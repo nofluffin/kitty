@@ -14,15 +14,15 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { colors, space, TOUCH, type } from './theme';
+import { colors, fonts, layout, space, TOUCH, type } from './theme';
 
 // ---------------------------------------------------------------------------
-// Screen: header, scrolling body and a footer pinned above the keyboard.
+// Screen: 56 pt header, 20 pt gutters, footer pinned 20 pt above the bottom.
 // ---------------------------------------------------------------------------
 
 interface ScreenProps {
   title: string;
-  /** Shows a back arrow. */
+  /** Shows a back arrow and the smaller screen title (e.g. "Enter the code"). */
   back?: boolean;
   /** Right side of the header, e.g. a "Log in" link or the avatar. */
   headerRight?: ReactNode;
@@ -33,23 +33,7 @@ interface ScreenProps {
 export function Screen({ title, back, headerRight, children, footer }: ScreenProps) {
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
-      <View style={styles.header}>
-        {back ? (
-          <Pressable
-            onPress={() => router.back()}
-            accessibilityRole="button"
-            accessibilityLabel="Back"
-            hitSlop={12}
-            style={styles.back}
-          >
-            <Text style={styles.backArrow}>←</Text>
-          </Pressable>
-        ) : null}
-        <Text style={styles.headerTitle} accessibilityRole="header" numberOfLines={1}>
-          {title}
-        </Text>
-        <View style={styles.headerRight}>{headerRight}</View>
-      </View>
+      <Header title={title} back={back} right={headerRight} />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
           {children}
@@ -60,20 +44,43 @@ export function Screen({ title, back, headerRight, children, footer }: ScreenPro
   );
 }
 
+export function Header({ title, back, right }: { title: string; back?: boolean; right?: ReactNode }) {
+  return (
+    <View style={styles.header}>
+      {back ? (
+        <Pressable
+          onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel="Back"
+          hitSlop={12}
+          style={styles.back}
+        >
+          <Text style={[type.appTitle, styles.arrow]}>←</Text>
+        </Pressable>
+      ) : null}
+      <Text style={[back ? type.screenTitle : type.appTitle, styles.flex]} accessibilityRole="header" numberOfLines={1}>
+        {title}
+      </Text>
+      {right ? <View style={styles.headerRight}>{right}</View> : null}
+    </View>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Text
 // ---------------------------------------------------------------------------
 
 export function Title({ children }: { children: ReactNode }) {
   return (
-    <Text style={type.title} accessibilityRole="header">
+    <Text style={[type.title, styles.titleGap]} accessibilityRole="header">
       {children}
     </Text>
   );
 }
 
+/** Paragraph under a title: 16 pt, 10 pt below it. */
 export function Body({ children, ink }: { children: ReactNode; ink?: boolean }) {
-  return <Text style={[ink ? type.bodyInk : type.body, styles.mtXs]}>{children}</Text>;
+  return <Text style={[ink ? type.bodyInk : type.body, styles.bodyGap]}>{children}</Text>;
 }
 
 export function Small({ children }: { children: ReactNode }) {
@@ -95,14 +102,15 @@ export function ErrorText({ children }: { children: ReactNode }) {
 
 export function TextLink({ children, onPress, disabled }: { children: ReactNode; onPress: () => void; disabled?: boolean }) {
   return (
-    <Pressable onPress={onPress} disabled={disabled} accessibilityRole="link" hitSlop={10}>
-      <Text style={[styles.link, disabled && styles.linkDisabled]}>{children}</Text>
+    <Pressable onPress={onPress} disabled={disabled} accessibilityRole="link" hitSlop={12}>
+      {/* The wires keep a counting-down link black and underlined; it just can't be tapped yet. */}
+      <Text style={type.link}>{children}</Text>
     </Pressable>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Buttons
+// Buttons: 51 pt, square corners. Primary is filled ink, secondary is outlined.
 // ---------------------------------------------------------------------------
 
 interface ButtonProps {
@@ -132,16 +140,14 @@ export function Button({ children, onPress, variant = 'primary', disabled, loadi
       {loading ? (
         <ActivityIndicator color={primary ? colors.inkOnDark : colors.ink} />
       ) : (
-        <Text style={[styles.buttonText, primary ? styles.buttonTextPrimary : styles.buttonTextSecondary]}>
-          {children}
-        </Text>
+        <Text style={primary ? [type.button, styles.textOnDark] : [type.buttonSecondary, styles.textInk]}>{children}</Text>
       )}
     </Pressable>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Fields
+// Fields: label, then a 47 pt input 6 pt below it, then an optional hint.
 // ---------------------------------------------------------------------------
 
 export type TextInputRef = ComponentRef<typeof TextInput>;
@@ -160,17 +166,17 @@ export function Field({ ref, label, hint, error, prefix, style, ...input }: Fiel
     <View style={styles.field}>
       <Label>{label}</Label>
       <View style={[styles.inputBox, error ? styles.inputBoxError : null]}>
-        {prefix ? <Text style={styles.prefix}>{prefix}</Text> : null}
+        {prefix ? <Text style={[type.input, styles.prefix]}>{prefix}</Text> : null}
         <TextInput
           ref={ref}
-          style={[styles.input, style]}
-          placeholderTextColor={colors.faint}
+          style={[type.input, styles.input, style]}
+          placeholderTextColor={colors.muted}
           accessibilityLabel={label}
           accessibilityHint={hint}
           {...input}
         />
       </View>
-      {error ? <ErrorText>{error}</ErrorText> : hint ? <Text style={[type.small, styles.mtXs]}>{hint}</Text> : null}
+      {error ? <ErrorText>{error}</ErrorText> : hint ? <Text style={[type.small, styles.hint]}>{hint}</Text> : null}
     </View>
   );
 }
@@ -183,19 +189,29 @@ export function Field({ ref, label, hint, error, prefix, style, ...input }: Fiel
 export function Note({ children }: { children: ReactNode }) {
   return (
     <View style={styles.note}>
-      <Text style={type.small}>{children}</Text>
+      <Text style={type.note}>{children}</Text>
     </View>
   );
 }
 
+/** White box with a 1 pt border and 16 pt padding. */
 export function Card({ children }: { children: ReactNode }) {
   return <View style={styles.card}>{children}</View>;
+}
+
+/** Outlined tag, e.g. "MOMENT" or "GOAL". */
+export function Badge({ children }: { children: string }) {
+  return (
+    <View style={styles.badge}>
+      <Text style={type.badge}>{children}</Text>
+    </View>
+  );
 }
 
 export function Avatar({ text, onPress }: { text: string; onPress: () => void }) {
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel="Your details" style={styles.avatar}>
-      <Text style={styles.avatarText}>{text}</Text>
+      <Text style={[type.meta, styles.avatarText]}>{text}</Text>
     </Pressable>
   );
 }
@@ -204,9 +220,9 @@ export function Avatar({ text, onPress }: { text: string; onPress: () => void })
 export function CenteredState({ title, body, action }: { title?: string; body?: string; action?: ReactNode }) {
   return (
     <View style={styles.centered}>
-      {title ? <Text style={type.heading}>{title}</Text> : <ActivityIndicator color={colors.ink} />}
+      {title ? <Text style={[type.title, styles.centerText]}>{title}</Text> : <ActivityIndicator color={colors.ink} />}
       {body ? <Text style={[type.body, styles.centerText]}>{body}</Text> : null}
-      {action ? <View style={styles.mtLg}>{action}</View> : null}
+      {action ? <View style={styles.centeredAction}>{action}</View> : null}
     </View>
   );
 }
@@ -217,71 +233,85 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   safe: { flex: 1, backgroundColor: colors.page },
   header: {
-    minHeight: 64,
+    height: layout.headerHeight,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: space.xl,
+    paddingHorizontal: layout.gutter,
     backgroundColor: colors.surface,
-    borderBottomWidth: 1,
+    borderBottomWidth: layout.border,
     borderBottomColor: colors.line,
   },
-  back: { marginRight: space.md, minWidth: 32, minHeight: TOUCH, justifyContent: 'center' },
-  backArrow: { fontSize: 24, color: colors.ink },
-  headerTitle: { flex: 1, fontSize: 20, fontWeight: '700', color: colors.ink },
+  back: { width: layout.backWidth, minHeight: TOUCH, justifyContent: 'center' },
+  arrow: { fontFamily: fonts.regular },
   headerRight: { marginLeft: space.md },
-  body: { padding: space.xl, flexGrow: 1 },
-  footer: { paddingHorizontal: space.xl, paddingTop: space.md, paddingBottom: space.lg, gap: space.md },
-  mtXs: { marginTop: space.xs },
-  mtLg: { marginTop: space.lg },
-  error: { color: colors.danger, fontSize: 14, marginTop: space.xs },
-  link: { color: colors.ink, fontSize: 15, textDecorationLine: 'underline', paddingVertical: space.xs },
-  linkDisabled: { color: colors.faint, textDecorationLine: 'none' },
+  body: { paddingHorizontal: layout.gutter, paddingTop: layout.top, paddingBottom: space.xl, flexGrow: 1 },
+  footer: { paddingHorizontal: layout.gutter, paddingTop: space.lg, paddingBottom: layout.gutter, gap: space.lg },
+  // Measured against screens 19 to 21: titles sit 5 pt lower, paragraphs 6 pt under them.
+  titleGap: { marginTop: 5 },
+  bodyGap: { marginTop: 6 },
+  error: { fontFamily: type.small.fontFamily, color: colors.danger, fontSize: 14, lineHeight: 20, marginTop: 6 },
   button: {
-    minHeight: 56,
+    height: layout.buttonHeight,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: space.lg,
-    borderWidth: 1,
+    borderWidth: layout.border,
   },
   buttonPrimary: { backgroundColor: colors.ink, borderColor: colors.ink },
   buttonSecondary: { backgroundColor: colors.surface, borderColor: colors.line },
   buttonDisabled: { opacity: 0.4 },
   buttonPressed: { opacity: 0.8 },
-  buttonText: { fontSize: 16 },
-  buttonTextPrimary: { color: colors.inkOnDark, fontWeight: '700' },
-  buttonTextSecondary: { color: colors.ink },
-  field: { marginTop: space.lg },
+  textOnDark: { color: colors.inkOnDark },
+  textInk: { color: colors.ink },
+  field: { marginTop: 14 },
   inputBox: {
-    marginTop: space.sm,
-    minHeight: 54,
+    marginTop: 6,
+    height: layout.inputHeight,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.surface,
-    borderWidth: 1,
+    borderWidth: layout.border,
     borderColor: colors.line,
-    paddingHorizontal: space.md,
+    borderRadius: layout.radius,
+    paddingHorizontal: 12,
   },
   inputBoxError: { borderColor: colors.danger },
-  prefix: { fontSize: 17, color: colors.ink, marginRight: space.sm },
-  input: { flex: 1, fontSize: 17, color: colors.ink, paddingVertical: space.md },
+  prefix: { marginRight: 5 },
+  input: { flex: 1, height: '100%', paddingVertical: 0 },
+  hint: { marginTop: 7 },
   note: {
-    borderWidth: 1,
+    borderWidth: layout.border,
     borderStyle: 'dashed',
     borderColor: colors.line,
-    padding: space.lg,
+    paddingHorizontal: 13,
+    paddingVertical: 14,
   },
-  card: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, padding: space.lg },
+  card: {
+    backgroundColor: colors.surface,
+    borderWidth: layout.border,
+    borderColor: colors.line,
+    padding: layout.cardPadding,
+  },
+  badge: {
+    height: 23,
+    justifyContent: 'center',
+    paddingHorizontal: 6,
+    borderWidth: layout.border,
+    borderColor: colors.line,
+    borderRadius: layout.radius,
+  },
   avatar: {
-    width: TOUCH,
-    height: TOUCH,
-    borderRadius: TOUCH / 2,
-    borderWidth: 1,
+    width: layout.avatar,
+    height: layout.avatar,
+    borderRadius: layout.avatar / 2,
+    borderWidth: layout.border,
     borderColor: colors.line,
     backgroundColor: colors.sunken,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { fontSize: 14, fontWeight: '700', color: colors.ink },
-  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: space.xl, gap: space.sm },
+  avatarText: { fontFamily: type.bodyBold.fontFamily },
+  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: layout.gutter, gap: space.sm },
+  centeredAction: { marginTop: space.lg, alignSelf: 'stretch' },
   centerText: { textAlign: 'center' },
 });

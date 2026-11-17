@@ -1,3 +1,6 @@
+import { DMSans_400Regular } from '@expo-google-fonts/dm-sans/400Regular';
+import { DMSans_700Bold } from '@expo-google-fonts/dm-sans/700Bold';
+import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
@@ -9,7 +12,10 @@ import { colors } from '@/ui/theme';
 SplashScreen.preventAutoHideAsync();
 
 function RootStack() {
-  const { ready, session } = useAuth();
+  const { ready: authReady, session } = useAuth();
+  // Stand-in for Adrianna until it's licensed. See src/ui/theme.ts.
+  const [fontsLoaded, fontError] = useFonts({ DMSans_400Regular, DMSans_700Bold });
+  const ready = authReady && (fontsLoaded || !!fontError);
 
   useEffect(() => {
     if (ready) SplashScreen.hideAsync();
