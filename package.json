@@ -1,0 +1,32 @@
+{
+  "name": "kitty",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "packageManager": "npm@10.9.4",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev:web": "turbo run dev --filter=@kitty/web",
+    "dev:mobile": "npm run start --workspace @kitty/mobile",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "build": "turbo run build",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:status": "supabase status",
+    "db:test": "supabase test db",
+    "check:login": "node scripts/check-login.mjs",
+    "db:types": "supabase gen types typescript --local --schema public > packages/db/src/database.types.ts"
+  },
+  "devDependencies": {
+    "supabase": "3.2.0",
+    "turbo": "2.11.11",
+    "@supabase/supabase-js": "^2.119.0"
+  }
+}
