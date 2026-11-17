@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import type { TextInputRef } from './components';
 
-import { colors, space } from './theme';
+import { colors, layout, type } from './theme';
 
 /**
  * Six boxes backed by one hidden input, so paste and the phone's
@@ -31,7 +31,7 @@ export function CodeInput({
             key={i}
             style={[styles.box, i === digits.length && styles.boxActive, invalid && styles.boxInvalid]}
           >
-            <Text style={styles.digit}>{digits[i] ?? ''}</Text>
+            <Text style={type.codeDigit}>{digits[i] ?? ''}</Text>
           </View>
         ))}
       </View>
@@ -52,20 +52,20 @@ export function CodeInput({
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: space.sm, marginTop: space.xl },
+  // Six 47 x 55 boxes spread across the 350 pt content width (60 pt apart), 20 pt below the text.
+  row: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 },
   box: {
-    flex: 1,
-    aspectRatio: 0.85,
-    maxWidth: 56,
-    borderWidth: 1,
+    width: 47,
+    height: 55,
+    borderWidth: layout.border,
     borderColor: colors.line,
+    borderRadius: layout.radius,
     backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
   boxActive: { borderColor: colors.ink, borderWidth: 2 },
   boxInvalid: { borderColor: colors.danger },
-  digit: { fontSize: 26, fontWeight: '700', color: colors.ink },
   // Kept on screen (not display: none) so the OS still offers code autofill.
   hidden: { position: 'absolute', opacity: 0, width: 1, height: 1 },
 });

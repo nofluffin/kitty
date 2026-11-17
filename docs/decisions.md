@@ -2,6 +2,12 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 17 Nov 2026: matching the wireframes
+
+- **All sizes, spacing and colours come from the wireframe PDF.** The wires are drawn on a 390 x 844 pt phone at 0.6 scale. Every value is in `apps/mobile/src/ui/theme.ts`, with the measurements behind it.
+- **The wires use Adrianna (Chank Co.) for all text.** It's a paid font and isn't licensed yet. **DM Sans stands in** because it was the closest free match by text width (within about 3%). To switch: buy an app and web licence for Adrianna Regular and Bold, add the files, load them in `apps/mobile/src/app/_layout.tsx` and change the two names under `fonts` in `theme.ts`.
+- **"You" in the avatar**, as drawn, instead of initials.
+
 ## 17 Nov 2026: step 3, organiser login and profile
 
 - **Sign up asks for an email as well as the mobile number** while login uses email codes. The mobile number is still collected, because spec section 14 matches new organisers to earlier kitty members by phone. It isn't verified until SMS login is switched on.

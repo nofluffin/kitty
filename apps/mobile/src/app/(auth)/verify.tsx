@@ -1,11 +1,12 @@
 import { formatIndianMobile } from '@kitty/core';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import { authErrorMessage, requestCode, verifyCode } from '@/lib/auth-flow';
 import { config } from '@/lib/config';
 import { CodeInput } from '@/ui/code-input';
-import { Body, Button, ErrorText, Gap, Note, Screen, TextLink, Title } from '@/ui/components';
+import { Body, Button, ErrorText, Note, Screen, TextLink, Title } from '@/ui/components';
 
 const RESEND_AFTER_SECONDS = 30;
 
@@ -58,9 +59,12 @@ export default function Verify() {
       title="Enter the code"
       back
       footer={
-        <Button onPress={() => submit()} loading={verifying} disabled={code.length !== 6}>
-          Continue
-        </Button>
+        <>
+          {mode === 'sign-up' ? <Note>Your UPI ID is asked for later, when you create your first kitty.</Note> : null}
+          <Button onPress={() => submit()} loading={verifying} disabled={code.length !== 6}>
+            Continue
+          </Button>
+        </>
       }
     >
       <Title>{usesEmail ? 'Check your email' : 'Check your messages'}</Title>
@@ -76,24 +80,25 @@ export default function Verify() {
       />
       <ErrorText>{error}</ErrorText>
 
-      <Gap size="xl" />
-      {wait > 0 ? (
-        <TextLink onPress={() => {}} disabled>
-          {`Send it again in 0:${String(wait).padStart(2, '0')}`}
-        </TextLink>
-      ) : (
-        <TextLink onPress={resend}>Send it again</TextLink>
-      )}
-      {resent ? <Body>New code sent.</Body> : null}
-      <Gap size="lg" />
-      <TextLink onPress={() => router.back()}>{usesEmail ? 'Wrong email? Change it' : 'Wrong number? Change it'}</TextLink>
-
-      {mode === 'sign-up' ? (
-        <>
-          <Gap size="xxl" />
-          <Note>Your UPI ID is asked for later, when you create your first kitty.</Note>
-        </>
-      ) : null}
+      <View style={styles.firstLink}>
+        {wait > 0 ? (
+          <TextLink onPress={() => {}} disabled>
+            {`Send it again in 0:${String(wait).padStart(2, '0')}`}
+          </TextLink>
+        ) : (
+          <TextLink onPress={resend}>Send it again</TextLink>
+        )}
+        {resent ? <Body>New code sent.</Body> : null}
+      </View>
+      <View style={styles.secondLink}>
+        <TextLink onPress={() => router.back()}>{usesEmail ? 'Wrong email? Change it' : 'Wrong number? Change it'}</TextLink>
+      </View>
     </Screen>
   );
 }
+
+// Measured from screen 20: links sit 28 pt below the code boxes and 37 pt apart.
+const styles = StyleSheet.create({
+  firstLink: { marginTop: 22 },
+  secondLink: { marginTop: 37 },
+});

@@ -1,19 +1,17 @@
-import { formatRupees, formatShortDate, initials, localIsoDate, timeToGo } from '@kitty/core';
+import { formatRupees, formatShortDate, localIsoDate, timeToGo } from '@kitty/core';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useAuth } from '@/lib/auth';
 import { loadKittySummaries, type KittySummary } from '@/lib/kitties';
-import { Avatar, Button, CenteredState, Label } from '@/ui/components';
-import { colors, space, type } from '@/ui/theme';
+import { Avatar, Badge, Body, Button, CenteredState, Header, Label, Title } from '@/ui/components';
+import { colors, layout, type } from '@/ui/theme';
 
 type Load = { state: 'loading' } | { state: 'error' } | { state: 'ready'; kitties: KittySummary[] };
 
-/** Screen 1 (kitties) and screen 21 (no kitties yet). */
+/** Screen 1 (kitties) and screen 21 (no kitties yet). Spacing measured from the wires. */
 export default function Home() {
-  const { profile } = useAuth();
   const [load, setLoad] = useState<Load>({ state: 'loading' });
   const [refreshing, setRefreshing] = useState(false);
 
@@ -41,12 +39,7 @@ export default function Home() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle} accessibilityRole="header">
-          Kitty
-        </Text>
-        <Avatar text={initials(profile?.name ?? '') || 'You'} onPress={() => router.push('/profile')} />
-      </View>
+      <Header title="Kitty" right={<Avatar text="You" onPress={() => router.push('/profile')} />} />
 
       {load.state === 'loading' ? (
         <CenteredState />
@@ -54,7 +47,16 @@ export default function Home() {
         <CenteredState
           title="Couldn't load your kitties"
           body="Check your connection and try again."
-          action={<Button onPress={() => { setLoad({ state: 'loading' }); fetchKitties(); }}>Try again</Button>}
+          action={
+            <Button
+              onPress={() => {
+                setLoad({ state: 'loading' });
+                fetchKitties();
+              }}
+            >
+              Try again
+            </Button>
+          }
         />
       ) : (
         <ScrollView
@@ -85,14 +87,16 @@ export default function Home() {
                 </>
               ) : null}
               {done.length > 0 ? (
-                <View style={styles.doneSection}>
+                <View style={collecting.length > 0 ? styles.doneSection : null}>
                   <Label>Done</Label>
-                  {done.map((k) => (
-                    <View key={k.id} style={styles.doneRow}>
-                      <Text style={type.bodyInk}>{k.title}</Text>
-                      <Text style={type.small}>Settled ✓</Text>
-                    </View>
-                  ))}
+                  <View style={styles.doneList}>
+                    {done.map((k) => (
+                      <View key={k.id} style={styles.doneRow}>
+                        <Text style={type.bodyInk}>{k.title}</Text>
+                        <Text style={type.metaMuted}>Settled ✓</Text>
+                      </View>
+                    ))}
+                  </View>
                 </View>
               ) : null}
             </>
@@ -115,19 +119,17 @@ function EmptyHome() {
   ];
   return (
     <View>
-      <Text style={type.title} accessibilityRole="header">
-        No kitties yet
-      </Text>
-      <Text style={[type.body, styles.mtXs]}>Collect from the group before you pay the bill.</Text>
+      <Title>No kitties yet</Title>
+      <Body>Collect from the group before you pay the bill.</Body>
       <View style={styles.steps}>
         {steps.map(([title, body], i) => (
           <View key={title} style={styles.step}>
             <View style={styles.stepNumber}>
-              <Text style={styles.stepNumberText}>{i + 1}</Text>
+              <Text style={[type.meta, styles.stepNumberText]}>{i + 1}</Text>
             </View>
-            <View style={styles.flex}>
-              <Text style={styles.stepTitle}>{title}</Text>
-              <Text style={type.small}>{body}</Text>
+            <View style={styles.stepText}>
+              <Text style={type.bodyBold}>{title}</Text>
+              <Text style={type.note}>{body}</Text>
             </View>
           </View>
         ))}
@@ -147,86 +149,74 @@ function KittyCard({ kitty, today }: { kitty: KittySummary; today: string }) {
       onPress={() => Alert.alert('Coming soon', 'The kitty feed is step 6 of the build.')}
     >
       <View style={styles.cardTop}>
-        <Text style={styles.cardTitle}>{kitty.title}</Text>
-        <Text style={styles.badge}>{isDraft ? 'DRAFT' : kitty.kind.toUpperCase()}</Text>
+        <Text style={[type.cardTitle, styles.cardTitle]}>{kitty.title}</Text>
+        <Badge>{isDraft ? 'Draft' : kitty.kind}</Badge>
       </View>
-      <Text style={[type.small, styles.mtXs]}>
+      <Text style={[type.metaMuted, styles.cardDate]}>
         {formatShortDate(kitty.dueDate)}, {timeToGo(today, kitty.dueDate)}
       </Text>
       <View style={styles.track}>
         <View style={[styles.fill, { width: `${progress * 100}%` }]} />
       </View>
       <View style={styles.cardBottom}>
-        <Text style={type.bodyInk}>
+        <Text style={type.meta}>
           {formatRupees(kitty.collectedPaise)} of {formatRupees(kitty.totalPaise)}
         </Text>
-        <Text style={type.bodyInk}>{isDraft ? 'Not shared yet' : `${kitty.paidCount} of ${kitty.memberCount} paid`}</Text>
+        <Text style={type.meta}>{isDraft ? 'Not shared yet' : `${kitty.paidCount} of ${kitty.memberCount} paid`}</Text>
       </View>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
   safe: { flex: 1, backgroundColor: colors.page },
-  header: {
-    minHeight: 64,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: space.xl,
+  body: { paddingHorizontal: layout.gutter, paddingTop: layout.top, paddingBottom: 24, flexGrow: 1 },
+  footer: { paddingHorizontal: layout.gutter, paddingTop: 16, paddingBottom: layout.gutter },
+  // Cards start 16 pt under the section label and sit 16 pt apart.
+  list: { marginTop: 16, gap: 16 },
+  card: {
     backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.line,
-  },
-  headerTitle: { fontSize: 20, fontWeight: '700', color: colors.ink },
-  body: { padding: space.xl, flexGrow: 1 },
-  footer: { paddingHorizontal: space.xl, paddingVertical: space.lg },
-  mtXs: { marginTop: space.xs },
-  list: { marginTop: space.md, gap: space.lg },
-  card: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.line, padding: space.lg },
-  cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: space.sm },
-  cardTitle: { fontSize: 18, fontWeight: '700', color: colors.ink, flex: 1 },
-  badge: {
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 1,
-    color: colors.ink,
-    borderWidth: 1,
-    borderColor: colors.ink,
-    paddingHorizontal: space.sm,
-    paddingVertical: 3,
-  },
-  track: { height: 8, backgroundColor: colors.lineSoft, marginTop: space.lg },
-  fill: { height: 8, backgroundColor: colors.ink },
-  cardBottom: { flexDirection: 'row', justifyContent: 'space-between', marginTop: space.md },
-  doneSection: { marginTop: space.xxl },
-  doneRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    minHeight: 56,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.line,
-  },
-  steps: {
-    marginTop: space.xl,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
+    borderWidth: layout.border,
     borderColor: colors.line,
-    padding: space.lg,
-    gap: space.lg,
+    padding: layout.cardPadding,
   },
-  step: { flexDirection: 'row', gap: space.md },
+  cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 },
+  cardTitle: { flex: 1 },
+  cardDate: { marginTop: 12 },
+  track: { height: 8, backgroundColor: colors.track, marginTop: 12 },
+  fill: { height: 8, backgroundColor: colors.ink },
+  cardBottom: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 },
+  doneSection: { marginTop: 26 },
+  doneList: { marginTop: 16, borderTopWidth: layout.border, borderTopColor: colors.line },
+  doneRow: {
+    height: 57,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderBottomWidth: layout.border,
+    borderBottomColor: colors.line,
+  },
+  // Screen 21: 24 pt below the intro, 16 pt padding, 27 pt number circles, 242 pt tall in the wire.
+  steps: {
+    marginTop: 24,
+    backgroundColor: colors.surface,
+    borderWidth: layout.border,
+    borderColor: colors.line,
+    paddingHorizontal: layout.cardPadding,
+    paddingTop: layout.cardPadding,
+    paddingBottom: 20,
+    gap: 16,
+  },
+  step: { flexDirection: 'row', gap: 12 },
   stepNumber: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 1.5,
+    width: 27,
+    height: 27,
+    borderRadius: 13.5,
+    borderWidth: layout.border,
     borderColor: colors.ink,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  stepNumberText: { fontSize: 13, fontWeight: '700', color: colors.ink },
-  stepTitle: { fontSize: 16, fontWeight: '700', color: colors.ink, marginBottom: 2 },
+  stepNumberText: { fontFamily: type.bodyBold.fontFamily, lineHeight: 17 },
+  stepText: { flex: 1, gap: 1 },
 });
