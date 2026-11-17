@@ -35,3 +35,4 @@ supabase/.temp/
 *.log
 .vscode/*
 !.vscode/extensions.json
+.vercel
