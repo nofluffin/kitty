@@ -100,7 +100,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [userId, applyProfile]);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
+    // This phone only. Logging out shouldn't end the organiser's sessions on other devices.
+    await supabase.auth.signOut({ scope: 'local' });
   }, []);
 
   // A profile left over from a previous login is never shown.

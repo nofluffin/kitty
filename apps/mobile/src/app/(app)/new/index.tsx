@@ -5,6 +5,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { useAuth } from '@/lib/auth';
 import { useDraftKitty, type Split } from '@/lib/draft-kitty';
+import { explainFailure } from '@/lib/errors';
 import { notify } from '@/lib/notify';
 import { supabase } from '@/lib/supabase';
 import {
@@ -69,7 +70,7 @@ export default function NewKitty() {
     });
     setSaving(false);
     if (error || !data) {
-      setFormError("Couldn't create the kitty. Check your connection and try again.");
+      setFormError(await explainFailure(error, 'create the kitty'));
       return;
     }
     refreshProfile(); // picks up the remembered UPI ID
