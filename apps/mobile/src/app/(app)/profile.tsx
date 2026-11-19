@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 
 import { useAuth, type Profile } from '@/lib/auth';
+import { explainFailure } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
 import { Body, Button, CenteredState, ErrorText, Field, Gap, Label, Screen } from '@/ui/components';
 
@@ -49,7 +50,7 @@ function ProfileForm({ profile }: { profile: Profile }) {
       .eq('id', profile.id);
     setSaving(false);
     if (error) {
-      setErrors({ form: "Couldn't save. Check your connection and try again." });
+      setErrors({ form: await explainFailure(error, 'save your details') });
       return;
     }
     await refreshProfile();

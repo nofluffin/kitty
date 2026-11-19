@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { explainFailure } from '@/lib/errors';
 import { loadKittySummaries, type KittySummary } from '@/lib/kitties';
 import { Avatar, Badge, Body, Button, CenteredState, Header, Label, Title } from '@/ui/components';
 import { colors, layout, type } from '@/ui/theme';
@@ -18,7 +19,8 @@ export default function Home() {
   const fetchKitties = useCallback(async () => {
     try {
       setLoad({ state: 'ready', kitties: await loadKittySummaries() });
-    } catch {
+    } catch (e) {
+      await explainFailure(e, 'load your kitties'); // logs out cleanly if the login has ended
       setLoad({ state: 'error' });
     }
   }, []);

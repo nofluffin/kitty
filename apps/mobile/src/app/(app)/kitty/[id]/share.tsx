@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { Linking, Platform, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { config } from '@/lib/config';
+import { explainFailure } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
 import {
   Body,
@@ -113,7 +114,7 @@ function ShareReady({ kitty, close }: { kitty: ShareKitty; close?: () => void })
     if (status !== 'draft') return true;
     const { error: e } = await supabase.rpc('share_kitty', { p_kitty_id: kitty.id });
     if (e) {
-      setError('Couldn’t share the kitty. Check your connection and try again.');
+      setError(await explainFailure(e, 'share the kitty'));
       return false;
     }
     setStatus('shared');
