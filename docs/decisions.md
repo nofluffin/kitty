@@ -2,6 +2,25 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 19 Nov 2026: step 4, creating and sharing a moment kitty
+
+- **Saving and sharing are database functions** (`create_kitty`, `share_kitty`), so a kitty is never half-saved. Both check that shares add up to the total to the paisa. The database tests cover them.
+- **Share on WhatsApp or Copy link locks the amounts**, whichever is tapped first (spec section 4). Sharing twice is safe.
+- **Share on WhatsApp opens WhatsApp's own chat picker** (`wa.me/?text=`), so the organiser can pick the group. If WhatsApp isn't installed, the phone's share sheet opens instead.
+- **A kitty needs at least one person besides the organiser**, and the pay-by date can't be in the past.
+- **The organiser starts as veg and doesn't drink**, like everyone else. They can change that, remove themselves ("I'm not paying into this one", e.g. for a gift) and add themselves back.
+- **Typing a share on screen 4 fixes it**; clearing the box unfixes it. Retyping the amount Kitty already worked out doesn't fix it.
+- **"Skip for now" leaves a draft.** Tapping a draft on home reopens its share screen.
+- **Goal and Scan the bill** show which build step adds them (9 and 8).
+
+**Open questions from step 4**
+
+| Question | Why it matters |
+| --- | --- |
+| Can a draft's people and amounts be edited after "Create kitty"? Right now they can't: create again instead. | Spec allows changes while `status = draft`. Needs an edit flow. |
+| The equal-share message always says "so the bill is covered before we sit down", as in spec section 9. Fine for a cab or tickets? | It reads oddly for non-dinner moments. Could drop it, or vary it. |
+| Android may declare the contacts permission even though Kitty only uses the picker. | Spec section 12 says never read the whole address book. Check on a real Android phone before store submission. |
+
 ## 17 Nov 2026: matching the wireframes
 
 - **All sizes, spacing and colours come from the wireframe PDF.** The wires are drawn on a 390 x 844 pt phone at 0.6 scale. Every value is in `apps/mobile/src/ui/theme.ts`, with the measurements behind it.

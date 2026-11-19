@@ -30,7 +30,7 @@ export default function Home() {
     }, [fetchKitties]),
   );
 
-  const startKitty = () => Alert.alert('Coming next', 'Creating a kitty is step 4 of the build.');
+  const startKitty = () => router.push('/new');
 
   const kitties = load.state === 'ready' ? load.kitties : [];
   const collecting = kitties.filter((k) => k.status !== 'closed');
@@ -146,7 +146,11 @@ function KittyCard({ kitty, today }: { kitty: KittySummary; today: string }) {
       style={styles.card}
       accessibilityRole="button"
       accessibilityLabel={`${kitty.title}, ${formatRupees(kitty.collectedPaise)} of ${formatRupees(kitty.totalPaise)} collected`}
-      onPress={() => Alert.alert('Coming soon', 'The kitty feed is step 6 of the build.')}
+      onPress={() =>
+        isDraft
+          ? router.push({ pathname: '/kitty/[id]/share', params: { id: kitty.id } })
+          : Alert.alert('Coming soon', 'The kitty feed is step 6 of the build.')
+      }
     >
       <View style={styles.cardTop}>
         <Text style={[type.cardTitle, styles.cardTitle]}>{kitty.title}</Text>
