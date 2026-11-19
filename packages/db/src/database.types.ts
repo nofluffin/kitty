@@ -171,11 +171,42 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "generate_share_slug":
+            "create_kitty":
+{ Args: { "p_due_date": string,"p_kind": Database["public"]['Enums']["kitty_kind"],"p_members": Json,"p_title": string,"p_total_paise": number,"p_upi_id": string }; Returns: {
+              "amount_source": Database["public"]['Enums']["amount_source"],
+"closed_at": string | null,
+"created_at": string,
+"due_date": string,
+"final_bill_paise": number | null,
+"goal_plan": Database["public"]['Enums']["goal_plan"] | null,
+"id": string,
+"kind": Database["public"]['Enums']["kitty_kind"],
+"organiser_id": string,
+"parts_count": number | null,
+"remind_day_before": boolean,
+"remind_on_day": boolean,
+"share_slug": string,
+"shared_at": string | null,
+"status": Database["public"]['Enums']["kitty_status"],
+"title": string,
+"total_paise": number,
+"updated_at": string,
+"upi_id": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "kitties"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
+"generate_share_slug":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
 "owns_kitty":
 { Args: { "target_kitty_id": string }; Returns: boolean
+                           },
+"share_kitty":
+{ Args: { "p_kitty_id": string }; Returns: string
                            }
           }
           Enums: {

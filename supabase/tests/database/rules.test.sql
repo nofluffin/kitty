@@ -20,11 +20,15 @@ select is((select name from public.profiles where id = '22222222-2222-4222-8222-
 select ok((select char_length(share_slug) = 16 from public.kitties where id = 'a2000000-0000-4000-8000-000000000001'),
   'new kitties get a 16 character share slug');
 
+-- How many kitties Rohan really has (the seed's 4, plus any made while testing locally).
+select count(*) as rohan_kitties from public.kitties where organiser_id = '11111111-1111-4111-8111-111111111111' \gset
+
 -- Act as Rohan -------------------------------------------------------------------
 set local role authenticated;
 set local request.jwt.claims = '{"sub": "11111111-1111-4111-8111-111111111111", "role": "authenticated"}';
 
-select is((select count(*)::int from public.kitties), 4, 'Rohan sees only his 4 kitties');
+select is((select count(*)::int from public.kitties), :rohan_kitties::int,
+  'Rohan sees all of his own kitties and nobody else''s');
 select is((select count(*)::int from public.members where kitty_id = 'a2000000-0000-4000-8000-000000000001'), 0,
   'Rohan cannot see members of Priya''s kitty');
 select is((select count(*)::int from public.profiles), 1, 'Rohan sees only his own profile');

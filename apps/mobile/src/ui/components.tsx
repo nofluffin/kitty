@@ -22,6 +22,7 @@ import { colors, fonts, layout, space, TOUCH, type } from './theme';
 
 interface ScreenProps {
   title: string;
+  close?: () => void;
   /** Shows a back arrow and the smaller screen title (e.g. "Enter the code"). */
   back?: boolean;
   /** Right side of the header, e.g. a "Log in" link or the avatar. */
@@ -30,10 +31,10 @@ interface ScreenProps {
   footer?: ReactNode;
 }
 
-export function Screen({ title, back, headerRight, children, footer }: ScreenProps) {
+export function Screen({ title, back, close, headerRight, children, footer }: ScreenProps) {
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
-      <Header title={title} back={back} right={headerRight} />
+      <Header title={title} back={back} close={close} right={headerRight} />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
           {children}
@@ -44,21 +45,32 @@ export function Screen({ title, back, headerRight, children, footer }: ScreenPro
   );
 }
 
-export function Header({ title, back, right }: { title: string; back?: boolean; right?: ReactNode }) {
+export function Header({
+  title,
+  back,
+  close,
+  right,
+}: {
+  title: string;
+  back?: boolean;
+  /** Shows ✗ instead of ←, for leaving a finished flow (screen 6). */
+  close?: () => void;
+  right?: ReactNode;
+}) {
   return (
     <View style={styles.header}>
-      {back ? (
+      {back || close ? (
         <Pressable
-          onPress={() => router.back()}
+          onPress={close ?? (() => router.back())}
           accessibilityRole="button"
-          accessibilityLabel="Back"
+          accessibilityLabel={close ? 'Close' : 'Back'}
           hitSlop={12}
           style={styles.back}
         >
-          <Text style={[type.appTitle, styles.arrow]}>←</Text>
+          <Text style={[type.appTitle, styles.arrow]}>{close ? '✕' : '←'}</Text>
         </Pressable>
       ) : null}
-      <Text style={[back ? type.screenTitle : type.appTitle, styles.flex]} accessibilityRole="header" numberOfLines={1}>
+      <Text style={[back || close ? type.screenTitle : type.appTitle, styles.flex]} accessibilityRole="header" numberOfLines={1}>
         {title}
       </Text>
       {right ? <View style={styles.headerRight}>{right}</View> : null}
@@ -166,7 +178,8 @@ export function Field({ ref, label, hint, error, prefix, style, ...input }: Fiel
     <View style={styles.field}>
       <Label>{label}</Label>
       <View style={[styles.inputBox, error ? styles.inputBoxError : null]}>
-        {prefix ? <Text style={[type.input, styles.prefix]}>{prefix}</Text> : null}
+        {/* A single symbol (₹) sits tight to the number; "+91" keeps a space after it. */}
+        {prefix ? <Text style={[type.input, prefix.length === 1 ? styles.prefixTight : styles.prefix]}>{prefix}</Text> : null}
         <TextInput
           ref={ref}
           style={[type.input, styles.input, style]}
@@ -229,6 +242,101 @@ export function CenteredState({ title, body, action }: { title?: string; body?: 
 
 export const Gap = ({ size = 'lg' }: { size?: keyof typeof space }) => <View style={{ height: space[size] }} />;
 
+// ---------------------------------------------------------------------------
+// Step 4 building blocks, sized from screens 2 to 4.
+// ---------------------------------------------------------------------------
+
+/** Two-option toggle, 44 pt tall (Moment/Goal, Veg/Non-veg, Drinks/Doesn't drink). */
+export function Segmented<T extends string>({
+  options,
+  value,
+  onChange,
+  label,
+}: {
+  options: readonly { value: T; label: string }[];
+  value: T;
+  onChange: (value: T) => void;
+  label: string;
+}) {
+  return (
+    <View style={styles.segmented} accessibilityRole="radiogroup" accessibilityLabel={label}>
+      {options.map((o) => {
+        const on = o.value === value;
+        return (
+          <Pressable
+            key={o.value}
+            onPress={() => onChange(o.value)}
+            accessibilityRole="radio"
+            accessibilityState={{ checked: on }}
+            style={[styles.segment, on ? styles.segmentOn : styles.segmentOff]}
+          >
+            <Text style={on ? [type.button, styles.textOnDark] : [type.buttonSecondary, styles.textInk]}>{o.label}</Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+/** Name pill, 35 pt tall. The organiser's own chip is filled. */
+export function Chip({ children, filled, onPress }: { children: string; filled?: boolean; onPress?: () => void }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={!onPress}
+      accessibilityRole={onPress ? 'button' : 'text'}
+      style={[styles.chip, filled && styles.chipFilled]}
+    >
+      <Text style={type.meta}>{children}</Text>
+    </Pressable>
+  );
+}
+
+/** Dashed full-width button, 46 pt tall ("Add or edit people"). */
+export function DashedButton({ children, onPress }: { children: string; onPress: () => void }) {
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button" style={({ pressed }) => [styles.dashedButton, pressed && styles.buttonPressed]}>
+      <Text style={[type.meta, styles.centerText]}>{children}</Text>
+    </Pressable>
+  );
+}
+
+/** Small outlined button, 44 pt tall ("Adjust", "Edit message"). */
+export function SmallButton({ children, onPress, disabled }: { children: string; onPress: () => void; disabled?: boolean }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: !!disabled }}
+      style={({ pressed }) => [styles.smallButton, disabled && styles.buttonDisabled, pressed && styles.buttonPressed]}
+    >
+      <Text style={type.meta}>{children}</Text>
+    </Pressable>
+  );
+}
+
+/** Light grey explanation box (screen 4: "You set Aisha to ₹600..."). */
+export function InfoBox({ children }: { children: ReactNode }) {
+  return (
+    <View style={styles.infoBox}>
+      <Text style={type.note}>{children}</Text>
+    </View>
+  );
+}
+
+/** A full-width row with a rule underneath (screen 3 "In this kitty", screen 24). */
+export function Row({ left, right, onPress }: { left: string; right?: string; onPress?: () => void }) {
+  return (
+    <Pressable onPress={onPress} disabled={!onPress} accessibilityRole={onPress ? 'button' : 'text'} style={styles.row}>
+      <Text style={[type.bodyInk, styles.flex]} numberOfLines={1}>
+        {left}
+      </Text>
+      {right ? <Text style={type.note}>{right}</Text> : null}
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   safe: { flex: 1, backgroundColor: colors.page },
@@ -277,6 +385,7 @@ const styles = StyleSheet.create({
   },
   inputBoxError: { borderColor: colors.danger },
   prefix: { marginRight: 5 },
+  prefixTight: { marginRight: 1 },
   input: { flex: 1, height: '100%', paddingVertical: 0 },
   hint: { marginTop: 7 },
   note: {
@@ -314,4 +423,44 @@ const styles = StyleSheet.create({
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: layout.gutter, gap: space.sm },
   centeredAction: { marginTop: space.lg, alignSelf: 'stretch' },
   centerText: { textAlign: 'center' },
+  segmented: { flexDirection: 'row', height: 44 },
+  segment: { flex: 1, alignItems: 'center', justifyContent: 'center', borderWidth: layout.border },
+  segmentOn: { backgroundColor: colors.ink, borderColor: colors.ink },
+  segmentOff: { backgroundColor: colors.surface, borderColor: colors.line },
+  chip: {
+    height: 35,
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+    borderWidth: layout.border,
+    borderColor: colors.line,
+    borderRadius: 17.5,
+    backgroundColor: colors.surface,
+  },
+  chipFilled: { backgroundColor: colors.sunken },
+  dashedButton: {
+    height: 46,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: layout.border,
+    borderStyle: 'dashed',
+    borderColor: colors.line,
+    paddingHorizontal: 12,
+  },
+  smallButton: {
+    height: 44,
+    justifyContent: 'center',
+    paddingHorizontal: 15,
+    borderWidth: layout.border,
+    borderColor: colors.line,
+    backgroundColor: colors.surface,
+  },
+  infoBox: { backgroundColor: colors.sunken, paddingHorizontal: 12, paddingVertical: 9 },
+  row: {
+    minHeight: 49,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderBottomWidth: layout.border,
+    borderBottomColor: colors.line,
+  },
 });
