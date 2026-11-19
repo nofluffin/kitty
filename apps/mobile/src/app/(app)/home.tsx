@@ -1,7 +1,7 @@
 import { formatRupees, formatShortDate, localIsoDate, timeToGo } from '@kitty/core';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { loadKittySummaries, type KittySummary } from '@/lib/kitties';
@@ -146,11 +146,9 @@ function KittyCard({ kitty, today }: { kitty: KittySummary; today: string }) {
       style={styles.card}
       accessibilityRole="button"
       accessibilityLabel={`${kitty.title}, ${formatRupees(kitty.collectedPaise)} of ${formatRupees(kitty.totalPaise)} collected`}
-      onPress={() =>
-        isDraft
-          ? router.push({ pathname: '/kitty/[id]/share', params: { id: kitty.id } })
-          : Alert.alert('Coming soon', 'The kitty feed is step 6 of the build.')
-      }
+      // Until the kitty feed (screen 7, step 6), every kitty opens its share screen,
+      // so the organiser can always get back to it and share the link again.
+      onPress={() => router.push({ pathname: '/kitty/[id]/share', params: { id: kitty.id } })}
     >
       <View style={styles.cardTop}>
         <Text style={[type.cardTitle, styles.cardTitle]}>{kitty.title}</Text>

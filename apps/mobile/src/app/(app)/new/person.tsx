@@ -2,10 +2,11 @@ import { cleanName, formatIndianMobile, normaliseIndianMobile, type Diet } from 
 import { Contact } from 'expo-contacts';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Platform, StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 
 import { useAuth } from '@/lib/auth';
 import { describePerson, useDraftKitty, type DraftPerson } from '@/lib/draft-kitty';
+import { notify } from '@/lib/notify';
 import { Button, Field, Label, Row, Screen, Segmented, Small, TextLink } from '@/ui/components';
 import { type } from '@/ui/theme';
 
@@ -41,7 +42,7 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
       const indian = phones.map((p) => normaliseIndianMobile(p.number ?? '')).find(Boolean);
       setMobile(indian ? formatIndianMobile(indian).replace(/^\+91 /, '') : '');
     } catch {
-      Alert.alert('Couldn’t open contacts', 'Type their name instead.');
+      notify('Couldn’t open contacts', 'Type their name instead.');
     }
   }
 
