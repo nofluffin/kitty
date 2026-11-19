@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["@kitty/core"],
+  transpilePackages: ["@kitty/core", "@kitty/db"],
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {
