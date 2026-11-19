@@ -6,52 +6,98 @@ import { supabase } from './supabase';
 
 export type Profile = Row<'profiles'>;
 
+/** loading: being fetched. error: couldn't reach the server (retry). ready: loaded. */
+export type ProfileStatus = 'loading' | 'error' | 'ready';
+
 interface AuthState {
-  /** False until the saved session has been read from storage. */
+  /** False until the saved session has been read and checked. */
   ready: boolean;
   session: Session | null;
   profile: Profile | null;
+  profileStatus: ProfileStatus;
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
 
-async function fetchProfile(userId: string): Promise<Profile | null> {
-  const { data } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
-  return data;
+type ProfileResult = { kind: 'found'; profile: Profile } | { kind: 'missing' } | { kind: 'error' };
+
+async function fetchProfile(userId: string): Promise<ProfileResult> {
+  const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
+  if (error) return { kind: 'error' };
+  return data ? { kind: 'found', profile: data } : { kind: 'missing' };
+}
+
+/**
+ * A saved login can outlive its account, for example after the local database is
+ * rebuilt. Ask the server whether it's still valid, and log out cleanly if not.
+ * Network failures keep the session, so organisers aren't logged out when offline.
+ */
+async function checkSavedSession(session: Session | null): Promise<Session | null> {
+  if (!session) return null;
+  const { data, error } = await supabase.auth.getUser();
+  const gone = error ? error.status === 401 || error.status === 403 || error.status === 404 : data.user?.id !== session.user.id;
+  if (gone) {
+    await supabase.auth.signOut({ scope: 'local' });
+    return null;
+  }
+  return session;
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [profileStatus, setProfileStatus] = useState<ProfileStatus>('loading');
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setReady(true);
-    });
+    let current = true;
+    supabase.auth
+      .getSession()
+      .then(({ data }) => checkSavedSession(data.session))
+      .then((checked) => {
+        if (!current) return;
+        setSession(checked);
+        setReady(true);
+      });
     const { data } = supabase.auth.onAuthStateChange((_event, next) => setSession(next));
-    return () => data.subscription.unsubscribe();
+    return () => {
+      current = false;
+      data.subscription.unsubscribe();
+    };
   }, []);
 
   const userId = session?.user.id;
 
+  const applyProfile = useCallback(async (result: ProfileResult) => {
+    if (result.kind === 'found') {
+      setProfile(result.profile);
+      setProfileStatus('ready');
+    } else if (result.kind === 'missing') {
+      // Logged in but the account has no profile: the account was removed. Start again.
+      await supabase.auth.signOut({ scope: 'local' });
+    } else {
+      setProfileStatus('error');
+    }
+  }, []);
+
   useEffect(() => {
     if (!userId) return;
     let current = true;
-    fetchProfile(userId).then((p) => {
-      if (current) setProfile(p);
+    fetchProfile(userId).then((r) => {
+      if (current) applyProfile(r);
     });
     return () => {
       current = false;
     };
-  }, [userId]);
+  }, [userId, applyProfile]);
 
   const refreshProfile = useCallback(async () => {
-    if (userId) setProfile(await fetchProfile(userId));
-  }, [userId]);
+    if (!userId) return;
+    setProfileStatus('loading');
+    await applyProfile(await fetchProfile(userId));
+  }, [userId, applyProfile]);
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
@@ -59,10 +105,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // A profile left over from a previous login is never shown.
   const visibleProfile = profile && profile.id === userId ? profile : null;
+  const visibleStatus: ProfileStatus = visibleProfile ? 'ready' : profileStatus === 'error' ? 'error' : 'loading';
 
   const value = useMemo(
-    () => ({ ready, session, profile: visibleProfile, refreshProfile, signOut }),
-    [ready, session, visibleProfile, refreshProfile, signOut],
+    () => ({ ready, session, profile: visibleProfile, profileStatus: visibleStatus, refreshProfile, signOut }),
+    [ready, session, visibleProfile, visibleStatus, refreshProfile, signOut],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

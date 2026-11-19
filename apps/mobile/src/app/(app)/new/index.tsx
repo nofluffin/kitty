@@ -1,10 +1,11 @@
 import { formatRupees, isValidUpiId, localIsoDate, normaliseUpiId } from '@kitty/core';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { useAuth } from '@/lib/auth';
 import { useDraftKitty, type Split } from '@/lib/draft-kitty';
+import { notify } from '@/lib/notify';
 import { supabase } from '@/lib/supabase';
 import {
   Button,
@@ -96,7 +97,7 @@ export default function NewKitty() {
         ]}
         value="moment"
         onChange={(v) => {
-          if (v === 'goal') Alert.alert('Coming soon', 'Goal kitties, saved up over weeks, come in step 9 of the build.');
+          if (v === 'goal') notify('Coming soon', 'Goal kitties, saved up over weeks, come in step 9 of the build.');
         }}
       />
 
@@ -130,7 +131,7 @@ export default function NewKitty() {
 
       <View style={styles.scanGap}>
         <DashedButton
-          onPress={() => Alert.alert('Coming soon', 'Scanning a bill for exact shares comes in step 8 of the build.')}
+          onPress={() => notify('Coming soon', 'Scanning a bill for exact shares comes in step 8 of the build.')}
         >
           Have the bill already? Scan it for exact shares
         </DashedButton>
