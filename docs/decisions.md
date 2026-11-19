@@ -2,6 +2,35 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 19 Nov 2026: step 5, the member pay page
+
+**Decided with Raj**
+
+- **"My name is not here" asks the organiser.** It shows "Only Rohan can add people to this kitty" and a button that opens WhatsApp to the organiser (when they have a number). Members can't add themselves, so amounts stay locked.
+- **Step 5 before step 6**, as in the spec.
+
+**How it works**
+
+- **The browser never talks to Supabase** (spec section 7). Next.js server code reads and writes with the service key, which only exists on the server.
+- **Picking a name sets an httpOnly cookie** for that link only, kept for a year. Page scripts can't read it. If the name was already picked on another phone, the page asks "Is this you, Zoya?" first.
+- **"Not you? Pick another name"** (and the back arrow on screen 15) forgets the name on this browser.
+- **The organiser isn't in the "Who are you?" list**, as in the wires. Names go unpaid first, then waiting, then paid (greyed out, not tappable).
+- **Drafts look like a missing link**, so an unshared kitty doesn't leak.
+- **"Did the payment go through?"** appears when the member comes back to the page after tapping the pay button. "I've paid" is always there too.
+- **UPI references must be 12 digits.** Sending one moves the payment back to "waiting" for the organiser.
+- **On iPhone, GPay, PhonePe and Paytm buttons** appear under the main pay button. Their link formats are unverified (see below).
+- **"Get Kitty" links to the site's home page** until the app is in the stores.
+
+**Not done yet**
+
+| What | When |
+| --- | --- |
+| Test the pay button on real phones with GPay, PhonePe and Paytm, Android and iPhone. The spec says step 5 isn't done until this passes. | Before merging step 5 |
+| The live Vercel site has no database yet, so member links there show "No connection". Needs a Supabase cloud project in Mumbai and its keys in Vercel. | Before sharing real links |
+| Rate limiting on member links (spec section 12). | Before the pilot |
+| Push notification to the organiser when someone marks paid. | Step 6 |
+| Top-up and refund screens (17, 18). | Step 7 |
+
 ## 19 Nov 2026: step 4, creating and sharing a moment kitty
 
 - **Saving and sharing are database functions** (`create_kitty`, `share_kitty`), so a kitty is never half-saved. Both check that shares add up to the total to the paisa. The database tests cover them.

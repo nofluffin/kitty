@@ -10,3 +10,4 @@ export * from './upi';
 export * from './messages';
 export * from './status';
 export * from './identity';
+export * from './member';
