@@ -2,7 +2,7 @@ import { cleanName, formatIndianMobile, normaliseIndianMobile, type Diet } from 
 // The legacy picker returns the picked person's details directly. The newer Contact.presentPicker
 // only returns an ID, and reading the numbers then needs full address book permission on iPhone.
 import { presentContactPickerAsync } from 'expo-contacts/legacy';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams, usePathname } from 'expo-router';
 import { useState } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 
@@ -27,6 +27,8 @@ export default function AddPerson() {
 function PersonForm({ editing }: { editing: DraftPerson | null }) {
   const k = useDraftKitty();
   const { profile } = useAuth();
+  // The same screen adds people to a new group (Groups tab).
+  const inGroup = usePathname().startsWith('/new-group');
   const [name, setName] = useState(editing?.name ?? '');
   const [mobile, setMobile] = useState(editing?.phone ? formatIndianMobile(editing.phone).replace(/^\+91 /, '') : '');
   const [diet, setDiet] = useState<Diet>(editing?.diet ?? 'veg');
@@ -108,7 +110,7 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
         editing ? (
           <Button onPress={save}>Save changes</Button>
         ) : name.trim() ? (
-          <Button onPress={save}>Add to kitty</Button>
+          <Button onPress={save}>{inGroup ? 'Add to group' : 'Add to kitty'}</Button>
         ) : (
           <Button onPress={() => router.back()}>{`Done, ${k.people.length} ${k.people.length === 1 ? 'person' : 'people'} in`}</Button>
         )

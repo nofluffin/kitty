@@ -1,3 +1,4 @@
+import { removeAllAvatars } from './avatar';
 import { supabase } from './supabase';
 
 /**
@@ -17,6 +18,9 @@ export async function deleteAccount(): Promise<Error | null> {
       if (removeError) return removeError;
     }
   }
+
+  const { data: me } = await supabase.auth.getUser();
+  if (me.user) await removeAllAvatars(me.user.id);
 
   const { error: deleteError } = await supabase.rpc('delete_my_account');
   if (deleteError) return deleteError;

@@ -72,7 +72,7 @@ const SECTIONS: { title: string; icon: IconName; topics: Topic[] }[] = [
       {
         q: 'Saving a group',
         a: [
-          'After adding people to a kitty, tap “Save these people as a group” and give it a name, like Family or Office lunch. Numbers, food and drink, and who pays for whom are kept, and you’re in it too.',
+          'In the Groups tab, tap “New group”, give it a name like Family or Office lunch, and add people. Or, after adding people to a kitty, tap “Save these people as a group”. Numbers, food and drink, and who pays for whom are kept, and you’re in it too.',
           'Saving again with the same name makes a new group and swaps your old one for it. Anyone you shared the old one with keeps theirs.',
         ],
       },
@@ -80,13 +80,14 @@ const SECTIONS: { title: string; icon: IconName; topics: Topic[] }[] = [
         q: 'Using a group',
         a: [
           'On a new kitty, tap “Add a saved group”. Favourites (tap ☆ to star one) come first, then the groups you used recently, then the rest. Tap a group to add everyone except you, then add or remove people as usual.',
+          'Someone eating veg or not drinking this time? Tap their name in the kitty and change it. It changes that kitty only; the group keeps its settings.',
         ],
       },
       {
         q: 'Sharing and leaving',
         a: [
           'Tap Share next to a group to send it on WhatsApp. When a friend who organises with Kitty opens the link, the group is added to their Kitty, with you in it, so you can take turns organising.',
-          'Tap Leave to take a group out of your Kitty. Others who have it keep it. Manage your groups from the You picture, then Your groups.',
+          'Tap Leave to take a group out of your Kitty. Others who have it keep it. All your groups are in the Groups tab, next to Kitties.',
         ],
       },
     ],
@@ -206,7 +207,10 @@ const SECTIONS: { title: string; icon: IconName; topics: Topic[] }[] = [
     topics: [
       {
         q: 'Your details and UPI ID',
-        a: ['Tap the You picture at the top right to change your name, mobile number or UPI ID, see your groups, log out, or delete your account.'],
+        a: [
+          'Tap the You picture at the top right to change your name, mobile number or UPI ID, log out, or delete your account.',
+          'Add a photo there too: take one or choose one from your photos. It shows in the You picture on every screen.',
+        ],
       },
       {
         q: 'Updates',

@@ -35,7 +35,7 @@ export function GroupsList({ onUse }: { onUse?: (g: SavedGroup) => void }) {
     return (
       <CenteredState
         title="No groups yet"
-        body="When you start a kitty, add people, then tap “Save these people as a group”. Groups friends share with you show here too."
+        body="Tap “New group”, or save the people in a kitty as a group. Groups friends share with you show here too."
       />
     );
   }
