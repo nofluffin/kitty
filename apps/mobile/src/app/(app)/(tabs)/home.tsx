@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { explainFailure } from '@/lib/errors';
 import { loadKittySummaries, type KittySummary } from '@/lib/kitties';
-import { Avatar, Badge, Body, Button, CenteredState, Header, Label, Title } from '@/ui/components';
+import { Badge, Body, Button, CenteredState, Header, Label, Title } from '@/ui/components';
 import { colors, layout, type } from '@/ui/theme';
 
 type Load = { state: 'loading' } | { state: 'error' } | { state: 'ready'; kitties: KittySummary[] };
@@ -41,7 +41,7 @@ export default function Home() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <Header title="Kitty" right={<Avatar text="You" onPress={() => router.push('/profile')} />} />
+      <Header title="Kitty" />
 
       {load.state === 'loading' ? (
         <CenteredState />

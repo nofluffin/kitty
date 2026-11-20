@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 
 import { Body, Header, Label, Note, Page, Small, Title } from "@/components/ui";
@@ -19,7 +20,14 @@ export default function Home() {
   return (
     <Page
       header={<Header title="Kitty" />}
-      footer={<Small>Got a Kitty link from a friend? Open it to pay your share. You don’t need the app.</Small>}
+      footer={
+        <Small>
+          Got a Kitty link from a friend? Open it to pay your share. You don’t need the app.{" "}
+          <Link href="/privacy" className="underline underline-offset-2">Privacy</Link>
+          {" · "}
+          <Link href="/terms" className="underline underline-offset-2">Terms</Link>
+        </Small>
+      }
     >
       <Title>Collect from the group before the bill arrives</Title>
       <Body>

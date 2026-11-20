@@ -6,14 +6,14 @@ import { useAuth, type Profile } from '@/lib/auth';
 import { explainFailure } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
 import { versionLines } from '@/lib/version';
-import { Body, Button, CenteredState, ErrorText, Field, Gap, Label, Screen, Small } from '@/ui/components';
+import { Body, Button, CenteredState, ErrorText, Field, Gap, Label, Screen, Small, TextLink } from '@/ui/components';
 
-/** Organiser's own details. Not drawn in the wires: reached from the avatar on home. */
+/** Organiser's own details. Not drawn in the wires: reached from the You picture at the top right of every screen. */
 export default function ProfileScreen() {
   const { profile } = useAuth();
   if (!profile) {
     return (
-      <Screen title="Your details" inTabs>
+      <Screen title="Your details" back hideAvatar>
         <CenteredState />
       </Screen>
     );
@@ -61,7 +61,8 @@ function ProfileForm({ profile }: { profile: Profile }) {
   return (
     <Screen
       title="Your details"
-      inTabs
+      back
+      hideAvatar
       footer={
         <>
           <ErrorText>{errors.form}</ErrorText>
@@ -106,6 +107,9 @@ function ProfileForm({ profile }: { profile: Profile }) {
       <Gap size="xxl" />
       <Label>Logged in as</Label>
       <Body ink>{session?.user.email ?? (session?.user.phone ? formatIndianMobile(`+${session.user.phone}`) : '')}</Body>
+
+      <Gap size="xxl" />
+      <TextLink onPress={() => router.push('/delete-account')}>Delete my account</TextLink>
 
       <Gap size="xxl" />
       <Label>App version</Label>

@@ -243,6 +243,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"delete_my_account":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
 "generate_share_slug":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
