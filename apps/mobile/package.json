@@ -51,7 +51,7 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
-    "update:preview": "npx -y eas-cli@latest update --channel preview --environment preview --non-interactive --message"
+    "update:preview": "eas update --channel preview --environment preview --non-interactive --message"
   },
   "private": true
 }

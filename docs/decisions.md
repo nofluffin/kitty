@@ -21,7 +21,7 @@ Decided with Raj:
 
 ## 20 Nov 2026: over-the-air updates for the phone apps
 
-- **Expo updates are on** (decided with Raj). A change that's only app code (screens, wording, fixes) reaches installed apps the next time they're opened twice: the first launch downloads it, the next one shows it. Publish with `npm run update:preview -- "what changed"` from `apps/mobile`.
+- **Expo updates are on** (decided with Raj). A change that's only app code (screens, wording, fixes) reaches installed apps the next time they're opened twice: the first launch downloads it, the next one shows it. Publish with `./scripts/publish-update.sh "what changed"` from `apps/mobile`. **Don't edit the `scripts` in `apps/mobile/package.json`** without making new builds: Expo's fingerprint includes them, and a change stops installed builds taking updates (this happened once on 20 Nov 2026).
 - **A new build is still needed** when native parts change: new packages with native code, permissions, app icon, SDK upgrades. Kitty uses Expo's "fingerprint" runtime version, so an update is only offered to builds it's compatible with; older builds never get an update that would crash them.
 - **App settings** (live Supabase address and public key, member page address, email login) now live in Expo's environment settings for preview and production, not in `eas.json`, so builds and updates always use the same values. None of them are secret.
 
