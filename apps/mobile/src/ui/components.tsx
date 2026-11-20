@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import type { ComponentRef, ReactNode, Ref } from 'react';
 import {
   ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -15,6 +16,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAuth } from '@/lib/auth';
+import { avatarUrl } from '@/lib/avatar';
 
 import { colors, fonts, layout, space, TOUCH, type } from './theme';
 
@@ -65,8 +67,9 @@ export function Header({
   /** The You picture shows on every screen once logged in (Raj, 20 Nov 2026), except your own details. */
   hideAvatar?: boolean;
 }) {
-  const { session } = useAuth();
-  const avatar = session && !hideAvatar ? <Avatar text="You" onPress={() => router.push('/profile')} /> : null;
+  const { session, profile } = useAuth();
+  const avatar =
+    session && !hideAvatar ? <Avatar text="You" imageUrl={avatarUrl(profile?.avatar_path)} onPress={() => router.push('/profile')} /> : null;
   return (
     <View style={styles.header}>
       {back || close ? (
@@ -227,19 +230,25 @@ export function Card({ children }: { children: ReactNode }) {
   return <View style={styles.card}>{children}</View>;
 }
 
-/** Outlined tag, e.g. "MOMENT" or "GOAL". */
-export function Badge({ children }: { children: string }) {
+/** Tag, e.g. "MOMENT" or "GOAL". Moments are orange (Raj, 20 Nov 2026); the rest outlined. */
+export function Badge({ children, tone }: { children: string; tone?: 'moment' }) {
   return (
-    <View style={styles.badge}>
-      <Text style={type.badge}>{children}</Text>
+    <View style={[styles.badge, tone === 'moment' && styles.badgeMoment]}>
+      <Text style={[type.badge, tone === 'moment' && styles.badgeMomentText]}>{children}</Text>
     </View>
   );
 }
 
-export function Avatar({ text, onPress }: { text: string; onPress: () => void }) {
+/** The You picture: the organiser's photo if they've added one, otherwise "You". */
+export function Avatar({ text, onPress, imageUrl, size }: { text: string; onPress?: () => void; imageUrl?: string | null; size?: number }) {
+  const dims = size ? { width: size, height: size, borderRadius: size / 2 } : null;
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel="Your details" style={styles.avatar}>
-      <Text style={[type.meta, styles.avatarText]}>{text}</Text>
+    <Pressable onPress={onPress} disabled={!onPress} accessibilityRole="button" accessibilityLabel="Your details" style={[styles.avatar, dims]}>
+      {imageUrl ? (
+        <Image source={{ uri: imageUrl }} style={[styles.avatarImage, dims]} accessibilityIgnoresInvertColors />
+      ) : (
+        <Text style={[type.meta, styles.avatarText]}>{text}</Text>
+      )}
     </Pressable>
   );
 }
@@ -425,6 +434,8 @@ const styles = StyleSheet.create({
     borderColor: colors.line,
     borderRadius: layout.radius,
   },
+  badgeMoment: { backgroundColor: '#F38427', borderColor: '#F38427', borderRadius: 3 },
+  badgeMomentText: { color: colors.inkOnDark },
   avatar: {
     width: layout.avatar,
     height: layout.avatar,
@@ -436,6 +447,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   avatarText: { fontFamily: type.bodyBold.fontFamily },
+  avatarImage: { width: layout.avatar, height: layout.avatar, borderRadius: layout.avatar / 2, overflow: 'hidden' },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: layout.gutter, gap: space.sm },
   centeredAction: { marginTop: space.lg, alignSelf: 'stretch' },
   centerText: { textAlign: 'center' },

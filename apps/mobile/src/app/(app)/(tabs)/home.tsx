@@ -168,7 +168,9 @@ function KittyCard({ kitty, today }: { kitty: KittySummary; today: string }) {
     >
       <View style={styles.cardTop}>
         <Text style={[type.cardTitle, styles.cardTitle]}>{kitty.title}</Text>
-        <Badge>{isDraft ? 'Draft' : kitty.status === 'settling' ? 'Settling' : kitty.kind}</Badge>
+        <Badge tone={!isDraft && kitty.status !== 'settling' && kitty.kind === 'moment' ? 'moment' : undefined}>
+          {isDraft ? 'Draft' : kitty.status === 'settling' ? 'Settling' : kitty.kind}
+        </Badge>
       </View>
       <Text style={[type.metaMuted, styles.cardDate]}>
         {formatShortDate(kitty.dueDate)}, {timeToGo(today, kitty.dueDate)}

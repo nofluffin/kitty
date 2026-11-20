@@ -263,14 +263,14 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "created_at": string,"id": string,"name": string,"phone": string | null,"updated_at": string,"upi_id": string | null
+                    "avatar_path": string | null,"created_at": string,"id": string,"name": string,"phone": string | null,"updated_at": string,"upi_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"id": string,"name"?: string,"phone"?: string | null,"updated_at"?: string,"upi_id"?: string | null
+                    "avatar_path"?: string | null,"created_at"?: string,"id": string,"name"?: string,"phone"?: string | null,"updated_at"?: string,"upi_id"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"id"?: string,"name"?: string,"phone"?: string | null,"updated_at"?: string,"upi_id"?: string | null
+                    "avatar_path"?: string | null,"created_at"?: string,"id"?: string,"name"?: string,"phone"?: string | null,"updated_at"?: string,"upi_id"?: string | null
                   }
                   Relationships: [
                     

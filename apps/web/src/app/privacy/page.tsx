@@ -23,7 +23,7 @@ export default function Privacy() {
       <section>
         <h2>What we collect</h2>
         <p>
-          <strong>From organisers</strong>: name, mobile number, email address (used for login codes) and UPI ID.
+          <strong>From organisers</strong>: name, mobile number, email address (used for login codes), UPI ID and, if they add one, a profile photo.
         </p>
         <p>
           <strong>About people in a kitty</strong>, added by the organiser: name, optionally a mobile number (picked from the

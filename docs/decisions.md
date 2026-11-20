@@ -2,6 +2,14 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 20 Nov 2026: Groups tab, tab icons, profile photo, orange MOMENT tag
+
+Decided with Raj:
+
+- **The footer is Kitties, Groups, Activity and Help**, each with a line icon (layers, people, bell, question mark). The Groups tab is the groups screen (favourites, recent, all, with Share and Leave).
+- **A profile photo** for the You picture: Take photo or Choose photo (Upload photo on the web) in Your details, cropped square and shrunk to 400 px, with Remove photo. Stored in a public "avatars" bucket under the organiser's own folder with a random file name; only they can add or remove files there. The privacy policy now mentions it.
+- **The MOMENT tag on kitty cards is orange, #F38427, with white text and 3px corners.** GOAL, DRAFT and SETTLING stay outlined. White on that orange is about 2.6:1 contrast; fine for a short label, but not for longer text.
+
 ## 20 Nov 2026: colour for actions and selections
 
 Decided with Raj:

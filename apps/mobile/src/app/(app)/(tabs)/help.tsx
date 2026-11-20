@@ -86,7 +86,7 @@ const SECTIONS: { title: string; icon: IconName; topics: Topic[] }[] = [
         q: 'Sharing and leaving',
         a: [
           'Tap Share next to a group to send it on WhatsApp. When a friend who organises with Kitty opens the link, the group is added to their Kitty, with you in it, so you can take turns organising.',
-          'Tap Leave to take a group out of your Kitty. Others who have it keep it. Manage your groups from the You picture, then Your groups.',
+          'Tap Leave to take a group out of your Kitty. Others who have it keep it. All your groups are in the Groups tab, next to Kitties.',
         ],
       },
     ],
@@ -206,7 +206,10 @@ const SECTIONS: { title: string; icon: IconName; topics: Topic[] }[] = [
     topics: [
       {
         q: 'Your details and UPI ID',
-        a: ['Tap the You picture at the top right to change your name, mobile number or UPI ID, see your groups, log out, or delete your account.'],
+        a: [
+          'Tap the You picture at the top right to change your name, mobile number or UPI ID, log out, or delete your account.',
+          'Add a photo there too: take one or choose one from your photos. It shows in the You picture on every screen.',
+        ],
       },
       {
         q: 'Updates',
