@@ -1,4 +1,4 @@
-import { memberPayState, type KittyKind, type KittyStatus, type MemberPayState, type PaymentStatus } from '@kitty/core';
+import { memberPayState, type Diet, type KittyKind, type KittyStatus, type MemberPayState, type PaymentStatus } from '@kitty/core';
 
 import { supabase } from './supabase';
 
@@ -12,6 +12,7 @@ export interface FeedKitty {
   totalPaise: number;
   upiId: string;
   slug: string;
+  amountSource: 'typed' | 'scanned';
   remindDayBefore: boolean;
   remindOnDay: boolean;
   /** Set once the organiser settles up (step 7). */
@@ -41,6 +42,8 @@ export interface FeedMember {
   lastOpenedAt: string | null;
   /** True when the organiser typed this share by hand. */
   shareFixed: boolean;
+  diet: Diet;
+  drinks: boolean;
   /** New share after settle up. */
   finalSharePaise: number | null;
   /** Where the member asked for their refund to go (screen 18). */
@@ -53,7 +56,7 @@ export async function loadFeed(kittyId: string): Promise<FeedKitty> {
   const { data, error } = await supabase
     .from('kitties')
     .select(
-      'id, title, kind, status, due_date, total_paise, upi_id, share_slug, remind_day_before, remind_on_day, final_bill_paise, members(id, name, phone, is_organiser, sort_order, share_paise, share_fixed, final_share_paise, refund_upi_id, last_opened_at, payments(kind, direction, status, amount_paise, marked_at, upi_ref))',
+      'id, title, kind, status, due_date, total_paise, upi_id, share_slug, amount_source, remind_day_before, remind_on_day, final_bill_paise, members(id, name, phone, is_organiser, sort_order, share_paise, share_fixed, diet, drinks, final_share_paise, refund_upi_id, last_opened_at, payments(kind, direction, status, amount_paise, marked_at, upi_ref))',
     )
     .eq('id', kittyId)
     .single();
@@ -68,6 +71,7 @@ export async function loadFeed(kittyId: string): Promise<FeedKitty> {
     totalPaise: data.total_paise,
     upiId: data.upi_id,
     slug: data.share_slug,
+    amountSource: data.amount_source,
     remindDayBefore: data.remind_day_before,
     remindOnDay: data.remind_on_day,
     finalBillPaise: data.final_bill_paise,
@@ -93,6 +97,8 @@ export async function loadFeed(kittyId: string): Promise<FeedKitty> {
         upiRef: shares.map((p) => p.upi_ref).find(Boolean) ?? null,
         lastOpenedAt: m.last_opened_at,
         shareFixed: m.share_fixed,
+        diet: m.diet,
+        drinks: m.drinks,
         finalSharePaise: m.final_share_paise,
         refundUpiId: m.refund_upi_id,
         topUp: adjustment('topup'),
@@ -140,5 +146,11 @@ export async function setReminder(kittyId: string, which: 'dayBefore' | 'onDay',
     .from('kitties')
     .update(which === 'dayBefore' ? { remind_day_before: on } : { remind_on_day: on })
     .eq('id', kittyId);
+  return error;
+}
+
+/** Food and drink matter for the scanned split; organisers can fix them on screen 11. */
+export async function setMemberDietDrinks(memberId: string, change: { diet?: Diet; drinks?: boolean }) {
+  const { error } = await supabase.from('members').update(change).eq('id', memberId);
   return error;
 }

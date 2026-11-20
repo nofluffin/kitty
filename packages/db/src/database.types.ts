@@ -27,14 +27,14 @@ isOneToOne: false
                   ]
                 },"bills": {
                   Row: {
-                    "created_at": string,"extras_paise": number,"id": string,"image_paths": (string)[],"kitty_id": string,"raw_result": Json | null,"status": Database["public"]['Enums']["bill_status"],"total_paise": number | null,"updated_at": string
+                    "created_at": string,"extras_paise": number,"id": string,"image_paths": (string)[],"kitty_id": string,"mismatch_paise": number | null,"raw_result": Json | null,"scan_cost_usd": number | null,"scan_input_tokens": number | null,"scan_model": string | null,"scan_output_tokens": number | null,"status": Database["public"]['Enums']["bill_status"],"total_paise": number | null,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"extras_paise"?: number,"id"?: string,"image_paths"?: (string)[],"kitty_id": string,"raw_result"?: Json | null,"status"?: Database["public"]['Enums']["bill_status"],"total_paise"?: number | null,"updated_at"?: string
+                    "created_at"?: string,"extras_paise"?: number,"id"?: string,"image_paths"?: (string)[],"kitty_id": string,"mismatch_paise"?: number | null,"raw_result"?: Json | null,"scan_cost_usd"?: number | null,"scan_input_tokens"?: number | null,"scan_model"?: string | null,"scan_output_tokens"?: number | null,"status"?: Database["public"]['Enums']["bill_status"],"total_paise"?: number | null,"updated_at"?: string
                   }
                   Update: {
-                    "created_at"?: string,"extras_paise"?: number,"id"?: string,"image_paths"?: (string)[],"kitty_id"?: string,"raw_result"?: Json | null,"status"?: Database["public"]['Enums']["bill_status"],"total_paise"?: number | null,"updated_at"?: string
+                    "created_at"?: string,"extras_paise"?: number,"id"?: string,"image_paths"?: (string)[],"kitty_id"?: string,"mismatch_paise"?: number | null,"raw_result"?: Json | null,"scan_cost_usd"?: number | null,"scan_input_tokens"?: number | null,"scan_model"?: string | null,"scan_output_tokens"?: number | null,"status"?: Database["public"]['Enums']["bill_status"],"total_paise"?: number | null,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -171,7 +171,10 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "close_kitty":
+            "apply_scanned_shares":
+{ Args: { "p_bill_id": string,"p_kitty_id": string,"p_shares": Json }; Returns: undefined
+                           },
+"close_kitty":
 { Args: { "p_kitty_id": string,"p_write_off"?: boolean }; Returns: undefined
                            },
 "create_kitty":

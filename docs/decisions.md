@@ -2,6 +2,27 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 20 Nov 2026: step 8, bill scan (screens 5, 9, 10, 11, 25)
+
+**How it works**
+
+- **The scan runs in a Supabase Edge Function, `scan-bill`,** so the Anthropic key never reaches a phone. It checks the caller's login, acts as them (RLS applies, so nobody can scan into someone else's kitty), downloads up to 3 photos from the private `bill-photos` bucket and asks Claude for the lines as structured JSON.
+- **Model: Claude Opus 5.5 (`claude-opus-5-5`)** at medium effort, with server-side fallbacks on, so a busy model doesn't fail the scan. A real test bill (7 lines, ₹5,954) read correctly in 7 seconds for about $0.023.
+- **Every scan logs its model, tokens and estimated cost** on the bill (`bills.scan_cost_usd`), so cost per kitty can be added up.
+- **Lines under 70% confidence are "unsure"** and go to screen 10 first. Nothing can be split while a line is unsure; the database refuses too.
+- **The printed total is checked** against the lines plus extras (tax, service). Over ₹1 out either way, screen 11 says so, since a line was probably missed or misread.
+- **Bill status:** processing → needs review (screens 10 and 11) → confirmed ("Looks right, work out shares"), or failed (screen 25).
+- **Photos:** the phone's own camera, not a live camera view inside Kitty. Photos are shrunk to 1600px JPEG before upload. On the web preview only "Choose from gallery" shows.
+- **Scanning before sharing** ("Have the bill already? Scan it", screen 2) saves the kitty as a draft with no total first, so the photos have a home. A kitty with no total can't be shared. Screen 5's "Done" sets the total and every share from the bill in one database call (`apply_scanned_shares`).
+- **Screen 5 amounts are read-only.** To change who had what, the organiser goes back to the bill lines, so the shares always add up to the bill.
+- **Scanning the final bill** (from the feed) leads straight into settle up (screen 12) with the scanned shares.
+- **Members see the breakdown by category** on screens 17 and 18 ("Veg dishes, split 6 ways ₹400", "Alcohol: Not charged"). **"See the scanned bill" shows the lines and total, not the photo,** since bill photos stay private (spec 12). Change this if you'd rather members see the photo.
+- **If nobody is marked as drinking but the bill has alcohol** (or the same for non-veg), screen 11 asks the organiser to tick who had it before splitting.
+
+**Not done yet**
+
+- The scan function, its migration and the Anthropic key are not in production yet.
+
 ## 20 Nov 2026: step 7, settle up (screens 12, 13, 17, 18)
 
 **Decided with Raj**
@@ -127,7 +148,7 @@ Choices made during the build that aren't in the spec, or that settle something 
 | --- | --- | --- |
 | Screen 14 "My name is not here" | What happens? Ask the organiser, or let the member add themselves? Adding would break the share lock. | Step 5 |
 | Screen 17 "Something looks wrong, tell Rohan" | Push to the organiser, or open WhatsApp to them? | Step 7 |
-| Screen 17 "See the scanned bill" | Bill photos are private (spec 12). Show members the lines only, or the photo too? | Step 7 |
+| Screen 17 "See the scanned bill" | Bill photos are private (spec 12). Lines only for now (step 8). Should members see the photo too? | Before pilot |
 | Screen 18 "I've got the ₹600" | Spec has only the organiser marking refunds sent. Does the member's tap confirm it, or is it just a signal? | Step 7 |
 | Spec 5, iPhone app links | `gpay://`, `phonepe://` and `paytmmp://` schemes in core are unverified. Test on real phones. | Step 5 |
 | Spec 13, Sentry | Not wired yet: needs a Sentry account and DSN. | Before pilot |

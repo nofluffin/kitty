@@ -5,7 +5,7 @@ import { Suspense } from "react";
 import { Header, NoInstall, Page } from "@/components/ui";
 import { claimCookie, loadMemberView, touchMember } from "@/server/member-view";
 
-import { Gone, NotReceived, PayShare, PickName, Refund, TopUp, Waiting } from "./screens";
+import { Gone, NotReceived, PayShare, PickName, Refund, ScannedBill, TopUp, Waiting } from "./screens";
 
 export const metadata: Metadata = { title: "Kitty" };
 
@@ -47,6 +47,7 @@ async function MemberScreen({ params, searchParams }: PageProps<"/k/[slug]">) {
   }
 
   await touchMember(me.id);
+  if (query.bill === "1" && view.bill) return <ScannedBill kitty={view} />;
   if (me.state === "not_received") return <NotReceived kitty={view} me={me} refInvalid={query.ref === "invalid"} />;
   // After settle up (step 7): a top-up to pay (screen 17) or money coming back (screen 18).
   if (me.topUp && me.topUp.status === "requested") return <TopUp kitty={view} me={me} />;

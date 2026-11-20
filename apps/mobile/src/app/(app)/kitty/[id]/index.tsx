@@ -86,8 +86,7 @@ export default function Feed() {
             ) : (
               <>
                 <Note>After the dinner, scan the bill. Kitty splits veg, non-veg and alcohol and works out who gets money back.</Note>
-                {/* Until the bill scan (step 8), this goes straight to typing the final bill. */}
-                <Button variant="secondary" onPress={() => router.push({ pathname: '/kitty/[id]/final-bill', params: { id } })}>
+                <Button variant="secondary" onPress={() => router.push({ pathname: '/kitty/[id]/scan', params: { id, mode: 'settle' } })}>
                   Scan the bill
                 </Button>
               </>

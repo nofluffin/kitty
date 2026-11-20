@@ -90,6 +90,18 @@ export default function ShareScreen() {
       </Screen>
     );
   }
+  // A draft saved for "Scan it" whose scan hasn't finished: there's nothing to share yet.
+  if (kitty.status === 'draft' && kitty.totalPaise === 0) {
+    return (
+      <Screen title={kitty.title} back={!close} close={close}>
+        <CenteredState
+          title="No total yet"
+          body="Scan the bill to work out everyone’s exact share."
+          action={<Button onPress={() => router.push({ pathname: '/kitty/[id]/scan', params: { id: kitty.id, mode: 'draft' } })}>Scan the bill</Button>}
+        />
+      </Screen>
+    );
+  }
   return <ShareReady kitty={kitty} close={close} />;
 }
 
