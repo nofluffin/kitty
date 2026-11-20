@@ -62,6 +62,12 @@
         "projectId": "87cfd2c4-6c76-4f87-b7d9-e381f0a0ae1b"
       }
     },
-    "owner": "thekitty"
+    "owner": "thekitty",
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/87cfd2c4-6c76-4f87-b7d9-e381f0a0ae1b"
+    }
   }
 }
