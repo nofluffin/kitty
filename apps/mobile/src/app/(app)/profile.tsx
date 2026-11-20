@@ -1,14 +1,17 @@
 import { cleanName, formatIndianMobile, isValidUpiId, normaliseIndianMobile, normaliseUpiId } from '@kitty/core';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
+import { Linking, Platform, Share, StyleSheet, Text, View } from 'react-native';
 
 import { ask } from '@/lib/ask';
 import { useAuth, type Profile } from '@/lib/auth';
 import { explainFailure } from '@/lib/errors';
-import { deleteGroup, loadGroups, type SavedGroup } from '@/lib/groups';
+import { config } from '@/lib/config';
+import { leaveGroup, loadGroups, type SavedGroup } from '@/lib/groups';
 import { supabase } from '@/lib/supabase';
 import { versionLines } from '@/lib/version';
-import { Body, Button, CenteredState, ErrorText, Field, Gap, Label, Row, Screen, Small, TextLink } from '@/ui/components';
+import { Body, Button, CenteredState, ErrorText, Field, Gap, Label, Screen, Small, SmallButton, TextLink } from '@/ui/components';
+import { colors, type } from '@/ui/theme';
 
 /** Organiser's own details. Not drawn in the wires: reached from the You picture at the top right of every screen. */
 export default function ProfileScreen() {
@@ -124,8 +127,9 @@ function ProfileForm({ profile }: { profile: Profile }) {
   );
 }
 
-/** Saved groups (Raj, 20 Nov 2026). Made from the new kitty screen; deleted here. */
+/** Saved groups (Raj, 20 Nov 2026): share one with a WhatsApp link, or leave it (others keep it). */
 function YourGroups() {
+  const { profile } = useAuth();
   const [groups, setGroups] = useState<SavedGroup[]>([]);
   useFocusEffect(
     useCallback(() => {
@@ -135,23 +139,47 @@ function YourGroups() {
     }, []),
   );
   if (groups.length === 0) return null;
+
+  async function share(g: SavedGroup) {
+    const text = `${profile?.name || 'I'} shared the group ${g.name} on Kitty. Open this to add it to your Kitty: ${config.memberPageUrl}/g/${g.shareToken}`;
+    try {
+      await Linking.openURL(`https://wa.me/?text=${encodeURIComponent(text)}`);
+    } catch {
+      if (Platform.OS !== 'web') await Share.share({ message: text });
+    }
+  }
+
+  async function leave(g: SavedGroup) {
+    if (!(await ask(`Leave ${g.name}?`, 'It goes from your groups. Anyone else who has it keeps it.', 'Leave'))) return;
+    const e = await leaveGroup(g.id);
+    if (e) await explainFailure(e, 'leave the group');
+    setGroups(await loadGroups().catch(() => []));
+  }
+
   return (
     <>
       <Gap size="xxl" />
       <Label>Your groups</Label>
       {groups.map((g) => (
-        <Row
-          key={g.id}
-          left={g.name}
-          right={`${g.people.length} ${g.people.length === 1 ? 'person' : 'people'}, tap to delete`}
-          onPress={async () => {
-            if (!(await ask(`Delete ${g.name}?`, 'Kitties made with this group stay as they are.', 'Delete'))) return;
-            const e = await deleteGroup(g.id);
-            if (e) await explainFailure(e, 'delete the group');
-            setGroups(await loadGroups().catch(() => []));
-          }}
-        />
+        <View key={g.id} style={groupStyles.row}>
+          <View style={groupStyles.flex}>
+            <Text style={type.bodyInk}>{g.name}</Text>
+            <Text style={type.note}>
+              {`${g.people.map((p) => (p.profileId === profile?.id ? 'You' : p.name)).join(', ')}${g.createdBy.id === profile?.id ? '' : `. From ${g.createdBy.name || 'a friend'}`}`}
+            </Text>
+          </View>
+          <View style={groupStyles.actions}>
+            <SmallButton onPress={() => share(g)}>Share</SmallButton>
+            <SmallButton onPress={() => leave(g)}>Leave</SmallButton>
+          </View>
+        </View>
       ))}
     </>
   );
 }
+
+const groupStyles = StyleSheet.create({
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.line },
+  flex: { flex: 1, gap: 2 },
+  actions: { flexDirection: 'row', gap: 8 },
+});

@@ -65,16 +65,42 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"group_members": {
+                },"group_holders": {
                   Row: {
-                    "created_at": string,"diet": Database["public"]['Enums']["diet"],"drinks": boolean,"group_id": string,"id": string,"name": string,"paid_by_index": number | null,"phone": string | null,"sort_order": number,"updated_at": string
+                    "created_at": string,"group_id": string,"profile_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"diet"?: Database["public"]['Enums']["diet"],"drinks"?: boolean,"group_id": string,"id"?: string,"name": string,"paid_by_index"?: number | null,"phone"?: string | null,"sort_order"?: number,"updated_at"?: string
+                    "created_at"?: string,"group_id": string,"profile_id": string
                   }
                   Update: {
-                    "created_at"?: string,"diet"?: Database["public"]['Enums']["diet"],"drinks"?: boolean,"group_id"?: string,"id"?: string,"name"?: string,"paid_by_index"?: number | null,"phone"?: string | null,"sort_order"?: number,"updated_at"?: string
+                    "created_at"?: string,"group_id"?: string,"profile_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "group_holders_group_id_fkey"
+      columns: ["group_id"]
+isOneToOne: false
+      referencedRelation: "groups"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "group_holders_profile_id_fkey"
+      columns: ["profile_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"group_members": {
+                  Row: {
+                    "created_at": string,"diet": Database["public"]['Enums']["diet"],"drinks": boolean,"group_id": string,"id": string,"name": string,"paid_by_index": number | null,"phone": string | null,"profile_id": string | null,"sort_order": number,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"diet"?: Database["public"]['Enums']["diet"],"drinks"?: boolean,"group_id": string,"id"?: string,"name": string,"paid_by_index"?: number | null,"phone"?: string | null,"profile_id"?: string | null,"sort_order"?: number,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"diet"?: Database["public"]['Enums']["diet"],"drinks"?: boolean,"group_id"?: string,"id"?: string,"name"?: string,"paid_by_index"?: number | null,"phone"?: string | null,"profile_id"?: string | null,"sort_order"?: number,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -83,18 +109,24 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "groups"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "group_members_profile_id_fkey"
+      columns: ["profile_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
     }
                   ]
                 },"groups": {
                   Row: {
-                    "created_at": string,"id": string,"name": string,"profile_id": string,"updated_at": string
+                    "created_at": string,"created_by_name": string,"id": string,"name": string,"profile_id": string,"share_token": string,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"id"?: string,"name": string,"profile_id": string,"updated_at"?: string
+                    "created_at"?: string,"created_by_name"?: string,"id"?: string,"name": string,"profile_id": string,"share_token"?: string,"updated_at"?: string
                   }
                   Update: {
-                    "created_at"?: string,"id"?: string,"name"?: string,"profile_id"?: string,"updated_at"?: string
+                    "created_at"?: string,"created_by_name"?: string,"id"?: string,"name"?: string,"profile_id"?: string,"share_token"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -290,15 +322,33 @@ isOneToOne: false
 "generate_share_slug":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
+"join_group":
+{ Args: { "p_token": string }; Returns: {
+              "created_at": string,
+"created_by_name": string,
+"id": string,
+"name": string,
+"profile_id": string,
+"share_token": string,
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "groups"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "register_device_token":
 { Args: { "p_platform": string,"p_token": string }; Returns: undefined
                            },
 "save_group":
 { Args: { "p_name": string,"p_people": Json }; Returns: {
               "created_at": string,
+"created_by_name": string,
 "id": string,
 "name": string,
 "profile_id": string,
+"share_token": string,
 "updated_at": string
             }
                           SetofOptions: {

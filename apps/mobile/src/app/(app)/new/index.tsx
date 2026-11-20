@@ -31,7 +31,7 @@ const MAX_PARTS_OFFERED = 12;
 
 /** Screen 2 (moment) and screen 22 (goal). */
 export default function NewKitty() {
-  const { refreshProfile } = useAuth();
+  const { refreshProfile, profile } = useAuth();
   const k = useDraftKitty();
   // Errors show after the first "Create kitty" tap, then update live as each field is fixed.
   const [tried, setTried] = useState(false);
@@ -286,7 +286,13 @@ export default function NewKitty() {
                 <Chip
                   key={g.id}
                   onPress={() => {
-                    const added = k.addGroup(g.people);
+                    // You're already in as You: leave out your own row (by login, or by your mobile number).
+                    const added = k.addGroup(
+                      g.people.map(({ profileId, ...p }) => ({
+                        ...p,
+                        isMe: profileId === profile?.id || (!!p.phone && p.phone === profile?.phone),
+                      })),
+                    );
                     setGroupNote(added > 0 ? `Added ${added} from ${g.name}.` : `Everyone in ${g.name} is already in.`);
                   }}
                 >

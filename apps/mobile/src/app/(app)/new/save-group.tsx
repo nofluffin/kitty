@@ -44,9 +44,9 @@ export default function SaveGroup() {
         </>
       }
     >
-      <Body>Next time, add everyone in one tap. Their numbers, food and drink, and who pays for whom are kept.</Body>
+      <Body>Next time, add everyone in one tap. Their numbers, food and drink, and who pays for whom are kept. You’re in the group too, so anyone you share it with gets you.</Body>
       <Field label="Group name" value={name} onChangeText={setName} placeholder="Office lunch" autoCapitalize="sentences" maxLength={60} />
-      <Body>A group with the same name is replaced.</Body>
+      <Body>If you already have a group with this name, it’s swapped for this one. Anyone you shared the old one with keeps it.</Body>
       <View style={styles.list}>
         {others.map((p) => (
           <Row key={p.key} left={p.name} right={`${p.diet === 'veg' ? 'Veg' : 'Non-veg'}, ${p.drinks ? 'drinks' : "doesn't drink"}`} />

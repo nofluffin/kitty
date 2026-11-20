@@ -8,7 +8,9 @@ Decided with Raj:
 
 - **Archive** sits under "Scan the bill" in a kitty. Archived kitties leave the home list and appear under **"Archived kitties (N)"** at the bottom of home, where they can be opened or unarchived. Friends' links keep working; archived kitties send no reminders.
 - **"Rescan the bill"** replaces "Scan the bill" once a kitty has a checked bill.
-- **Saved groups**: "Save these people as a group" on the new kitty screen keeps each person's name, number, food and drink, and who pays for whom (the organiser isn't stored; they're always in). Next time, tap the group under "Add a saved group" to add everyone not already in, then add or remove people as usual. Saving with an existing name replaces that group. Groups are listed, and deleted, in Your details.
+- **Saved groups**: "Save these people as a group" on the new kitty screen keeps each person's name, number, food and drink, and who pays for whom, **including the organiser**. Next time, tap the group under "Add a saved group" to add everyone except yourself (matched by login, or by mobile number), then add or remove people as usual.
+- **Groups are shared, and never change once made** (Raj): saving under a name makes a new group; if you had one with that name you swap to the new one, and anyone you shared the old one with keeps it. **Share** (in Your details) sends a WhatsApp link, thekitty.app/g/<link>, which adds the group in the Kitty app or on app.thekitty.app. **Anyone can leave** a group; it's deleted only when the last person leaves. This lets friends take turns organising with the same group.
+- **Later**: once SMS login verifies mobile numbers, groups will reach a member automatically when they sign up with their number. Not now, because sign-up numbers aren't verified with email login, so someone could claim a friend's number.
 
 ## 20 Nov 2026: Help, account deletion, privacy policy and terms (step 10)
 

@@ -36,7 +36,11 @@ export interface DraftPerson {
 export type DraftPersonInput = Omit<DraftPerson, 'key' | 'fixedPaise' | 'memberId'>;
 
 /** A person from a saved group: who pays for them is a place in the group's list. */
-export type GroupPersonInput = Omit<DraftPersonInput, 'paidByKey' | 'isOrganiser'> & { paidByIndex: number | null };
+export type GroupPersonInput = Omit<DraftPersonInput, 'paidByKey' | 'isOrganiser'> & {
+  paidByIndex: number | null;
+  /** This is the organiser using the group: they're already in, as You. */
+  isMe: boolean;
+};
 
 /** A saved kitty loaded back into the form, to edit it until someone pays. */
 export interface ExistingKitty {
@@ -150,10 +154,13 @@ export function DraftKittyProvider({
       const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
       // Everyone in the group gets a key (an existing person's if the name is already in), so
       // "who pays for whom" can point at the right person.
-      const keys = group.map((g) => people.find((p) => !p.isOrganiser && sameName(p.name, g.name))?.key ?? newKey());
+      const organiserKey = people.find((p) => p.isOrganiser)?.key;
+      const keys = group.map((g) =>
+        g.isMe ? (organiserKey ?? newKey()) : (people.find((p) => !p.isOrganiser && sameName(p.name, g.name))?.key ?? newKey()),
+      );
       const fresh = group
         .map((g, i) => ({ g, key: keys[i]! }))
-        .filter(({ g }) => !people.some((p) => !p.isOrganiser && sameName(p.name, g.name)))
+        .filter(({ g }) => !g.isMe && !people.some((p) => !p.isOrganiser && sameName(p.name, g.name)))
         .map(({ g, key }) => ({
           key,
           name: g.name,
