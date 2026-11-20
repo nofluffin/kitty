@@ -5,7 +5,8 @@ import { useState } from 'react';
 import { useAuth, type Profile } from '@/lib/auth';
 import { explainFailure } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
-import { Body, Button, CenteredState, ErrorText, Field, Gap, Label, Screen } from '@/ui/components';
+import { versionLines } from '@/lib/version';
+import { Body, Button, CenteredState, ErrorText, Field, Gap, Label, Screen, Small } from '@/ui/components';
 
 /** Organiser's own details. Not drawn in the wires: reached from the avatar on home. */
 export default function ProfileScreen() {
@@ -105,6 +106,12 @@ function ProfileForm({ profile }: { profile: Profile }) {
       <Gap size="xxl" />
       <Label>Logged in as</Label>
       <Body ink>{session?.user.email ?? (session?.user.phone ? formatIndianMobile(`+${session.user.phone}`) : '')}</Body>
+
+      <Gap size="xxl" />
+      <Label>App version</Label>
+      {versionLines().map((line) => (
+        <Small key={line}>{line}</Small>
+      ))}
     </Screen>
   );
 }
