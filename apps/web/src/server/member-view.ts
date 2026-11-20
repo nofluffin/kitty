@@ -1,6 +1,6 @@
 import "server-only";
 
-import { memberPayState, type MemberPayState, type PaymentStatus } from "@kitty/core";
+import { billSplit, memberPayState, type BillCategory, type CategorySummary, type Diet, type MemberPayState, type PaymentStatus } from "@kitty/core";
 
 import { db } from "./db";
 
@@ -28,6 +28,8 @@ export interface MemberRow {
   markedAt: string | null;
   claimed: boolean;
   shareFixed: boolean;
+  diet: Diet;
+  drinks: boolean;
   /** New share after settle up. */
   finalSharePaise: number | null;
   /** Confirmed towards the original share, before any top-up or refund. */
@@ -47,10 +49,19 @@ export interface OpenKitty {
   totalPaise: number;
   upiId: string;
   finalBillPaise: number | null;
+  /** The checked scanned bill, if the kitty used one: lines only, never the photos (spec section 12). */
+  bill: ScannedBillView | null;
   organiser: { name: string; phone: string | null };
   members: MemberRow[];
   /** The member this browser picked, if any. */
   me: MemberRow | null;
+}
+
+export interface ScannedBillView {
+  lines: { label: string; amountPaise: number; category: BillCategory }[];
+  extrasPaise: number;
+  totalPaise: number;
+  categories: CategorySummary[];
 }
 
 export type MemberView =
@@ -71,7 +82,7 @@ export async function loadMemberView(slug: string, claimToken: string | undefine
   const { data: k, error } = await supabase
     .from("kitties")
     .select(
-      "id, title, status, due_date, total_paise, upi_id, closed_at, final_bill_paise, organiser:profiles(name, phone), members(id, name, is_organiser, sort_order, share_paise, share_fixed, final_share_paise, refund_upi_id, member_claims(claim_token), payments(kind, direction, status, amount_paise, marked_at))",
+      "id, title, status, due_date, total_paise, upi_id, closed_at, final_bill_paise, organiser:profiles(name, phone), bills(status, extras_paise, created_at, bill_lines(label, raw_text, amount_paise, category, created_at)), members(id, name, is_organiser, sort_order, share_paise, share_fixed, diet, drinks, final_share_paise, refund_upi_id, member_claims(claim_token), payments(kind, direction, status, amount_paise, marked_at))",
     )
     .eq("share_slug", slug)
     .maybeSingle();
@@ -108,6 +119,8 @@ export async function loadMemberView(slug: string, claimToken: string | undefine
       markedAt: topUp?.markedAt ?? marked.at(-1) ?? null,
       claimed: tokens.length > 0,
       shareFixed: m.share_fixed,
+      diet: m.diet,
+      drinks: m.drinks,
       finalSharePaise: m.final_share_paise,
       paidBeforePaise: shares.filter((p) => p.status === "confirmed").reduce((sum, p) => sum + p.amount_paise, 0),
       refundUpiId: m.refund_upi_id,
@@ -116,8 +129,24 @@ export async function loadMemberView(slug: string, claimToken: string | undefine
     };
   });
 
+  const confirmed = [...k.bills].filter((b) => b.status === "confirmed").sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
+  let bill: ScannedBillView | null = null;
+  if (confirmed) {
+    const lines = [...confirmed.bill_lines]
+      .sort((a, b) => a.created_at.localeCompare(b.created_at))
+      .map((l, i) => ({ id: String(i), label: l.label || l.raw_text, amountPaise: l.amount_paise, category: l.category as BillCategory }));
+    const split = billSplit(lines, confirmed.extras_paise, [...members].sort((a, b) => a.sortOrder - b.sortOrder).map((m) => ({ id: m.id, diet: m.diet, drinks: m.drinks })));
+    bill = {
+      lines: lines.map(({ label, amountPaise, category }) => ({ label, amountPaise, category })),
+      extrasPaise: confirmed.extras_paise,
+      totalPaise: lines.reduce((s, l) => s + l.amountPaise, 0) + confirmed.extras_paise,
+      categories: split.ok ? split.value.categories : [],
+    };
+  }
+
   return {
     kind: "open",
+    bill,
     id: k.id,
     slug,
     title: k.title,

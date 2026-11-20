@@ -371,25 +371,72 @@ export function NotReceived({ kitty, me, refInvalid }: { kitty: OpenKitty; me: M
 // Screens 17 and 18: after the final bill
 // ---------------------------------------------------------------------------
 
-/** "How your share was worked out" for a typed final bill. The scanned breakdown comes in step 8. */
+const CATEGORY_NAME = { veg: "Veg dishes", nonveg: "Non-veg dishes", alcohol: "Alcohol" } as const;
+
+/** "How your share was worked out" (screens 17 and 18): by category for a scanned bill, otherwise the typed split. */
 function Breakdown({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
   const unfixed = kitty.members.filter((m) => !m.shareFixed).length;
-  const rows: [string, string, boolean?][] = [
-    me.shareFixed
-      ? [`Your amount, set by ${kitty.organiser.name}`, formatRupees(me.finalSharePaise ?? 0)]
-      : [`Final bill ${formatRupees(kitty.finalBillPaise ?? 0)}, split ${unfixed} ways`, formatRupees(me.finalSharePaise ?? 0)],
-    ["Your share", formatRupees(me.finalSharePaise ?? 0), true],
-    ["You already paid", formatRupees(me.paidBeforePaise)],
-  ];
+  const rows: [string, string, boolean?][] = kitty.bill
+    ? (["veg", "nonveg", "alcohol"] as const)
+        .map((c) => kitty.bill!.categories.find((x) => x.category === c))
+        .filter((c): c is NonNullable<typeof c> => !!c)
+        .map((c): [string, string] =>
+          c.memberIds.includes(me.id)
+            ? [`${CATEGORY_NAME[c.category]}, split ${c.memberIds.length} ways`, formatRupees(c.perHeadPaise)]
+            : [CATEGORY_NAME[c.category], "Not charged"],
+        )
+    : [
+        me.shareFixed
+          ? [`Your amount, set by ${kitty.organiser.name}`, formatRupees(me.finalSharePaise ?? 0)]
+          : [`Final bill ${formatRupees(kitty.finalBillPaise ?? 0)}, split ${unfixed} ways`, formatRupees(me.finalSharePaise ?? 0)],
+      ];
+  rows.push(["Your share", formatRupees(me.finalSharePaise ?? 0), true], ["You already paid", formatRupees(me.paidBeforePaise)]);
   return (
-    <div className="mt-3 border border-line bg-surface px-4">
-      {rows.map(([label, value, bold], i) => (
-        <div key={label} className={`flex min-h-[45px] items-center justify-between gap-3 ${i < rows.length - 1 ? "border-b border-line" : ""}`}>
-          <span className="text-base text-text">{label}</span>
-          <span className={`text-base text-ink ${bold ? "font-bold" : ""}`}>{value}</span>
-        </div>
-      ))}
-    </div>
+    <>
+      <div className="mt-3 border border-line bg-surface px-4">
+        {rows.map(([label, value, bold], i) => (
+          <div key={label} className={`flex min-h-[45px] items-center justify-between gap-3 ${i < rows.length - 1 ? "border-b border-line" : ""}`}>
+            <span className="text-base text-text">{label}</span>
+            <span className={`text-base text-ink ${bold ? "font-bold" : ""}`}>{value}</span>
+          </div>
+        ))}
+      </div>
+      {kitty.bill ? (
+        <Link href={`/k/${kitty.slug}?bill=1`} className={`${buttonClass.link} mt-4 block w-fit`}>
+          See the scanned bill
+        </Link>
+      ) : null}
+    </>
+  );
+}
+
+/** "See the scanned bill": the lines Kitty read, never the photos (bill photos are private, spec section 12). */
+export function ScannedBill({ kitty }: { kitty: OpenKitty }) {
+  const bill = kitty.bill!;
+  const tag = { veg: "Veg", nonveg: "Non-veg", alcohol: "Alcohol", unsure: "Unsure" } as const;
+  return (
+    <Page header={<Header title={kitty.title} left={<Link href={`/k/${kitty.slug}`} aria-label="Back" className="-ml-1 flex h-11 w-9 items-center text-xl text-ink">←</Link>} />}>
+      <Title>The scanned bill</Title>
+      <Body>What {kitty.organiser.name} checked before Kitty worked out the shares.</Body>
+      <ul className="mt-6 border-t border-line">
+        {bill.lines.map((l, i) => (
+          <li key={i} className="flex min-h-[49px] items-center gap-3 border-b border-line">
+            <span className="flex-1 text-base text-ink">{l.label}</span>
+            <span className="text-sm text-muted">{tag[l.category]}</span>
+            <span className="w-24 text-right text-base text-ink">{formatRupees(l.amountPaise)}</span>
+          </li>
+        ))}
+        <li className="flex min-h-[49px] items-center gap-3 border-b border-line">
+          <span className="flex-1 text-base text-text">Tax, service and discounts</span>
+          <span className="w-24 text-right text-base text-ink">{formatRupees(bill.extrasPaise)}</span>
+        </li>
+        <li className="flex min-h-[49px] items-center gap-3">
+          <span className="flex-1 text-base font-bold text-ink">Total</span>
+          <span className="w-24 text-right text-base font-bold text-ink">{formatRupees(bill.totalPaise)}</span>
+        </li>
+      </ul>
+      <Small className="mt-4">Tax and service charge are spread across each line before splitting.</Small>
+    </Page>
   );
 }
 

@@ -1,6 +1,6 @@
 import { formatRupees, isValidUpiId, localIsoDate, normaliseUpiId } from '@kitty/core';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { useAuth } from '@/lib/auth';
@@ -32,6 +32,9 @@ export default function NewKitty() {
   const [tried, setTried] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  // A draft saved by "Scan it" that the organiser then backed out of. Removed if they create normally.
+  const scanDraft = useRef<string | null>(null);
   const today = localIsoDate();
   const upi = normaliseUpiId(k.upiId);
   const others = k.people.filter((p) => !p.isOrganiser).length;
@@ -52,6 +55,10 @@ export default function NewKitty() {
 
     const shares = new Map(k.split.shares.map((s) => [s.memberId, s]));
     setSaving(true);
+    if (scanDraft.current) {
+      await supabase.from('kitties').delete().eq('id', scanDraft.current);
+      scanDraft.current = null;
+    }
     const { data, error } = await supabase.rpc('create_kitty', {
       p_kind: 'moment',
       p_title: k.title.trim(),
@@ -75,6 +82,40 @@ export default function NewKitty() {
     }
     refreshProfile(); // picks up the remembered UPI ID
     router.replace({ pathname: '/kitty/[id]/share', params: { id: data.id, fresh: '1' } });
+  }
+
+  /** "Have the bill already? Scan it": save the draft now so the photos have a home; the scan sets the total. */
+  async function scanFirst() {
+    setTried(true);
+    setFormError(null);
+    const needed: (keyof Errors)[] = ['title', 'date', 'people', 'upi'];
+    if (needed.some((key) => problems[key]) || !k.dueDate) return;
+    setScanning(true);
+    if (scanDraft.current) await supabase.from('kitties').delete().eq('id', scanDraft.current);
+    const { data, error } = await supabase.rpc('create_kitty', {
+      p_kind: 'moment',
+      p_title: k.title.trim(),
+      p_due_date: k.dueDate,
+      p_total_paise: 0,
+      p_upi_id: upi,
+      p_members: k.people.map((p) => ({
+        name: p.name.trim(),
+        phone: p.phone,
+        is_organiser: p.isOrganiser,
+        diet: p.diet,
+        drinks: p.drinks,
+        share_paise: 0,
+        share_fixed: false,
+      })),
+    });
+    setScanning(false);
+    if (error || !data) {
+      setFormError(await explainFailure(error, 'save the kitty'));
+      return;
+    }
+    scanDraft.current = data.id;
+    refreshProfile();
+    router.push({ pathname: '/kitty/[id]/scan', params: { id: data.id, mode: 'draft' } });
   }
 
   return (
@@ -131,10 +172,8 @@ export default function NewKitty() {
       </View>
 
       <View style={styles.scanGap}>
-        <DashedButton
-          onPress={() => notify('Coming soon', 'Scanning a bill for exact shares comes in step 8 of the build.')}
-        >
-          Have the bill already? Scan it for exact shares
+        <DashedButton onPress={scanFirst}>
+          {scanning ? 'Saving the kitty…' : 'Have the bill already? Scan it for exact shares'}
         </DashedButton>
       </View>
 

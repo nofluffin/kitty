@@ -90,7 +90,7 @@ function FinalBillForm({ kitty }: { kitty: FeedKitty }) {
       back
       footer={
         <>
-          <Note>Scanning the bill for exact veg, non-veg and alcohol shares comes in step 8. A typed total keeps any amounts you set by hand and splits the rest equally.</Note>
+          <Note>A typed total keeps any amounts you set by hand and splits the rest equally. Scan the bill instead to split veg, non-veg and alcohol exactly.</Note>
           <ErrorText>{error}</ErrorText>
           <Button onPress={settle} loading={busy} disabled={!plan || waiting.length > 0}>
             Work out top-ups and refunds
