@@ -1,6 +1,17 @@
 import "server-only";
 
-import { billSplit, memberPayState, type BillCategory, type CategorySummary, type Diet, type MemberPayState, type PaymentStatus } from "@kitty/core";
+import {
+  billSplit,
+  memberPayState,
+  partsProgress,
+  type BillCategory,
+  type CategorySummary,
+  type Diet,
+  type MemberPayState,
+  type PartPayment,
+  type PartsProgress,
+  type PaymentStatus,
+} from "@kitty/core";
 
 import { db } from "./db";
 
@@ -37,6 +48,8 @@ export interface MemberRow {
   refundUpiId: string | null;
   topUp: Adjustment | null;
   refund: Adjustment | null;
+  /** Goals paid in parts: every part in date order, and which is next. */
+  parts: (PartsProgress & { list: PartPayment[] }) | null;
 }
 
 export interface OpenKitty {
@@ -49,6 +62,9 @@ export interface OpenKitty {
   totalPaise: number;
   upiId: string;
   finalBillPaise: number | null;
+  kittyKind: "moment" | "goal";
+  /** Goals paid in parts. */
+  partsCount: number | null;
   /** The checked scanned bill, if the kitty used one: lines only, never the photos (spec section 12). */
   bill: ScannedBillView | null;
   organiser: { name: string; phone: string | null };
@@ -82,7 +98,7 @@ export async function loadMemberView(slug: string, claimToken: string | undefine
   const { data: k, error } = await supabase
     .from("kitties")
     .select(
-      "id, title, status, due_date, total_paise, upi_id, closed_at, final_bill_paise, organiser:profiles(name, phone), bills(status, extras_paise, created_at, bill_lines(label, raw_text, amount_paise, category, created_at)), members(id, name, is_organiser, sort_order, share_paise, share_fixed, diet, drinks, final_share_paise, refund_upi_id, member_claims(claim_token), payments(kind, direction, status, amount_paise, marked_at))",
+      "id, title, kind, status, due_date, total_paise, upi_id, closed_at, final_bill_paise, parts_count, organiser:profiles(name, phone), bills(status, extras_paise, created_at, bill_lines(label, raw_text, amount_paise, category, created_at)), members(id, name, is_organiser, sort_order, share_paise, share_fixed, diet, drinks, final_share_paise, refund_upi_id, member_claims(claim_token), payments(kind, direction, status, amount_paise, due_date, marked_at))",
     )
     .eq("share_slug", slug)
     .maybeSingle();
@@ -104,6 +120,10 @@ export async function loadMemberView(slug: string, claimToken: string | undefine
       const p = m.payments.find((x) => x.kind === kind);
       return p ? { status: p.status as PaymentStatus, amountPaise: p.amount_paise, markedAt: p.marked_at } : null;
     };
+    const partList: PartPayment[] = m.payments
+      .filter((p) => p.kind === "part" && p.due_date)
+      .map((p) => ({ amountPaise: p.amount_paise, dueDate: p.due_date!, status: p.status as PaymentStatus }))
+      .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
     const topUp = adjustment("topup");
     const refund = adjustment("refund");
     const shareState = m.share_paise === 0 ? "paid" : memberPayState(shares.map((p) => p.status as PaymentStatus));
@@ -126,6 +146,7 @@ export async function loadMemberView(slug: string, claimToken: string | undefine
       refundUpiId: m.refund_upi_id,
       topUp,
       refund,
+      parts: k.parts_count && partList.length > 0 ? { ...partsProgress(partList), list: partList } : null,
     };
   });
 
@@ -155,6 +176,8 @@ export async function loadMemberView(slug: string, claimToken: string | undefine
     totalPaise: k.total_paise,
     upiId: k.upi_id,
     finalBillPaise: k.final_bill_paise,
+    kittyKind: k.kind,
+    partsCount: k.parts_count,
     organiser: { name: organiserName, phone: k.organiser?.phone ?? null },
     members,
     me: members.find((m) => m.id === meId) ?? null,

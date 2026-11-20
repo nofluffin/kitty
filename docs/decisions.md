@@ -2,6 +2,26 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 20 Nov 2026: step 9, goal kitties (screen 22)
+
+**Decided with Raj**
+
+- **Goals are in v1.** Launch on Android and iPhone together.
+
+**How it works** (only screen 22 is drawn, so the rest follows the moment screens)
+
+- **Screen 22** switches the labels to "What are you saving for" and "Target", hides "Scan the bill", and adds "How people pay": one payment or in parts.
+- **Number of parts** isn't in the wires. Kitty offers 2 up to as many monthly parts as fit before the pay by date (a year at most), and starts at 3, or fewer if fewer fit. The last part falls on the pay by date, one a month before it; the first can be today.
+- **Each part is its own payment.** Members pay one part at a time: the member page asks for "part 2 of 4, ₹1,250, due Sun 20 Dec" and lists every part with how it stands. "I've paid" and the organiser's "Yes, it arrived" act on that part only, so later parts stay open.
+- **The feed shows "1 of 4 parts paid. Next ₹1,250 by Sun 20 Dec"**, and Nudge asks for the next part: "Hi Aisha, part 2 of 4 for Goa trip (₹1,250) is due Sun 20 Dec. It takes a minute to pay: [link]". Someone counts as paid once every part is confirmed.
+- **Share message for parts** (not worded in the spec): "Goa trip is ₹5,000 each, paid in 4 monthly parts. The first is due Fri 20 Nov, the last Sat 20 Feb. [link]".
+- **After the trip, "Enter the final cost"** replaces "Scan the bill" in a goal's feed and uses the typed settle up from step 7. Parts not yet paid are written off and replaced by the top-up or refund, as with shares.
+- The database works out the parts when the kitty is shared, with the same rule as `goalParts` in packages/core, and refuses a plan whose first part would fall before today.
+
+**Not done yet**
+
+- The push reminder 3 days before each part is due (spec section 10) comes with push notifications.
+
 ## 20 Nov 2026: paying by QR code first
 
 - **Raj's real-phone test (iPhone, ₹1 to a personal UPI ID):** the pay button failed in GPay, PhonePe and Paytm with "you've exceeded the bank limit for this payment". Scanning the QR code with the same details worked. Developers report the same block for payment links to personal UPI IDs, so it isn't the amount or Kitty's link.

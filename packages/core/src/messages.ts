@@ -16,6 +16,8 @@ export interface ShareMessageInput {
   /** Every member's share, in sort order. */
   sharesPaise: readonly Paise[];
   link: string;
+  /** Goals paid in parts: how many monthly parts, and when the first is due. */
+  parts?: { count: number; firstDueDate: IsoDate };
 }
 
 export interface ShareMessage {
@@ -25,7 +27,7 @@ export interface ShareMessage {
 }
 
 export function shareMessage(input: ShareMessageInput): ShareMessage {
-  const { kind, title, totalPaise, dueDate, sharesPaise, link } = input;
+  const { kind, title, totalPaise, dueDate, sharesPaise, link, parts } = input;
 
   if (sharesPaise.length > 0 && isEqualSplit(sharesPaise)) {
     // Shares a paisa apart (₹333.34 and ₹333.33) count as equal. Quote the lower amount;
@@ -34,7 +36,21 @@ export function shareMessage(input: ShareMessageInput): ShareMessage {
     const by = formatShortDate(dueDate);
     // The "before we sit down" line suits a dinner, not a trip, so goals get a plainer line.
     const why = kind === 'moment' ? ' so the bill is covered before we sit down' : '';
+    if (parts) {
+      // Not worded in the spec (goals paid in parts, step 9).
+      return {
+        variant: 'equal',
+        text: `${title} is ${each} each, paid in ${parts.count} monthly parts. The first is due ${formatShortDate(parts.firstDueDate)}, the last ${by}. ${link}`,
+      };
+    }
     return { variant: 'equal', text: `${title} is ${each} each. Pay your share by ${by}${why}. ${link}` };
+  }
+
+  if (parts) {
+    return {
+      variant: 'differ',
+      text: `${title} is ${formatRupees(totalPaise)} in all. Open the link, pick your name and pay your share in ${parts.count} monthly parts: ${link}`,
+    };
   }
 
   return {
@@ -48,9 +64,14 @@ export interface NudgeMessageInput {
   title: string;
   amountPaise: Paise;
   link: string;
+  /** Goals paid in parts: the part being asked for. */
+  part?: { partNumber: number; partsCount: number; dueDate: IsoDate };
 }
 
-export function nudgeMessage({ memberName, title, amountPaise, link }: NudgeMessageInput): string {
+export function nudgeMessage({ memberName, title, amountPaise, link, part }: NudgeMessageInput): string {
+  if (part) {
+    return `Hi ${memberName}, part ${part.partNumber} of ${part.partsCount} for ${title} (${formatRupees(amountPaise)}) is due ${formatShortDate(part.dueDate)}. It takes a minute to pay: ${link}`;
+  }
   return `Hi ${memberName}, ${formatRupees(amountPaise)} for ${title} is still open. It takes a minute to pay: ${link}`;
 }
 

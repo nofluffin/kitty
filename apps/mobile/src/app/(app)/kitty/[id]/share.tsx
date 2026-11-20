@@ -1,4 +1,4 @@
-import { formatRupees, shareMessage, type KittyKind, type KittyStatus } from '@kitty/core';
+import { addMonths, formatRupees, shareMessage, type KittyKind, type KittyStatus } from '@kitty/core';
 import * as Clipboard from 'expo-clipboard';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -29,13 +29,15 @@ interface ShareKitty {
   dueDate: string;
   totalPaise: number;
   slug: string;
+  /** Goals paid in parts. */
+  partsCount: number | null;
   members: { name: string; sharePaise: number; isOrganiser: boolean }[];
 }
 
 async function loadKitty(id: string): Promise<ShareKitty> {
   const { data, error } = await supabase
     .from('kitties')
-    .select('id, title, kind, status, due_date, total_paise, share_slug, members(name, share_paise, is_organiser, sort_order)')
+    .select('id, title, kind, status, due_date, total_paise, share_slug, parts_count, members(name, share_paise, is_organiser, sort_order)')
     .eq('id', id)
     .single();
   if (error) throw error;
@@ -47,6 +49,7 @@ async function loadKitty(id: string): Promise<ShareKitty> {
     dueDate: data.due_date,
     totalPaise: data.total_paise,
     slug: data.share_slug,
+    partsCount: data.parts_count,
     members: [...data.members]
       .sort((a, b) => a.sort_order - b.sort_order)
       .map((m) => ({ name: m.name, sharePaise: m.share_paise, isOrganiser: m.is_organiser })),
@@ -108,7 +111,9 @@ export default function ShareScreen() {
 function ShareReady({ kitty, close }: { kitty: ShareKitty; close?: () => void }) {
   const link = `${config.memberPageUrl}/k/${kitty.slug}`;
   const shares = kitty.members.map((m) => m.sharePaise);
-  const message = shareMessage({ ...kitty, sharesPaise: shares, link });
+  // The last part falls on the pay by date, one a month before it (goalParts in core).
+  const parts = kitty.partsCount ? { count: kitty.partsCount, firstDueDate: addMonths(kitty.dueDate, -(kitty.partsCount - 1)) } : undefined;
+  const message = shareMessage({ ...kitty, sharesPaise: shares, link, parts });
   const equal = message.variant === 'equal';
   const each = equal ? formatRupees(Math.min(...shares)) : null;
 

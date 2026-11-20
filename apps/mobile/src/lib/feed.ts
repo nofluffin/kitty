@@ -1,4 +1,13 @@
-import { memberPayState, type Diet, type KittyKind, type KittyStatus, type MemberPayState, type PaymentStatus } from '@kitty/core';
+import {
+  memberPayState,
+  partsProgress,
+  type Diet,
+  type KittyKind,
+  type KittyStatus,
+  type MemberPayState,
+  type PartsProgress,
+  type PaymentStatus,
+} from '@kitty/core';
 
 import { supabase } from './supabase';
 
@@ -17,6 +26,8 @@ export interface FeedKitty {
   remindOnDay: boolean;
   /** Set once the organiser settles up (step 7). */
   finalBillPaise: number | null;
+  /** Goals paid in parts. */
+  partsCount: number | null;
   members: FeedMember[];
 }
 
@@ -50,13 +61,15 @@ export interface FeedMember {
   refundUpiId: string | null;
   topUp: Adjustment | null;
   refund: Adjustment | null;
+  /** Goals paid in parts: how many are paid and which is next. */
+  parts: PartsProgress | null;
 }
 
 export async function loadFeed(kittyId: string): Promise<FeedKitty> {
   const { data, error } = await supabase
     .from('kitties')
     .select(
-      'id, title, kind, status, due_date, total_paise, upi_id, share_slug, amount_source, remind_day_before, remind_on_day, final_bill_paise, members(id, name, phone, is_organiser, sort_order, share_paise, share_fixed, diet, drinks, final_share_paise, refund_upi_id, last_opened_at, payments(kind, direction, status, amount_paise, marked_at, upi_ref))',
+      'id, title, kind, status, due_date, total_paise, upi_id, share_slug, amount_source, remind_day_before, remind_on_day, final_bill_paise, parts_count, members(id, name, phone, is_organiser, sort_order, share_paise, share_fixed, diet, drinks, final_share_paise, refund_upi_id, last_opened_at, payments(kind, direction, status, amount_paise, due_date, marked_at, upi_ref))',
     )
     .eq('id', kittyId)
     .single();
@@ -75,6 +88,7 @@ export async function loadFeed(kittyId: string): Promise<FeedKitty> {
     remindDayBefore: data.remind_day_before,
     remindOnDay: data.remind_on_day,
     finalBillPaise: data.final_bill_paise,
+    partsCount: data.parts_count,
     members: data.members.map((m) => {
       const adjustment = (kind: 'topup' | 'refund'): Adjustment | null => {
         const p = m.payments.find((x) => x.kind === kind);
@@ -103,6 +117,13 @@ export async function loadFeed(kittyId: string): Promise<FeedKitty> {
         refundUpiId: m.refund_upi_id,
         topUp: adjustment('topup'),
         refund: adjustment('refund'),
+        parts: data.parts_count
+          ? partsProgress(
+              m.payments
+                .filter((p) => p.kind === 'part' && p.due_date)
+                .map((p) => ({ amountPaise: p.amount_paise, dueDate: p.due_date!, status: p.status as PaymentStatus })),
+            )
+          : null,
       };
     }),
   };
@@ -113,14 +134,21 @@ export async function loadFeed(kittyId: string): Promise<FeedKitty> {
  * never marked it. Returns the error, if any, for explainFailure().
  */
 export async function confirmShare(memberId: string) {
-  const { data, error } = await supabase
+  // Confirm what the member said they paid. If they never marked it (cash), confirm the
+  // earliest open payment only, so a goal's later parts stay open.
+  const open = await supabase
     .from('payments')
-    .update({ status: 'confirmed' })
+    .select('id, status, due_date')
     .eq('member_id', memberId)
     .eq('direction', 'in')
     .in('kind', ['share', 'part'])
     .in('status', ['requested', 'marked', 'not_received'])
-    .select('id');
+    .order('due_date', { ascending: true, nullsFirst: true });
+  if (open.error) return open.error;
+  const marked = open.data.filter((p) => p.status === 'marked' || p.status === 'not_received');
+  const ids = (marked.length > 0 ? marked : open.data.slice(0, 1)).map((p) => p.id);
+  if (ids.length === 0) return new Error('nothing to confirm');
+  const { data, error } = await supabase.from('payments').update({ status: 'confirmed' }).in('id', ids).select('id');
   if (error) return error;
   // An update that changed nothing means the login didn't reach the row.
   return data.length === 0 ? new Error('nothing confirmed') : null;

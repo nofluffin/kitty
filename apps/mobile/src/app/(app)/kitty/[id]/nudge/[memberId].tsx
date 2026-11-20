@@ -55,7 +55,13 @@ async function openWhatsApp(url: string, text: string) {
 function NudgeReady({ kitty, member }: { kitty: FeedKitty; member: FeedMember }) {
   const link = `${config.memberPageUrl}/k/${kitty.slug}`;
   const [words, setWords] = useState(
-    nudgeMessage({ memberName: member.name, title: kitty.title, amountPaise: member.sharePaise, link }).slice(0, -link.length).trimEnd(),
+    nudgeMessage({
+      memberName: member.name,
+      title: kitty.title,
+      amountPaise: member.parts?.next?.amountPaise ?? member.sharePaise,
+      link,
+      part: member.parts?.next ? { partNumber: member.parts.next.partNumber, partsCount: member.parts.total, dueDate: member.parts.next.dueDate } : undefined,
+    }).slice(0, -link.length).trimEnd(),
   );
   const [editing, setEditing] = useState(false);
   const [dayBefore, setDayBefore] = useState(kitty.remindDayBefore);
@@ -112,7 +118,7 @@ function NudgeReady({ kitty, member }: { kitty: FeedKitty; member: FeedMember })
         </Button>
         <View style={styles.cash}>
           <TextLink onPress={() => router.replace({ pathname: '/kitty/[id]/confirm/[memberId]', params: { id: kitty.id, memberId: member.id } })}>
-            {`${member.name} paid you another way? Confirm ${formatRupees(member.sharePaise)}`}
+            {`${member.name} paid you another way? Confirm ${formatRupees(member.parts?.next?.amountPaise ?? member.sharePaise)}`}
           </TextLink>
         </View>
       </View>

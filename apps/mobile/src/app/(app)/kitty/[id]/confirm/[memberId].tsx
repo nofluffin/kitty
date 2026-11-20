@@ -45,7 +45,9 @@ export default function ConfirmPayment() {
 function ConfirmReady({ kitty, member }: { kitty: FeedKitty; member: FeedMember }) {
   const [busy, setBusy] = useState<'yes' | 'no' | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const amount = formatRupees(member.sharePaise);
+  // Goals in parts: the part being confirmed, not the whole share.
+  const next = member.parts?.next ?? null;
+  const amount = formatRupees(next?.amountPaise ?? member.sharePaise);
   const saidPaid = member.state === 'waiting' || member.state === 'not_received';
 
   async function answer(arrived: boolean) {
@@ -62,7 +64,7 @@ function ConfirmReady({ kitty, member }: { kitty: FeedKitty; member: FeedMember 
 
   const rows: [string, string][] = [
     ['From', member.name],
-    ['Amount', amount],
+    ['Amount', next && member.parts ? `${amount}, part ${next.partNumber} of ${member.parts.total}` : amount],
     ...(member.markedAt ? ([['Marked paid', capitalise(describeWhen(new Date(member.markedAt)))]] as [string, string][]) : []),
     ...(member.upiRef ? ([['UPI reference', member.upiRef]] as [string, string][]) : []),
     ['Paid to', kitty.upiId],

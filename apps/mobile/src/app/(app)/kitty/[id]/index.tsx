@@ -83,6 +83,13 @@ export default function Feed() {
           <View style={styles.footer}>
             {load.kitty.status === 'settling' ? (
               <Button onPress={() => router.push({ pathname: '/kitty/[id]/settle', params: { id } })}>Open settle up</Button>
+            ) : load.kitty.kind === 'goal' ? (
+              <>
+                <Note>Once you’ve paid for it, enter what it really cost. Kitty works out who pays a bit more and who gets money back.</Note>
+                <Button variant="secondary" onPress={() => router.push({ pathname: '/kitty/[id]/final-bill', params: { id } })}>
+                  Enter the final cost
+                </Button>
+              </>
             ) : (
               <>
                 <Note>After the dinner, scan the bill. Kitty splits veg, non-veg and alcohol and works out who gets money back.</Note>
@@ -125,6 +132,9 @@ function Summary({ kitty }: { kitty: FeedKitty }) {
 function FeedRow({ kitty, member: m }: { kitty: FeedKitty; member: FeedMember }) {
   const amount = formatRupees(m.sharePaise);
   const name = m.isOrganiser ? 'You' : m.name;
+  // Goals in parts: talk about the part that's due, not the whole share.
+  const next = m.parts?.next ?? null;
+  const partLabel = next && m.parts ? `part ${next.partNumber} of ${m.parts.total}, ${formatRupees(next.amountPaise)}` : null;
 
   if (m.isOrganiser || m.state === 'paid') {
     return (
@@ -137,14 +147,16 @@ function FeedRow({ kitty, member: m }: { kitty: FeedKitty; member: FeedMember })
 
   const detail =
     m.state === 'waiting'
-      ? `Says paid ${amount}${m.markedAt ? `, ${describeWhen(new Date(m.markedAt))}` : ''}`
+      ? `Says paid ${partLabel ?? amount}${m.markedAt ? `, ${describeWhen(new Date(m.markedAt))}` : ''}`
       : m.state === 'not_received'
         ? m.upiRef
           ? `Not received yet. Sent UPI ref ${m.upiRef}`
           : 'Not received yet, asked to check'
-        : m.lastOpenedAt
-          ? 'Not paid, opened the link'
-          : 'Not paid, hasn’t opened the link';
+        : next && m.parts
+          ? `${m.parts.paid} of ${m.parts.total} parts paid. Next ${formatRupees(next.amountPaise)} by ${formatShortDate(next.dueDate)}`
+          : m.lastOpenedAt
+            ? 'Not paid, opened the link'
+            : 'Not paid, hasn’t opened the link';
 
   const needsConfirm = m.state === 'waiting' || m.state === 'not_received';
   const go = () =>

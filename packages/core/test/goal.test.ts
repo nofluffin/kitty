@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addDays, addMonths, daysBetween, describeDay, describeWhen, formatShortDate, goalParts, localIsoDate, parseIsoDate, timeToGo } from '../src';
+import { addDays, addMonths, daysBetween, describeDay, describeWhen, formatShortDate, goalParts, localIsoDate, maxGoalParts, parseIsoDate, partsProgress, timeToGo, type PaymentStatus } from '../src';
 import { sum } from './fixtures';
 
 describe('goalParts', () => {
@@ -93,5 +93,30 @@ describe('describeWhen and describeDay', () => {
   it('describes a day on its own', () => {
     expect(describeDay(new Date(2026, 10, 18, 22, 0), now)).toBe('yesterday');
     expect(describeDay(new Date(2026, 10, 12, 10, 0), now)).toBe('on Thu 12 Nov');
+  });
+});
+
+describe('maxGoalParts', () => {
+  it('counts the monthly parts that fit, the last on the due date', () => {
+    expect(maxGoalParts('2027-01-12', '2026-11-20')).toBe(2); // 12 Dec and 12 Jan
+    expect(maxGoalParts('2027-01-12', '2026-11-12')).toBe(3); // 12 Nov counts: due today
+    expect(maxGoalParts('2026-12-01', '2026-11-20')).toBe(1);
+  });
+});
+
+describe('partsProgress', () => {
+  const part = (dueDate: string, status: PaymentStatus) => ({ amountPaise: 333400, dueDate, status });
+
+  it('finds the next part to pay, in date order', () => {
+    const p = partsProgress([part('2027-01-12', 'requested'), part('2026-11-12', 'confirmed'), part('2026-12-12', 'requested')]);
+    expect(p).toEqual({ paid: 1, total: 3, next: { ...part('2026-12-12', 'requested'), partNumber: 2 } });
+  });
+
+  it('the next part can be waiting for confirmation', () => {
+    expect(partsProgress([part('2026-11-12', 'marked'), part('2026-12-12', 'requested')]).next?.partNumber).toBe(1);
+  });
+
+  it('has no next part when everything is paid or written off', () => {
+    expect(partsProgress([part('2026-11-12', 'confirmed'), part('2026-12-12', 'written_off')])).toEqual({ paid: 1, total: 1, next: null });
   });
 });
