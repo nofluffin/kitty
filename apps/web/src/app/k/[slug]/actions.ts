@@ -50,7 +50,7 @@ export async function claimName(slug: string, formData: FormData) {
 
   const { data: member } = await open.supabase
     .from("members")
-    .select("id, kitty_id, is_organiser, member_claims(claim_token), payments(status, kind, direction)")
+    .select("id, kitty_id, is_organiser, paid_by_member_id, member_claims(claim_token), payments(status, kind, direction)")
     .eq("id", memberId)
     .maybeSingle();
   // Paid names can't be picked, unless money is coming back to them after settle up.
@@ -61,7 +61,8 @@ export async function claimName(slug: string, formData: FormData) {
     member.payments
       .filter((p) => p.direction === "in" && (p.kind === "share" || p.kind === "part"))
       .every((p) => p.status === "confirmed");
-  if (!member || member.kitty_id !== open.kittyId || member.is_organiser || paid) redirect(`/k/${slug}`);
+  // Someone paid for by another person (e.g. a child) never pays, so can't be picked.
+  if (!member || member.kitty_id !== open.kittyId || member.is_organiser || member.paid_by_member_id || paid) redirect(`/k/${slug}`);
 
   // Claiming is a convenience, not security (spec section 7). If the name was picked on
   // another browser, ask "Is this you?" first, then let them continue.

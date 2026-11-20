@@ -29,6 +29,8 @@ export interface DraftPerson {
   fixedPaise: Paise | null;
   /** The database row, when editing a kitty that already exists. */
   memberId?: string;
+  /** Someone else in the kitty pays this person's share, e.g. a parent for a child. */
+  paidByKey: string | null;
 }
 
 export type DraftPersonInput = Omit<DraftPerson, 'key' | 'fixedPaise' | 'memberId'>;
@@ -44,7 +46,7 @@ export interface ExistingKitty {
   totalPaise: Paise;
   dueDate: string;
   upiId: string;
-  people: Omit<DraftPerson, 'key'>[];
+  people: (Omit<DraftPerson, 'key' | 'paidByKey'> & { paidByMemberId: string | null })[];
 }
 
 export type Split =
@@ -96,8 +98,9 @@ const Context = createContext<DraftKitty | null>(null);
 let nextKey = 1;
 const newKey = () => `p${nextKey++}`;
 
-export function describePerson(p: Pick<DraftPerson, 'diet' | 'drinks'>): string {
-  return `${p.diet === 'veg' ? 'Veg' : 'Non-veg'}, ${p.drinks ? 'drinks' : "doesn't drink"}`;
+export function describePerson(p: Pick<DraftPerson, 'diet' | 'drinks'>, paidByName?: string | null): string {
+  const food = `${p.diet === 'veg' ? 'Veg' : 'Non-veg'}, ${p.drinks ? 'drinks' : "doesn't drink"}`;
+  return paidByName ? `${food}, ${paidByName} pays` : food;
 }
 
 export function DraftKittyProvider({
@@ -119,11 +122,14 @@ export function DraftKittyProvider({
   const [dueDate, setDueDate] = useState<string | null>(existing?.dueDate ?? null);
   const [upiId, setUpiId] = useState(existing?.upiId ?? initialUpi);
   // The organiser is in their own kitty by default and can remove themselves (spec section 3).
-  const [people, setPeople] = useState<DraftPerson[]>(() =>
-    existing
-      ? existing.people.map((p) => ({ ...p, key: newKey() }))
-      : [{ key: newKey(), name: organiserName || 'You', phone: null, isOrganiser: true, diet: 'veg', drinks: false, fixedPaise: null }],
-  );
+  const [people, setPeople] = useState<DraftPerson[]>(() => {
+    if (!existing) {
+      return [{ key: newKey(), name: organiserName || 'You', phone: null, isOrganiser: true, diet: 'veg', drinks: false, fixedPaise: null, paidByKey: null }];
+    }
+    const keyed = existing.people.map(({ paidByMemberId, ...p }) => ({ ...p, key: newKey(), paidByMemberId }));
+    const keyFor = new Map(keyed.map((p) => [p.memberId, p.key]));
+    return keyed.map(({ paidByMemberId, ...p }) => ({ ...p, paidByKey: paidByMemberId ? (keyFor.get(paidByMemberId) ?? null) : null }));
+  });
   const editing = useMemo(() => (existing ? { id: existing.id, status: existing.status } : null), [existing]);
 
   const totalPaise = useMemo(() => {
@@ -138,7 +144,8 @@ export function DraftKittyProvider({
     setPeople((list) => list.map((x) => (x.key === key ? { ...x, ...p } : x)));
   }, []);
   const removePerson = useCallback((key: string) => {
-    setPeople((list) => list.filter((x) => x.key !== key));
+    // Anyone they paid for goes back to paying for themselves.
+    setPeople((list) => list.filter((x) => x.key !== key).map((x) => (x.paidByKey === key ? { ...x, paidByKey: null } : x)));
   }, []);
   const setFixed = useCallback((key: string, paise: Paise | null) => {
     setPeople((list) => list.map((x) => (x.key === key ? { ...x, fixedPaise: paise } : x)));

@@ -50,6 +50,14 @@ export interface MemberRow {
   refund: Adjustment | null;
   /** Goals paid in parts: every part in date order, and which is next. */
   parts: (PartsProgress & { list: PartPayment[] }) | null;
+  /** Who pays this person's share, if someone else does (e.g. a parent). */
+  paidById: string | null;
+  /** The ids of people this person pays for, in list order. */
+  paysForIds: string[];
+  /** Asked of this person: their own share plus those they pay for. Zero if someone else pays. */
+  askPaise: number;
+  /** After settle up: their new share plus those they pay for. */
+  finalAskPaise: number | null;
 }
 
 export interface OpenKitty {
@@ -98,7 +106,7 @@ export async function loadMemberView(slug: string, claimToken: string | undefine
   const { data: k, error } = await supabase
     .from("kitties")
     .select(
-      "id, title, kind, status, due_date, total_paise, upi_id, closed_at, final_bill_paise, parts_count, organiser:profiles(name, phone), bills(status, extras_paise, created_at, bill_lines(label, raw_text, amount_paise, category, created_at)), members(id, name, is_organiser, sort_order, share_paise, share_fixed, diet, drinks, final_share_paise, refund_upi_id, member_claims(claim_token), payments(kind, direction, status, amount_paise, due_date, marked_at))",
+      "id, title, kind, status, due_date, total_paise, upi_id, closed_at, final_bill_paise, parts_count, organiser:profiles(name, phone), bills(status, extras_paise, created_at, bill_lines(label, raw_text, amount_paise, category, created_at)), members(id, name, is_organiser, sort_order, share_paise, share_fixed, diet, drinks, final_share_paise, refund_upi_id, paid_by_member_id, member_claims(claim_token), payments(kind, direction, status, amount_paise, due_date, marked_at))",
     )
     .eq("share_slug", slug)
     .maybeSingle();
@@ -126,7 +134,8 @@ export async function loadMemberView(slug: string, claimToken: string | undefine
       .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
     const topUp = adjustment("topup");
     const refund = adjustment("refund");
-    const shareState = m.share_paise === 0 ? "paid" : memberPayState(shares.map((p) => p.status as PaymentStatus));
+    // Nothing asked of them (a zero share, or someone else pays): nothing to pay.
+    const shareState = shares.length === 0 ? "paid" : memberPayState(shares.map((p) => p.status as PaymentStatus));
     return {
       id: m.id,
       name: m.name,
@@ -147,8 +156,24 @@ export async function loadMemberView(slug: string, claimToken: string | undefine
       topUp,
       refund,
       parts: k.parts_count && partList.length > 0 ? { ...partsProgress(partList), list: partList } : null,
+      paidById: m.paid_by_member_id,
+      paysForIds: [],
+      askPaise: 0,
+      finalAskPaise: null,
     };
   });
+  // Paying for someone else: the payer is asked for the group, and the people they
+  // pay for stand wherever the payer stands.
+  for (const m of members) {
+    const group = members.filter((x) => x.id === m.id || x.paidById === m.id);
+    m.paysForIds = [...group].filter((x) => x.id !== m.id).sort((a, b) => a.sortOrder - b.sortOrder).map((x) => x.id);
+    m.askPaise = m.paidById ? 0 : group.reduce((sum, x) => sum + x.sharePaise, 0);
+    m.finalAskPaise = m.paidById || m.finalSharePaise === null ? null : group.reduce((sum, x) => sum + (x.finalSharePaise ?? 0), 0);
+  }
+  for (const m of members) {
+    const payer = m.paidById ? members.find((x) => x.id === m.paidById) : null;
+    if (payer) m.state = payer.state;
+  }
 
   const confirmed = [...k.bills].filter((b) => b.status === "confirmed").sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
   let bill: ScannedBillView | null = null;

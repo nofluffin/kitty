@@ -107,14 +107,14 @@ isOneToOne: false
                   ]
                 },"members": {
                   Row: {
-                    "created_at": string,"diet": Database["public"]['Enums']["diet"],"drinks": boolean,"final_share_paise": number | null,"id": string,"is_organiser": boolean,"kitty_id": string,"last_opened_at": string | null,"name": string,"phone": string | null,"refund_upi_id": string | null,"share_fixed": boolean,"share_paise": number,"sort_order": number,"updated_at": string
+                    "created_at": string,"diet": Database["public"]['Enums']["diet"],"drinks": boolean,"final_share_paise": number | null,"id": string,"is_organiser": boolean,"kitty_id": string,"last_opened_at": string | null,"name": string,"paid_by_member_id": string | null,"phone": string | null,"refund_upi_id": string | null,"share_fixed": boolean,"share_paise": number,"sort_order": number,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"diet"?: Database["public"]['Enums']["diet"],"drinks"?: boolean,"final_share_paise"?: number | null,"id"?: string,"is_organiser"?: boolean,"kitty_id": string,"last_opened_at"?: string | null,"name": string,"phone"?: string | null,"refund_upi_id"?: string | null,"share_fixed"?: boolean,"share_paise"?: number,"sort_order"?: number,"updated_at"?: string
+                    "created_at"?: string,"diet"?: Database["public"]['Enums']["diet"],"drinks"?: boolean,"final_share_paise"?: number | null,"id"?: string,"is_organiser"?: boolean,"kitty_id": string,"last_opened_at"?: string | null,"name": string,"paid_by_member_id"?: string | null,"phone"?: string | null,"refund_upi_id"?: string | null,"share_fixed"?: boolean,"share_paise"?: number,"sort_order"?: number,"updated_at"?: string
                   }
                   Update: {
-                    "created_at"?: string,"diet"?: Database["public"]['Enums']["diet"],"drinks"?: boolean,"final_share_paise"?: number | null,"id"?: string,"is_organiser"?: boolean,"kitty_id"?: string,"last_opened_at"?: string | null,"name"?: string,"phone"?: string | null,"refund_upi_id"?: string | null,"share_fixed"?: boolean,"share_paise"?: number,"sort_order"?: number,"updated_at"?: string
+                    "created_at"?: string,"diet"?: Database["public"]['Enums']["diet"],"drinks"?: boolean,"final_share_paise"?: number | null,"id"?: string,"is_organiser"?: boolean,"kitty_id"?: string,"last_opened_at"?: string | null,"name"?: string,"paid_by_member_id"?: string | null,"phone"?: string | null,"refund_upi_id"?: string | null,"share_fixed"?: boolean,"share_paise"?: number,"sort_order"?: number,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -122,6 +122,12 @@ isOneToOne: false
       columns: ["kitty_id"]
 isOneToOne: false
       referencedRelation: "kitties"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "members_paid_by_member_id_fkey"
+      columns: ["paid_by_member_id"]
+isOneToOne: false
+      referencedRelation: "members"
       referencedColumns: ["id"]
     }
                   ]

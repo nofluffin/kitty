@@ -2,6 +2,20 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 20 Nov 2026: paying for someone else
+
+**Decided with Raj**
+
+- **Anyone can pay for someone else**, for example a parent for a child. On screen 3, "Who pays for them" offers Themselves or anyone who pays for themselves. The person keeps their own food and drink settings, so a scanned bill splits correctly for them.
+- **They count as a full person in an equal split.** Adjust their amount on screen 4 for less, for example half.
+
+**How it works**
+
+- The payer is asked for one amount: their share plus everyone they pay for. Their pay page shows a breakdown "For you" and "For Aarav", and "For you and Aarav ₹2,000".
+- People paid for by someone else aren't in "Who are you?", aren't messaged (no mobile number), and show under their payer in the feed ("Pays for Aarav too") and in "Everyone's share" ("Aarav, Kabir pays").
+- Settle up works out each person's new share, then adds them up for whoever pays, so one top-up or refund covers the family. Goal parts split the combined amount.
+- No chains: someone who pays for others pays for themselves, and nobody pays for the organiser. Removing a payer puts the people they paid for back on their own. Who pays for whom locks with the amounts, once someone pays.
+
 ## 20 Nov 2026: push notifications, Activity and the footer
 
 **Decided with Raj**

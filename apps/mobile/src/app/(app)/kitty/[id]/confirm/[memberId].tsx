@@ -47,7 +47,7 @@ function ConfirmReady({ kitty, member }: { kitty: FeedKitty; member: FeedMember 
   const [error, setError] = useState<string | null>(null);
   // Goals in parts: the part being confirmed, not the whole share.
   const next = member.parts?.next ?? null;
-  const amount = formatRupees(next?.amountPaise ?? member.sharePaise);
+  const amount = formatRupees(next?.amountPaise ?? member.askPaise);
   const saidPaid = member.state === 'waiting' || member.state === 'not_received';
 
   async function answer(arrived: boolean) {

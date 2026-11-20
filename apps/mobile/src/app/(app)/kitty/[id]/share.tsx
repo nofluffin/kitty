@@ -1,4 +1,4 @@
-import { addMonths, formatRupees, shareMessage, type KittyKind, type KittyStatus } from '@kitty/core';
+import { addMonths, combineByPayer, formatRupees, shareMessage, type KittyKind, type KittyStatus } from '@kitty/core';
 import * as Clipboard from 'expo-clipboard';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
@@ -34,13 +34,14 @@ interface ShareKitty {
   partsCount: number | null;
   /** Editable until someone pays (decided 20 Nov 2026). */
   editable: boolean;
-  members: { name: string; sharePaise: number; isOrganiser: boolean }[];
+  /** Per person; paidBy names whoever pays their share, if someone else does. */
+  members: { name: string; sharePaise: number; isOrganiser: boolean; id: string; paidById: string | null }[];
 }
 
 async function loadKitty(id: string): Promise<ShareKitty> {
   const { data, error } = await supabase
     .from('kitties')
-    .select('id, title, kind, status, due_date, total_paise, share_slug, parts_count, members(name, share_paise, is_organiser, sort_order, payments(status))')
+    .select('id, title, kind, status, due_date, total_paise, share_slug, parts_count, members(id, name, share_paise, is_organiser, sort_order, paid_by_member_id, payments(status))')
     .eq('id', id)
     .single();
   if (error) throw error;
@@ -59,7 +60,7 @@ async function loadKitty(id: string): Promise<ShareKitty> {
     ),
     members: [...data.members]
       .sort((a, b) => a.sort_order - b.sort_order)
-      .map((m) => ({ name: m.name, sharePaise: m.share_paise, isOrganiser: m.is_organiser })),
+      .map((m) => ({ id: m.id, name: m.name, sharePaise: m.share_paise, isOrganiser: m.is_organiser, paidById: m.paid_by_member_id })),
   };
 }
 
@@ -122,7 +123,9 @@ export default function ShareScreen() {
 
 function ShareReady({ kitty, close }: { kitty: ShareKitty; close?: () => void }) {
   const link = `${config.memberPageUrl}/k/${kitty.slug}`;
-  const shares = kitty.members.map((m) => m.sharePaise);
+  // What each payer is asked for: their own share plus anyone they pay for.
+  const asked = combineByPayer(kitty.members, (m) => m.sharePaise);
+  const shares = kitty.members.filter((m) => !m.paidById).map((m) => asked.get(m.id) ?? 0);
   // The last part falls on the pay by date, one a month before it (goalParts in core).
   const parts = kitty.partsCount ? { count: kitty.partsCount, firstDueDate: addMonths(kitty.dueDate, -(kitty.partsCount - 1)) } : undefined;
   const message = shareMessage({ ...kitty, sharesPaise: shares, link, parts });
@@ -256,9 +259,15 @@ function ShareReady({ kitty, close }: { kitty: ShareKitty; close?: () => void })
         <View style={styles.section}>
           <Label>What each person will see</Label>
           <View style={styles.list}>
-            {kitty.members.map((m, i) => (
-              <Row key={i} left={m.isOrganiser ? 'You' : m.name} right={formatRupees(m.sharePaise)} />
-            ))}
+            {kitty.members
+              .filter((m) => !m.paidById)
+              .map((m) => {
+                const paysFor = kitty.members.filter((x) => x.paidById === m.id).map((x) => x.name);
+                const who = m.isOrganiser ? 'You' : m.name;
+                return (
+                  <Row key={m.id} left={paysFor.length > 0 ? `${who}, with ${paysFor.join(', ')}` : who} right={formatRupees(asked.get(m.id) ?? 0)} />
+                );
+              })}
           </View>
         </View>
       ) : null}

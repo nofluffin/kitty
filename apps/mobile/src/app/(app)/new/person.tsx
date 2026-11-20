@@ -9,7 +9,7 @@ import { Platform, StyleSheet, Text, View } from 'react-native';
 import { useAuth } from '@/lib/auth';
 import { describePerson, useDraftKitty, type DraftPerson } from '@/lib/draft-kitty';
 import { notify } from '@/lib/notify';
-import { Button, Field, Label, Row, Screen, Segmented, Small, TextLink } from '@/ui/components';
+import { Button, Chip, Field, Label, Row, Screen, Segmented, Small, TextLink } from '@/ui/components';
 import { type } from '@/ui/theme';
 
 /**
@@ -31,9 +31,19 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
   const [mobile, setMobile] = useState(editing?.phone ? formatIndianMobile(editing.phone).replace(/^\+91 /, '') : '');
   const [diet, setDiet] = useState<Diet>(editing?.diet ?? 'veg');
   const [drinks, setDrinks] = useState(editing?.drinks ?? false);
+  const [paidByKey, setPaidByKey] = useState<string | null>(editing?.paidByKey ?? null);
   const [errors, setErrors] = useState<{ name?: string; mobile?: string }>({});
   const [added, setAdded] = useState<string | null>(null);
   const isOrganiser = editing?.isOrganiser ?? false;
+  // Paying for someone else: anyone who pays for themselves can pay for this person.
+  // Someone already paying for others can't be paid for (no chains), nor can the organiser.
+  const paysForOthers = editing ? k.people.filter((p) => p.paidByKey === editing.key) : [];
+  const payers = k.people.filter((p) => p.key !== editing?.key && !p.paidByKey);
+  const canBePaidFor = !isOrganiser && paysForOthers.length === 0 && payers.length > 0;
+  const nameOf = (key: string | null) => {
+    const p = k.people.find((x) => x.key === key);
+    return p ? (p.isOrganiser ? 'You' : p.name) : null;
+  };
   const shownName = name.trim() || 'them';
 
   async function pickContact() {
@@ -66,7 +76,8 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
     setErrors(next);
     if (Object.keys(next).length > 0 || !cleaned) return;
 
-    const person = { name: cleaned, phone, isOrganiser, diet, drinks };
+    // Someone paid for by another person isn't messaged, so their number isn't kept.
+    const person = { name: cleaned, phone: paidByKey ? null : phone, isOrganiser, diet, drinks, paidByKey: canBePaidFor ? paidByKey : null };
     if (editing) {
       k.updatePerson(editing.key, person);
       router.setParams({ key: undefined });
@@ -77,6 +88,7 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
       setMobile('');
       setDiet('veg');
       setDrinks(false);
+      setPaidByKey(null);
     }
   }
 
@@ -121,6 +133,35 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
             maxLength={80}
             error={errors.name ?? null}
           />
+          {canBePaidFor ? (
+            <View style={styles.group}>
+              <Label>Who pays for them</Label>
+              <View style={styles.chips}>
+                <Chip filled={paidByKey === null} onPress={() => setPaidByKey(null)}>
+                  Themselves
+                </Chip>
+                {payers.map((p) => (
+                  <Chip key={p.key} filled={paidByKey === p.key} onPress={() => setPaidByKey(p.key)}>
+                    {p.isOrganiser ? 'You' : p.name}
+                  </Chip>
+                ))}
+              </View>
+              <View style={styles.hint}>
+                <Small>
+                  {paidByKey
+                    ? nameOf(paidByKey) === 'You'
+                      ? 'You cover their share along with your own.'
+                      : `${nameOf(paidByKey)} is asked for their share along with their own.`
+                    : 'For a child, or anyone whose share someone else covers.'}
+                </Small>
+              </View>
+            </View>
+          ) : paysForOthers.length > 0 ? (
+            <View style={styles.group}>
+              <Small>{`Pays for ${paysForOthers.map((p) => p.name).join(', ')} too.`}</Small>
+            </View>
+          ) : null}
+          {paidByKey && canBePaidFor ? null : (
           <Field
             label="Mobile number"
             prefix="+91"
@@ -131,6 +172,7 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
             hint={`Used to open a WhatsApp chat with ${shownName} when you share or nudge. Optional.`}
             error={errors.mobile ?? null}
           />
+          )}
         </>
       )}
 
@@ -185,7 +227,9 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
         <Label>In this kitty</Label>
         {!k.people.some((p) => p.isOrganiser) ? (
           <View style={styles.addBack}>
-            <TextLink onPress={() => k.addPerson({ name: profile?.name || 'You', phone: null, isOrganiser: true, diet: 'veg', drinks: false })}>
+            <TextLink
+              onPress={() => k.addPerson({ name: profile?.name || 'You', phone: null, isOrganiser: true, diet: 'veg', drinks: false, paidByKey: null })}
+            >
               Add yourself back
             </TextLink>
           </View>
@@ -198,7 +242,7 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
               <Row
                 key={p.key}
                 left={p.isOrganiser ? 'You' : p.name}
-                right={describePerson(p)}
+                right={describePerson(p, nameOf(p.paidByKey))}
                 onPress={() => router.setParams({ key: p.key })}
               />
             ))
@@ -221,4 +265,5 @@ const styles = StyleSheet.create({
   empty: { paddingVertical: 12 },
   addBack: { marginTop: 8 },
   added: { textAlign: 'center' },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 9, marginTop: 11 },
 });

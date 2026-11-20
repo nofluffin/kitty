@@ -1,4 +1,4 @@
-import { confirmedNetPaid, type KittyKind, type KittyStatus, type Paise, type PaymentForTotals } from '@kitty/core';
+import { combineByPayer, confirmedNetPaid, payerIdOf, type KittyKind, type KittyStatus, type Paise, type PaymentForTotals } from '@kitty/core';
 
 import { supabase } from './supabase';
 
@@ -19,7 +19,7 @@ export async function loadKittySummaries(): Promise<KittySummary[]> {
   const { data, error } = await supabase
     .from('kitties')
     .select(
-      'id, title, kind, status, due_date, total_paise, members(id, share_paise), payments(member_id, direction, status, amount_paise)',
+      'id, title, kind, status, due_date, total_paise, members(id, share_paise, paid_by_member_id), payments(member_id, direction, status, amount_paise)',
     )
     .neq('status', 'cancelled')
     .order('due_date', { ascending: true });
@@ -32,7 +32,12 @@ export async function loadKittySummaries(): Promise<KittySummary[]> {
       status: p.status,
       amountPaise: p.amount_paise,
     }));
-    const paid = k.members.map((m) => ({ share: m.share_paise, net: confirmedNetPaid(payments, m.id) }));
+    // Someone paying for others (e.g. a child) is asked for everyone's share together,
+    // so a person counts as paid once whoever pays for them has paid the lot.
+    const people = k.members.map((m) => ({ id: m.id, paidById: m.paid_by_member_id }));
+    const groupShare = combineByPayer(people, (m) => k.members.find((x) => x.id === m.id)!.share_paise);
+    const paid = people.map((m) => ({ share: groupShare.get(payerIdOf(m)) ?? 0, net: confirmedNetPaid(payments, payerIdOf(m)) }));
+    const collected = [...groupShare.keys()].reduce((sum, payer) => sum + confirmedNetPaid(payments, payer), 0);
     return {
       id: k.id,
       title: k.title,
@@ -40,7 +45,7 @@ export async function loadKittySummaries(): Promise<KittySummary[]> {
       status: k.status,
       dueDate: k.due_date,
       totalPaise: k.total_paise,
-      collectedPaise: paid.reduce((sum, m) => sum + m.net, 0),
+      collectedPaise: collected,
       paidCount: paid.filter((m) => m.share > 0 && m.net >= m.share).length,
       memberCount: k.members.length,
     };

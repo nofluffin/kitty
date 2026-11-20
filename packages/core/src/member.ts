@@ -66,3 +66,30 @@ export function feedOrder<T extends MemberLike>(members: readonly T[]): T[] {
   const rank = (m: T) => (m.isOrganiser ? 3 : FEED_RANK[m.state]);
   return [...members].sort((a, b) => rank(a) - rank(b) || a.sortOrder - b.sortOrder);
 }
+
+/** Paying for someone else (decided with Raj, 20 Nov 2026): a parent pays a child's share. */
+export interface PayerLink {
+  id: string;
+  /** Who pays this person's share. Null: they pay it themselves. */
+  paidById: string | null;
+}
+
+/** Whoever pays this person's share: themselves, or the person paying for them. */
+export function payerIdOf(m: PayerLink): string {
+  return m.paidById ?? m.id;
+}
+
+/** What each payer is asked for: their own amount plus everyone they pay for. Keyed by payer id. */
+export function combineByPayer<T extends PayerLink>(members: readonly T[], amount: (m: T) => number): Map<string, number> {
+  const totals = new Map<string, number>();
+  for (const m of members) {
+    const payer = payerIdOf(m);
+    totals.set(payer, (totals.get(payer) ?? 0) + amount(m));
+  }
+  return totals;
+}
+
+/** The people a payer pays for, in list order. */
+export function dependantsOf<T extends PayerLink>(members: readonly T[], payerId: string): T[] {
+  return members.filter((m) => m.paidById === payerId);
+}
