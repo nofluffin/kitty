@@ -2,6 +2,11 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 20 Nov 2026: personal links in nudges
+
+- **The group link no longer singles anyone out.** Every name in "Who are you?" (screen 14) has an arrow; the wire's highlighted first name was only illustrating a tappable row.
+- **Nudges and top-up requests carry a personal link** (`/k/<link>?for=<person>`), decided with Raj. It opens with "I'm Nathan, continue" at the top, one tap to their pay screen, and "Not Nathan? Pick your name" below. It only preselects: it grants nothing the group link doesn't. The group reminder keeps the shared link.
+
 ## 20 Nov 2026: the "Thanks" screen (screen 16) and the receipt
 
 Decided with Raj:

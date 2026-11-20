@@ -53,7 +53,9 @@ async function openWhatsApp(url: string, text: string) {
 }
 
 function NudgeReady({ kitty, member }: { kitty: FeedKitty; member: FeedMember }) {
-  const link = `${config.memberPageUrl}/k/${kitty.slug}`;
+  const groupLink = `${config.memberPageUrl}/k/${kitty.slug}`;
+  // Their own link opens with their name ready to tap (decided with Raj, 20 Nov 2026).
+  const link = `${groupLink}?for=${member.id}`;
   const [words, setWords] = useState(
     nudgeMessage({
       memberName: member.name,
@@ -110,7 +112,7 @@ function NudgeReady({ kitty, member }: { kitty: FeedKitty; member: FeedMember })
         <Button
           variant="secondary"
           onPress={() => {
-            const group = groupReminderMessage({ title: kitty.title, link });
+            const group = groupReminderMessage({ title: kitty.title, link: groupLink });
             openWhatsApp(`https://wa.me/?text=${encodeURIComponent(group)}`, group);
           }}
         >

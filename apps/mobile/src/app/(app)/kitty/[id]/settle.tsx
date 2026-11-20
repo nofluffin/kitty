@@ -77,7 +77,7 @@ function SettleReady({ kitty, reload }: { kitty: FeedKitty; reload: () => Promis
   }
 
   async function askForTopUp(m: FeedMember) {
-    const text = topUpMessage({ memberName: m.name, title: kitty.title, newSharePaise: finalOf(m), paidPaise: paidBefore(m), link });
+    const text = topUpMessage({ memberName: m.name, title: kitty.title, newSharePaise: finalOf(m), paidPaise: paidBefore(m), link: `${link}?for=${m.id}` });
     const url = (m.phone && whatsAppUrl(m.phone, text)) || `https://wa.me/?text=${encodeURIComponent(text)}`;
     try {
       await Linking.openURL(url);
