@@ -93,14 +93,14 @@ export default function ShareScreen() {
   const close = fresh ? () => router.replace('/home') : undefined;
   if (failed) {
     return (
-      <Screen title="Share" back={!close} close={close}>
+      <Screen title="Share" back={!close} close={close} hideAvatar>
         <CenteredState title="Couldn’t load this kitty" body="Check your connection and try again." action={<Button onPress={load}>Try again</Button>} />
       </Screen>
     );
   }
   if (!kitty) {
     return (
-      <Screen title="Share" back={!close} close={close}>
+      <Screen title="Share" back={!close} close={close} hideAvatar>
         <CenteredState />
       </Screen>
     );
@@ -108,7 +108,7 @@ export default function ShareScreen() {
   // A draft saved for "Scan it" whose scan hasn't finished: there's nothing to share yet.
   if (kitty.status === 'draft' && kitty.totalPaise === 0) {
     return (
-      <Screen title={kitty.title} back={!close} close={close}>
+      <Screen title={kitty.title} back={!close} close={close} hideAvatar>
         <CenteredState
           title="No total yet"
           body="Scan the bill to work out everyone’s exact share."
@@ -189,6 +189,7 @@ function ShareReady({ kitty, close }: { kitty: ShareKitty; close?: () => void })
       title={kitty.title}
       back={!close}
       close={close}
+      hideAvatar
       footer={
         <>
           <ErrorText>{error}</ErrorText>

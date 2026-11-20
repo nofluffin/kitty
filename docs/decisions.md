@@ -6,7 +6,7 @@ Choices made during the build that aren't in the spec, or that settle something 
 
 Decided with Raj:
 
-- **The footer is Kitties, Activity and Help.** "You" moved to the picture at the top right, which now shows on every screen once logged in (not on your details screen itself).
+- **The footer is Kitties, Activity and Help.** "You" moved to the picture at the top right, which shows on every screen once logged in, except your details, a kitty's feed and its share screen (those have "Share link" or a close button there instead).
 - **Help** explains how Kitty works in tap-to-open sections: getting started, starting a kitty, sharing and getting paid, the bill and settling up, goals and monthly parts, what your friends see, your account, and privacy and contact.
 - **Delete my account** is in Your details (App Store rule). It removes bill photos, then the account, which deletes the profile, every kitty with its people and payment records, notifications and phones. Shared links stop working.
 - **Privacy policy and terms** are at thekitty.app/privacy and /terms, linked from sign-up, Help and the home page. They name **Kitty Labs** and **hello@thekitty.app**. They were written to match what Kitty stores; have them reviewed before the public launch.
