@@ -178,7 +178,7 @@ isOneToOne: false
 { Args: { "p_kitty_id": string,"p_write_off"?: boolean }; Returns: undefined
                            },
 "create_kitty":
-{ Args: { "p_due_date": string,"p_kind": Database["public"]['Enums']["kitty_kind"],"p_members": Json,"p_title": string,"p_total_paise": number,"p_upi_id": string }; Returns: {
+{ Args: { "p_due_date": string,"p_goal_plan"?: Database["public"]['Enums']["goal_plan"],"p_kind": Database["public"]['Enums']["kitty_kind"],"p_members": Json,"p_parts_count"?: number,"p_title": string,"p_total_paise": number,"p_upi_id": string }; Returns: {
               "amount_source": Database["public"]['Enums']["amount_source"],
 "closed_at": string | null,
 "created_at": string,

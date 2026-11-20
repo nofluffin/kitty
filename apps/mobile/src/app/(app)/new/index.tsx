@@ -1,12 +1,11 @@
-import { formatRupees, isValidUpiId, localIsoDate, normaliseUpiId } from '@kitty/core';
+import { formatRupees, formatShortDate, goalParts, isValidUpiId, localIsoDate, maxGoalParts, normaliseUpiId } from '@kitty/core';
 import { router } from 'expo-router';
 import { useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { useAuth } from '@/lib/auth';
-import { useDraftKitty, type Split } from '@/lib/draft-kitty';
+import { useDraftKitty, type GoalPlan, type Split } from '@/lib/draft-kitty';
 import { explainFailure } from '@/lib/errors';
-import { notify } from '@/lib/notify';
 import { supabase } from '@/lib/supabase';
 import {
   Button,
@@ -17,14 +16,18 @@ import {
   Label,
   Screen,
   Segmented,
+  Small,
   SmallButton,
 } from '@/ui/components';
 import { DateField } from '@/ui/date-field';
 import { colors, layout, type } from '@/ui/theme';
 
-type Errors = Partial<Record<'title' | 'total' | 'date' | 'people' | 'upi' | 'form', string>>;
+type Errors = Partial<Record<'title' | 'total' | 'date' | 'plan' | 'people' | 'upi' | 'form', string>>;
 
-/** Screen 2. Goal kitties (screen 22) come in step 9. */
+/** Most parts offered on screen 22: a year of monthly payments. */
+const MAX_PARTS_OFFERED = 12;
+
+/** Screen 2 (moment) and screen 22 (goal). */
 export default function NewKitty() {
   const { refreshProfile } = useAuth();
   const k = useDraftKitty();
@@ -38,9 +41,24 @@ export default function NewKitty() {
   const today = localIsoDate();
   const upi = normaliseUpiId(k.upiId);
   const others = k.people.filter((p) => !p.isOrganiser).length;
+  const goal = k.kind === 'goal';
+  const inParts = goal && k.goalPlan === 'parts';
+  // Parts offered: as many monthly parts as fit before the pay by date, up to a year.
+  const maxParts = k.dueDate ? Math.min(maxGoalParts(k.dueDate, today), MAX_PARTS_OFFERED) : 0;
+  const parts = inParts && maxParts >= 2 ? Math.min(k.partsCount ?? Math.min(maxParts, 3), maxParts) : null;
+  const planProblem = !inParts
+    ? null
+    : !k.dueDate
+      ? 'Pick a pay by date to see the parts.'
+      : maxParts < 2
+        ? 'Pick a pay by date at least a month away to pay in parts.'
+        : k.split.state === 'ok' && k.split.shares.some((x) => x.sharePaise > 0 && x.sharePaise < parts!)
+          ? 'A share is too small to split into parts.'
+          : null;
   const problems: Errors = {
-    ...(k.title.trim() ? {} : { title: 'Give it a name your friends will recognise.' }),
-    ...(k.totalPaise ? {} : { total: 'Enter the total, like 6,000.' }),
+    ...(k.title.trim() ? {} : { title: goal ? 'Say what you’re saving for.' : 'Give it a name your friends will recognise.' }),
+    ...(k.totalPaise ? {} : { total: goal ? 'Enter the target, like 50,000.' : 'Enter the total, like 6,000.' }),
+    ...(planProblem ? { plan: planProblem } : {}),
     ...(k.dueDate ? {} : { date: 'Pick the day everyone should pay by.' }),
     ...(others > 0 ? {} : { people: 'Add at least one other person.' }),
     ...(isValidUpiId(upi) ? {} : { upi: 'Enter your UPI ID, like name@okicici.' }),
@@ -60,7 +78,8 @@ export default function NewKitty() {
       scanDraft.current = null;
     }
     const { data, error } = await supabase.rpc('create_kitty', {
-      p_kind: 'moment',
+      p_kind: k.kind,
+      ...(goal ? { p_goal_plan: k.goalPlan, ...(parts ? { p_parts_count: parts } : {}) } : {}),
       p_title: k.title.trim(),
       p_due_date: k.dueDate,
       p_total_paise: k.totalPaise,
@@ -137,17 +156,15 @@ export default function NewKitty() {
           { value: 'moment', label: 'Moment' },
           { value: 'goal', label: 'Goal' },
         ]}
-        value="moment"
-        onChange={(v) => {
-          if (v === 'goal') notify('Coming soon', 'Goal kitties, saved up over weeks, come in step 9 of the build.');
-        }}
+        value={k.kind}
+        onChange={k.setKind}
       />
 
       <Field
-        label="What is it for"
+        label={goal ? 'What are you saving for' : 'What is it for'}
         value={k.title}
         onChangeText={k.setTitle}
-        placeholder="Friday dinner"
+        placeholder={goal ? 'Goa trip' : 'Friday dinner'}
         autoCapitalize="sentences"
         maxLength={80}
         error={errors.title ?? null}
@@ -156,12 +173,12 @@ export default function NewKitty() {
       <View style={styles.pair}>
         <View style={styles.flex}>
           <Field
-            label="Total"
+            label={goal ? 'Target' : 'Total'}
             prefix="₹"
             value={k.totalText}
             onChangeText={k.setTotalText}
             onBlur={() => k.totalPaise && k.setTotalText(formatRupees(k.totalPaise).replace('₹', ''))}
-            placeholder="6,000"
+            placeholder={goal ? '50,000' : '6,000'}
             keyboardType="decimal-pad"
             error={errors.total ?? null}
           />
@@ -171,11 +188,39 @@ export default function NewKitty() {
         </View>
       </View>
 
-      <View style={styles.scanGap}>
-        <DashedButton onPress={scanFirst}>
-          {scanning ? 'Saving the kitty…' : 'Have the bill already? Scan it for exact shares'}
-        </DashedButton>
-      </View>
+      {goal ? (
+        <View style={styles.scanGap}>
+          <Segmented
+            label="How people pay"
+            options={[
+              { value: 'single', label: 'One payment' },
+              { value: 'parts', label: 'In parts' },
+            ]}
+            value={k.goalPlan}
+            onChange={(v: GoalPlan) => k.setGoalPlan(v)}
+          />
+          <Small>In parts splits each share into monthly payments, with a nudge before each one.</Small>
+          {inParts && maxParts >= 2 ? (
+            <View style={styles.section}>
+              <Label>Number of parts</Label>
+              <View style={styles.chips}>
+                {Array.from({ length: maxParts - 1 }, (_, i) => i + 2).map((n) => (
+                  <Chip key={n} filled={n === parts} onPress={() => k.setPartsCount(n)}>
+                    {String(n)}
+                  </Chip>
+                ))}
+              </View>
+            </View>
+          ) : null}
+          <ErrorText>{inParts ? planProblem : null}</ErrorText>
+        </View>
+      ) : (
+        <View style={styles.scanGap}>
+          <DashedButton onPress={scanFirst}>
+            {scanning ? 'Saving the kitty…' : 'Have the bill already? Scan it for exact shares'}
+          </DashedButton>
+        </View>
+      )}
 
       <View style={styles.section}>
         <Label>Who is in</Label>
@@ -197,7 +242,7 @@ export default function NewKitty() {
       </View>
 
       <View style={styles.summaryGap}>
-        <SplitSummary split={k.split} count={k.people.length} />
+        <SplitSummary split={k.split} count={k.people.length} parts={parts && k.dueDate ? { count: parts, dueDate: k.dueDate, today } : null} />
       </View>
 
       <Field
@@ -214,7 +259,15 @@ export default function NewKitty() {
   );
 }
 
-function SplitSummary({ split, count }: { split: Split; count: number }) {
+function SplitSummary({
+  split,
+  count,
+  parts,
+}: {
+  split: Split;
+  count: number;
+  parts: { count: number; dueDate: string; today: string } | null;
+}) {
   const people = `${count} ${count === 1 ? 'person' : 'people'}`;
   let headline: React.ReactNode;
   let detail: string;
@@ -225,9 +278,17 @@ function SplitSummary({ split, count }: { split: Split; count: number }) {
       </>
     );
     detail = `${people}, split equally. Editable until you share.`;
+    if (parts) {
+      const plan = goalParts(Math.max(...split.shares.map((s) => s.sharePaise)), parts.count, parts.dueDate, parts.today);
+      if (plan.ok) {
+        detail = `${people}, split equally, in ${parts.count} monthly parts of about ${formatRupees(plan.value[0]!.amountPaise)}, from ${formatShortDate(plan.value[0]!.dueDate)}.`;
+      }
+    }
   } else if (split.state === 'ok') {
     headline = <Text style={type.bodyBold}>Amounts differ</Text>;
-    detail = `${people}, some amounts set by you. Editable until you share.`;
+    detail = parts
+      ? `${people}, some amounts set by you, each paid in ${parts.count} monthly parts.`
+      : `${people}, some amounts set by you. Editable until you share.`;
   } else if (split.state === 'error') {
     headline = <Text style={[type.bodyBold, styles.danger]}>Amounts don’t add up</Text>;
     detail = 'The amounts you set are more than the total.';

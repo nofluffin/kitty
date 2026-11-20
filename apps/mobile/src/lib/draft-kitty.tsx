@@ -4,6 +4,7 @@ import {
   parseRupees,
   type AdjustError,
   type Diet,
+  type KittyKind,
   type MemberShare,
   type Paise,
 } from '@kitty/core';
@@ -41,7 +42,18 @@ export type Split =
       unfixedCount: number;
     };
 
+export type GoalPlan = 'single' | 'parts';
+
 interface DraftKitty {
+  /** Screen 2 (moment) or screen 22 (goal). */
+  kind: KittyKind;
+  setKind: (k: KittyKind) => void;
+  /** Goals only: one payment or monthly parts. */
+  goalPlan: GoalPlan;
+  setGoalPlan: (p: GoalPlan) => void;
+  /** Goals in parts: how many monthly parts. Null until the organiser picks, or a pay by date allows. */
+  partsCount: number | null;
+  setPartsCount: (n: number | null) => void;
   title: string;
   setTitle: (t: string) => void;
   totalText: string;
@@ -78,6 +90,9 @@ export function DraftKittyProvider({
   upiId: string;
   children: ReactNode;
 }) {
+  const [kind, setKind] = useState<KittyKind>('moment');
+  const [goalPlan, setGoalPlan] = useState<GoalPlan>('single');
+  const [partsCount, setPartsCount] = useState<number | null>(null);
   const [title, setTitle] = useState('');
   const [totalText, setTotalText] = useState('');
   const [dueDate, setDueDate] = useState<string | null>(null);
@@ -127,6 +142,12 @@ export function DraftKittyProvider({
 
   const value = useMemo(
     () => ({
+      kind,
+      setKind,
+      goalPlan,
+      setGoalPlan,
+      partsCount,
+      setPartsCount,
       title,
       setTitle,
       totalText,
@@ -144,7 +165,7 @@ export function DraftKittyProvider({
       resetFixed,
       split,
     }),
-    [title, totalText, totalPaise, dueDate, upiId, people, addPerson, updatePerson, removePerson, setFixed, resetFixed, split],
+    [kind, goalPlan, partsCount, title, totalText, totalPaise, dueDate, upiId, people, addPerson, updatePerson, removePerson, setFixed, resetFixed, split],
   );
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }

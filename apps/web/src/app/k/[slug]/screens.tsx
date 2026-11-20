@@ -6,6 +6,7 @@ import {
   isEqualSplit,
   kittyPaymentNote,
   payProgress,
+  type PaymentStatus,
   pickList,
   statusList,
   whatsAppUrl,
@@ -186,21 +187,26 @@ export function PickName({ kitty, confirmId, notListed }: { kitty: OpenKitty; co
 // ---------------------------------------------------------------------------
 
 export async function PayShare({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
-  const amount = formatRupees(me.sharePaise);
+  // Goals in parts: ask for the next part, not the whole share.
+  const next = me.parts?.next ?? null;
+  const owed = next?.amountPaise ?? me.sharePaise;
+  const amount = formatRupees(owed);
   const paid = markPaid.bind(null, kitty.slug);
 
   return (
     <Page
       header={<Header title={kitty.title} left={<BackToNames slug={kitty.slug} />} />}
     >
-      <p className="text-base leading-6 text-text">{me.name}, your share</p>
+      <p className="text-base leading-6 text-text">
+        {me.name}, {next && me.parts ? `part ${next.partNumber} of ${me.parts.total}` : "your share"}
+      </p>
       <p className="mt-0.5 text-[40px] leading-[48px] font-bold text-ink">{amount}</p>
       <p className="mt-1 text-sm leading-[21px] text-text">
-        To {kitty.organiser.name}, {kitty.upiId}
+        {next ? `Due ${formatShortDate(next.dueDate)}. ` : ""}To {kitty.organiser.name}, {kitty.upiId}
       </p>
 
       <Label className="mt-8">Step 1, pay</Label>
-      <PayOptions kitty={kitty} amountPaise={me.sharePaise} markPaid={paid} />
+      <PayOptions kitty={kitty} amountPaise={owed} markPaid={paid} />
 
       <Label className="mt-6">Step 2, tell the group</Label>
       <form action={paid} className="mt-3">
@@ -209,7 +215,42 @@ export async function PayShare({ kitty, me }: { kitty: OpenKitty; me: MemberRow 
         </button>
       </form>
       <Small className="mt-3.5">{kitty.organiser.name} gets a prompt to confirm it arrived.</Small>
+
+      {me.parts ? <PartsList me={me} /> : null}
     </Page>
+  );
+}
+
+const PART_STATUS: Record<PaymentStatus, string> = {
+  requested: "To pay",
+  marked: "Waiting to be confirmed",
+  confirmed: "Paid ✓",
+  not_received: "Not received yet",
+  written_off: "Not needed",
+};
+
+/** Goals in parts: every part with its date and how it stands. Not drawn in the wires. */
+function PartsList({ me }: { me: MemberRow }) {
+  const parts = me.parts;
+  if (!parts) return null;
+  return (
+    <>
+      <Label className="mt-8">
+        Your {parts.total} parts, {formatRupees(me.sharePaise)} in all
+      </Label>
+      <ul className="mt-3 border-t border-line">
+        {parts.list.map((p, i) => (
+          <li key={p.dueDate} className="flex min-h-[49px] items-center justify-between gap-3 border-b border-line">
+            <span className="text-base text-ink">
+              {formatRupees(p.amountPaise)}, {formatShortDate(p.dueDate)}
+            </span>
+            <span className={`text-sm ${p.status === "confirmed" ? "text-muted" : "text-text"}`}>
+              {parts.next?.partNumber === i + 1 && p.status === "requested" ? "Next" : PART_STATUS[p.status]}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }
 
@@ -277,7 +318,9 @@ export function Waiting({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
             ? `${org} set your share to nothing, so there’s nothing to pay.`
             : me.state === "paid"
               ? `${org} confirmed your ${amount}. You’re all done.`
-              : `You marked ${amount} as paid. ${org} will confirm once it lands.`;
+              : me.parts?.next
+                ? `You marked part ${me.parts.next.partNumber} of ${me.parts.total} (${formatRupees(me.parts.next.amountPaise)}) as paid. ${org} will confirm once it lands.`
+                : `You marked ${amount} as paid. ${org} will confirm once it lands.`;
 
   return (
     <Page
@@ -327,7 +370,7 @@ export function Waiting({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
 // ---------------------------------------------------------------------------
 
 export function NotReceived({ kitty, me, refInvalid }: { kitty: OpenKitty; me: MemberRow; refInvalid?: boolean }) {
-  const owed = me.topUp ? me.topUp.amountPaise : me.sharePaise;
+  const owed = me.topUp ? me.topUp.amountPaise : (me.parts?.next?.amountPaise ?? me.sharePaise);
   const amount = formatRupees(owed);
   const org = kitty.organiser.name;
   const uri = buildUpiUri({ payeeUpiId: kitty.upiId, payeeName: org, amountPaise: owed, note: kittyPaymentNote(kitty.title) });

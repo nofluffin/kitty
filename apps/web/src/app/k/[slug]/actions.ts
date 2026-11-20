@@ -57,8 +57,10 @@ export async function claimName(slug: string, formData: FormData) {
   const refundOpen = member?.payments.some((p) => p.kind === "refund" && (p.status === "requested" || p.status === "marked"));
   const paid =
     !refundOpen &&
-    member?.payments.some((p) => p.direction === "in" && p.kind === "share") &&
-    member.payments.filter((p) => p.direction === "in" && p.kind === "share").every((p) => p.status === "confirmed");
+    member?.payments.some((p) => p.direction === "in" && (p.kind === "share" || p.kind === "part")) &&
+    member.payments
+      .filter((p) => p.direction === "in" && (p.kind === "share" || p.kind === "part"))
+      .every((p) => p.status === "confirmed");
   if (!member || member.kitty_id !== open.kittyId || member.is_organiser || paid) redirect(`/k/${slug}`);
 
   // Claiming is a convenience, not security (spec section 7). If the name was picked on
@@ -93,13 +95,20 @@ export async function forgetMe(slug: string) {
 export async function markPaid(slug: string) {
   const me = await claimedMember(slug);
   if (me) {
-    await me.supabase
+    // Only the payment being paid now: for a goal in parts that's the earliest open part,
+    // so later parts stay open until their turn.
+    const { data: next } = await me.supabase
       .from("payments")
-      .update({ status: "marked" })
+      .select("id")
       .eq("member_id", me.memberId)
       .eq("direction", "in")
       .in("kind", ["share", "part", "topup"])
-      .in("status", ["requested", "not_received"]);
+      .in("status", ["requested", "not_received"])
+      .order("due_date", { ascending: true, nullsFirst: false })
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (next) await me.supabase.from("payments").update({ status: "marked" }).eq("id", next.id);
     // The push notification to the organiser comes with step 6.
   }
   redirect(`/k/${slug}`);

@@ -58,12 +58,29 @@ describe('shareMessage', () => {
     });
     expect(m.text).toBe(`Goa trip is ₹10,000 each. Pay your share by Tue 12 Jan. ${link}`);
   });
+
+  it('says when a goal is paid in parts', () => {
+    const goa = { kind: 'goal' as const, title: 'Goa trip', totalPaise: 5000000, dueDate: '2027-01-12', link, parts: { count: 3, firstDueDate: '2026-11-12' } };
+    expect(shareMessage({ ...goa, sharesPaise: Array(5).fill(1000000) }).text).toBe(
+      `Goa trip is ₹10,000 each, paid in 3 monthly parts. The first is due Thu 12 Nov, the last Tue 12 Jan. ${link}`,
+    );
+    expect(shareMessage({ ...goa, sharesPaise: [2000000, 1500000, 1500000] }).text).toBe(
+      `Goa trip is ₹50,000 in all. Open the link, pick your name and pay your share in 3 monthly parts: ${link}`,
+    );
+  });
 });
 
 describe('nudgeMessage', () => {
   it('matches spec section 9 (screen 23)', () => {
     expect(nudgeMessage({ memberName: 'Zoya', title: 'Friday dinner', amountPaise: 100000, link })).toBe(
       `Hi Zoya, ₹1,000 for Friday dinner is still open. It takes a minute to pay: ${link}`,
+    );
+  });
+
+  it('names the part for a goal paid in parts', () => {
+    const part = { partNumber: 2, partsCount: 3, dueDate: '2026-12-12' };
+    expect(nudgeMessage({ memberName: 'Zoya', title: 'Goa trip', amountPaise: 333300, link, part })).toBe(
+      `Hi Zoya, part 2 of 3 for Goa trip (₹3,333) is due Sat 12 Dec. It takes a minute to pay: ${link}`,
     );
   });
 });
