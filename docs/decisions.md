@@ -2,6 +2,14 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 20 Nov 2026: production domain and login emails
+
+- **Domain: `thekitty.app`**, bought by Raj at GoDaddy, with DNS moved to Vercel. The member page is served at `https://thekitty.app`, and `www` forwards there.
+- **Login emails go through Resend** from `login@mail.thekitty.app`, as "Kitty". The Resend DNS records were added to Vercel DNS by Resend's own "Connect" flow.
+- **Production auth settings live in `supabase/config.toml` under `[remotes.production]`**, so local values (localhost addresses, one-second email gaps, two emails an hour) never reach production. Always run `supabase config diff` before `supabase config push`, and set `RESEND_API_KEY` from the keychain item "Kitty Resend API key" for the push.
+- **Production login:** 6-digit codes valid for 10 minutes, one code a minute per email, 60 emails an hour across the project.
+- **Not yet done:** the organiser app still points at the local database. Pointing a phone build at production comes with the development build (push notifications, step 6).
+
 ## 20 Nov 2026: step 6, the kitty feed (screens 7, 8, 23)
 
 - **Feed order:** people who said they paid, then "not received", then unpaid, then you, then everyone who's paid.
