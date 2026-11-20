@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canMoveKitty, canMovePayment, nudgeMessage, shareMessage, sharesEditable, whatsAppUrl } from '../src';
+import { canMoveKitty, canMovePayment, groupReminderMessage, nudgeMessage, shareMessage, sharesEditable, whatsAppUrl } from '../src';
 
 const link = 'https://kitty.example/k/abc123def456';
 
@@ -100,5 +100,13 @@ describe('status rules', () => {
     expect(canMovePayment('marked', 'not_received')).toBe(true);
     expect(canMovePayment('not_received', 'marked')).toBe(true);
     expect(canMovePayment('confirmed', 'marked')).toBe(false);
+  });
+});
+
+describe('groupReminderMessage', () => {
+  it('reminds the group without naming anyone', () => {
+    expect(groupReminderMessage({ title: 'Friday dinner', link })).toBe(
+      `Quick reminder for Friday dinner: if you haven’t paid your share yet, it takes a minute: ${link}`,
+    );
   });
 });

@@ -167,7 +167,11 @@ function ShareReady({ kitty, close }: { kitty: ShareKitty; close?: () => void })
             {copied ? 'Link copied' : 'Copy link'}
           </Button>
           <View style={styles.skip}>
-            <TextLink onPress={() => router.replace('/home')}>{locked ? 'Done, go home' : 'Skip for now, go to the kitty'}</TextLink>
+            <TextLink
+              onPress={() => (locked ? router.replace({ pathname: '/kitty/[id]', params: { id: kitty.id } }) : router.replace('/home'))}
+            >
+              {locked ? 'Go to the kitty' : 'Skip for now, go to the kitty'}
+            </TextLink>
           </View>
         </>
       }

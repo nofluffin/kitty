@@ -54,3 +54,15 @@ export function payProgress(members: readonly { state: MemberPayState }[]): {
     total: members.length,
   };
 }
+
+const FEED_RANK: Record<MemberPayState, number> = { waiting: 0, not_received: 1, unpaid: 2, paid: 4 };
+
+/**
+ * The organiser's feed (screen 7): rows that need action first (said they paid,
+ * then not received, then unpaid), then the organiser's own share, then everyone
+ * who has paid, each group in sort order.
+ */
+export function feedOrder<T extends MemberLike>(members: readonly T[]): T[] {
+  const rank = (m: T) => (m.isOrganiser ? 3 : FEED_RANK[m.state]);
+  return [...members].sort((a, b) => rank(a) - rank(b) || a.sortOrder - b.sortOrder);
+}

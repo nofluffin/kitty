@@ -148,9 +148,12 @@ function KittyCard({ kitty, today }: { kitty: KittySummary; today: string }) {
       style={styles.card}
       accessibilityRole="button"
       accessibilityLabel={`${kitty.title}, ${formatRupees(kitty.collectedPaise)} of ${formatRupees(kitty.totalPaise)} collected`}
-      // Until the kitty feed (screen 7, step 6), every kitty opens its share screen,
-      // so the organiser can always get back to it and share the link again.
-      onPress={() => router.push({ pathname: '/kitty/[id]/share', params: { id: kitty.id } })}
+      // Drafts haven't been shared yet, so they open the share screen. Everything else opens the feed (screen 7).
+      onPress={() =>
+        isDraft
+          ? router.push({ pathname: '/kitty/[id]/share', params: { id: kitty.id } })
+          : router.push({ pathname: '/kitty/[id]', params: { id: kitty.id } })
+      }
     >
       <View style={styles.cardTop}>
         <Text style={[type.cardTitle, styles.cardTitle]}>{kitty.title}</Text>

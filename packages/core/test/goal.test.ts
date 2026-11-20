@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addDays, addMonths, daysBetween, formatShortDate, goalParts, localIsoDate, parseIsoDate, timeToGo } from '../src';
+import { addDays, addMonths, daysBetween, describeDay, describeWhen, formatShortDate, goalParts, localIsoDate, parseIsoDate, timeToGo } from '../src';
 import { sum } from './fixtures';
 
 describe('goalParts', () => {
@@ -79,5 +79,19 @@ describe('localIsoDate and timeToGo', () => {
     expect(timeToGo('2026-11-21', '2026-11-20')).toBe('1 day late');
     expect(timeToGo('2026-11-25', '2026-11-20')).toBe('5 days late');
     expect(timeToGo('2026-11-01', '2026-11-14')).toBe('13 days to go');
+  });
+});
+
+describe('describeWhen and describeDay', () => {
+  const now = new Date(2026, 10, 19, 21, 0);
+  it('says today, yesterday or the date, with a 12 hour clock', () => {
+    expect(describeWhen(new Date(2026, 10, 19, 19, 42), now)).toBe('today 7:42 pm');
+    expect(describeWhen(new Date(2026, 10, 18, 9, 5), now)).toBe('yesterday 9:05 am');
+    expect(describeWhen(new Date(2026, 10, 16, 0, 15), now)).toBe('Mon 16 Nov 12:15 am');
+    expect(describeWhen(new Date(2026, 10, 19, 12, 0), now)).toBe('today 12:00 pm');
+  });
+  it('describes a day on its own', () => {
+    expect(describeDay(new Date(2026, 10, 18, 22, 0), now)).toBe('yesterday');
+    expect(describeDay(new Date(2026, 10, 12, 10, 0), now)).toBe('on Thu 12 Nov');
   });
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { memberPayState, payProgress, pickList, statusList, type MemberLike } from '../src';
+import { feedOrder, memberPayState, payProgress, pickList, statusList, type MemberLike } from '../src';
 
 describe('memberPayState', () => {
   it('reads a single share payment', () => {
@@ -56,5 +56,16 @@ describe('statusList', () => {
 describe('payProgress', () => {
   it('counts the organiser and people waiting', () => {
     expect(payProgress(friday)).toEqual({ paid: 4, waiting: 1, total: 6 });
+  });
+});
+
+describe('feedOrder', () => {
+  it('matches screen 7: Dev (says paid), Zoya (unpaid), You, then everyone who paid', () => {
+    expect(feedOrder(friday).map((x) => x.id)).toEqual(['dev', 'zoya', 'rohan', 'kabir', 'aisha', 'meera']);
+  });
+
+  it('puts "not received" between said-paid and unpaid', () => {
+    const list = [m('a', 0, 'unpaid'), m('b', 1, 'not_received'), m('c', 2, 'waiting'), m('o', 3, 'unpaid', true)];
+    expect(feedOrder(list).map((x) => x.id)).toEqual(['c', 'b', 'a', 'o']);
   });
 });

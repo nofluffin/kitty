@@ -65,3 +65,11 @@ export function whatsAppUrl(phone: string, text: string): string | null {
   if (digits.length < 11 || digits.length > 15) return null;
   return `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
 }
+
+/**
+ * "Post a reminder in the group instead" (screen 23). Not worded in the spec;
+ * written to match the nudge's tone without naming who hasn't paid.
+ */
+export function groupReminderMessage({ title, link }: { title: string; link: string }): string {
+  return `Quick reminder for ${title}: if you haven’t paid your share yet, it takes a minute: ${link}`;
+}

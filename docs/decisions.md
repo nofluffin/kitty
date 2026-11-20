@@ -2,6 +2,16 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 20 Nov 2026: step 6, the kitty feed (screens 7, 8, 23)
+
+- **Feed order:** people who said they paid, then "not received", then unpaid, then you, then everyone who's paid.
+- **Confirm also covers cash.** The nudge screen has "Zoya paid you another way? Confirm ₹1,000", since the feed only shows Nudge for people who haven't marked paid.
+- **"Not yet"** sets the payment to "not received", which shows the member screen 26. Their UPI reference, if they send one, shows on the confirm screen.
+- **"Open my UPI app to check" (screen 8) is left out.** No standard link opens a UPI app just to view history; the generic `upi://` link starts a new payment. The screen tells the organiser to check their UPI app instead.
+- **Group reminder wording isn't in the spec.** Kitty uses: "Quick reminder for Friday dinner: if you haven't paid your share yet, it takes a minute: [link]". Change it in `groupReminderMessage` if you'd like different words.
+- **Tapping a shared kitty on home opens its feed.** Drafts still open their share screen.
+- **Reminder switches save now.** The reminders themselves are push notifications, the last part of step 6.
+
 ## 19 Nov 2026: step 5, the member pay page
 
 **Decided with Raj**
