@@ -2,6 +2,13 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 20 Nov 2026: paying by QR code first
+
+- **Raj's real-phone test (iPhone, ₹1 to a personal UPI ID):** the pay button failed in GPay, PhonePe and Paytm with "you've exceeded the bank limit for this payment". Scanning the QR code with the same details worked. Developers report the same block for payment links to personal UPI IDs, so it isn't the amount or Kitty's link.
+- **Screens 15 and 17 now lead with the QR code,** with steps for paying from the same phone: screenshot it or press and hold to save it, then scan it from photos in the UPI app. "Copy UPI ID" sits under it.
+- **"Open a UPI app" stays as a secondary button,** with a line saying some apps block it. It may still work on Android or with other banks; not tested yet.
+- **"I've paid" is now the main button,** since there's no longer a return from the UPI app to prompt it.
+
 ## 20 Nov 2026: step 8, bill scan (screens 5, 9, 10, 11, 25)
 
 **How it works**

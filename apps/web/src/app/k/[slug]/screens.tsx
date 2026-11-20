@@ -186,21 +186,12 @@ export function PickName({ kitty, confirmId, notListed }: { kitty: OpenKitty; co
 // ---------------------------------------------------------------------------
 
 export async function PayShare({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
-  const payment = {
-    payeeUpiId: kitty.upiId,
-    payeeName: kitty.organiser.name,
-    amountPaise: me.sharePaise,
-    note: kittyPaymentNote(kitty.title),
-  };
-  const uri = buildUpiUri(payment);
-  const qr = await QRCode.toString(uri, { type: "svg", margin: 0, errorCorrectionLevel: "M", color: { dark: "#0a0a0a", light: "#ffffff" } });
   const amount = formatRupees(me.sharePaise);
   const paid = markPaid.bind(null, kitty.slug);
 
   return (
     <Page
       header={<Header title={kitty.title} left={<BackToNames slug={kitty.slug} />} />}
-      footer={<Note>Back from the UPI app, this page asks “Did the payment go through?” so step 2 is one tap.</Note>}
     >
       <p className="text-base leading-6 text-text">{me.name}, your share</p>
       <p className="mt-0.5 text-[40px] leading-[48px] font-bold text-ink">{amount}</p>
@@ -209,34 +200,50 @@ export async function PayShare({ kitty, me }: { kitty: OpenKitty; me: MemberRow 
       </p>
 
       <Label className="mt-8">Step 1, pay</Label>
-      <div className="mt-3">
-        <PaySection uri={uri} appLinks={buildUpiAppLinks(payment)} label={`Pay ${amount} with a UPI app`} markPaid={paid} />
-      </div>
-      <Small className="mt-3.5">Opens GPay, PhonePe, Paytm or any UPI app with the amount filled in.</Small>
-
-      <div className="mt-4 flex gap-3 border border-line bg-surface p-3">
-        <div
-          className="size-24 shrink-0 [&>svg]:size-full"
-          role="img"
-          aria-label={`QR code to pay ${amount} to ${kitty.upiId}`}
-          dangerouslySetInnerHTML={{ __html: qr }}
-        />
-        <div className="flex flex-col justify-between">
-          <p className="text-sm leading-[21px] text-text">Button not working? Scan this or copy the UPI ID.</p>
-          <div>
-            <CopyButton text={kitty.upiId} label="Copy UPI ID" />
-          </div>
-        </div>
-      </div>
+      <PayOptions kitty={kitty} amountPaise={me.sharePaise} markPaid={paid} />
 
       <Label className="mt-6">Step 2, tell the group</Label>
       <form action={paid} className="mt-3">
-        <button type="submit" className={`${buttonClass.secondary} font-bold`}>
+        <button type="submit" className={buttonClass.primary}>
           I’ve paid
         </button>
       </form>
       <Small className="mt-3.5">{kitty.organiser.name} gets a prompt to confirm it arrived.</Small>
     </Page>
+  );
+}
+
+/**
+ * How to pay, used on screens 15 and 17. The QR code leads: GPay, PhonePe and Paytm
+ * often refuse a payment link to a personal UPI ID ("exceeded the bank limit", even
+ * for ₹1), but scanning the same details as a QR works. Tested on iPhone, 20 Nov 2026.
+ */
+async function PayOptions({ kitty, amountPaise, markPaid }: { kitty: OpenKitty; amountPaise: number; markPaid: () => Promise<void> }) {
+  const payment = { payeeUpiId: kitty.upiId, payeeName: kitty.organiser.name, amountPaise, note: kittyPaymentNote(kitty.title) };
+  const uri = buildUpiUri(payment);
+  const amount = formatRupees(amountPaise);
+  // A PNG, not an SVG, so iPhone and Android offer "Save to Photos" on a long press.
+  const qr = await QRCode.toDataURL(uri, { width: 480, margin: 2, errorCorrectionLevel: "M", color: { dark: "#0a0a0a", light: "#ffffff" } });
+  return (
+    <>
+      <div className="mt-3 border border-line bg-surface p-4">
+        {/* eslint-disable-next-line @next/next/no-img-element -- a data URL, nothing to optimise */}
+        <img src={qr} alt={`QR code to pay ${amount} to ${kitty.upiId}`} width={200} height={200} className="mx-auto block size-[200px]" />
+        <ol className="mt-4 list-decimal space-y-1 pl-5 text-sm leading-[21px] text-text">
+          <li>Take a screenshot, or press and hold the code to save it.</li>
+          <li>In GPay, PhonePe or Paytm, tap Scan and pick it from your photos.</li>
+        </ol>
+        <p className="mt-2 text-sm leading-[21px] text-text">On another phone? Just scan it. The amount fills in.</p>
+      </div>
+      <div className="mt-3 flex items-center justify-between gap-3">
+        <Small>Or pay {amount} to {kitty.upiId}</Small>
+        <CopyButton text={kitty.upiId} label="Copy UPI ID" />
+      </div>
+      <div className="mt-4">
+        <PaySection uri={uri} appLinks={buildUpiAppLinks(payment)} label="Open a UPI app" markPaid={markPaid} variant="secondary" />
+      </div>
+      <Small className="mt-2">Some apps block this for personal UPI IDs. If you see a bank limit message, use the code above.</Small>
+    </>
   );
 }
 
@@ -455,7 +462,6 @@ function TellOrganiser({ kitty }: { kitty: OpenKitty }) {
 export async function TopUp({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
   const owed = me.topUp!.amountPaise;
   const amount = formatRupees(owed);
-  const payment = { payeeUpiId: kitty.upiId, payeeName: kitty.organiser.name, amountPaise: owed, note: kittyPaymentNote(kitty.title) };
   const paid = markPaid.bind(null, kitty.slug);
   const neverPaid = me.paidBeforePaise <= 0;
   return (
@@ -463,9 +469,8 @@ export async function TopUp({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) 
       header={<Header title="Kitty" right={<NoInstall />} />}
       footer={
         <>
-          <PaySection uri={buildUpiUri(payment)} appLinks={buildUpiAppLinks(payment)} label={`Pay ${amount} with a UPI app`} markPaid={paid} />
           <form action={paid}>
-            <button type="submit" className={`${buttonClass.secondary} font-bold`}>
+            <button type="submit" className={buttonClass.primary}>
               I’ve paid
             </button>
           </form>
@@ -482,6 +487,8 @@ export async function TopUp({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) 
       </p>
       <Label className="mt-8">How your share was worked out</Label>
       <Breakdown kitty={kitty} me={me} />
+      <Label className="mt-8">Pay {amount}</Label>
+      <PayOptions kitty={kitty} amountPaise={owed} markPaid={paid} />
     </Page>
   );
 }

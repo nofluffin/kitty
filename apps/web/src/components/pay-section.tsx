@@ -16,11 +16,14 @@ export function PaySection({
   appLinks,
   label,
   markPaid,
+  variant = "primary",
 }: {
   uri: string;
   appLinks: { gpay: string; phonepe: string; paytm: string };
   label: string;
   markPaid: () => Promise<void>;
+  /** Secondary when the QR code leads, since many UPI apps block links to personal UPI IDs. */
+  variant?: "primary" | "secondary";
 }) {
   const [opened, setOpened] = useState(false);
   const [askBack, setAskBack] = useState(false);
@@ -61,7 +64,7 @@ export function PaySection({
         </div>
       ) : null}
 
-      <a href={uri} onClick={() => setOpened(true)} className={buttonClass.primary}>
+      <a href={uri} onClick={() => setOpened(true)} className={buttonClass[variant]}>
         {label}
       </a>
       {iPhone ? (
