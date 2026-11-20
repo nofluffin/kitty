@@ -216,6 +216,9 @@ export async function PayShare({ kitty, me }: { kitty: OpenKitty; me: MemberRow 
       </form>
       <Small className="mt-3.5">{kitty.organiser.name} gets a prompt to confirm it arrived.</Small>
 
+      <Label className="mt-8">How your share was worked out</Label>
+      <ShareBreakdown kitty={kitty} me={me} />
+
       {me.parts ? <PartsList me={me} /> : null}
     </Page>
   );
@@ -424,6 +427,56 @@ export function NotReceived({ kitty, me, refInvalid }: { kitty: OpenKitty; me: M
 const CATEGORY_NAME = { veg: "Veg dishes", nonveg: "Non-veg dishes", alcohol: "Alcohol" } as const;
 
 /** "How your share was worked out" (screens 17 and 18): by category for a scanned bill, otherwise the typed split. */
+/** Screen 15: how the share being asked for was worked out, before any settle up. */
+function ShareBreakdown({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
+  const org = kitty.organiser.name;
+  const fixed = kitty.members.filter((m) => m.shareFixed);
+  const fixedTotal = fixed.reduce((sum, m) => sum + m.sharePaise, 0);
+  const splitWays = kitty.members.length - fixed.length;
+  const rows: [string, string, boolean?][] = kitty.bill
+    ? (["veg", "nonveg", "alcohol"] as const)
+        .map((c) => kitty.bill!.categories.find((x) => x.category === c))
+        .filter((c): c is NonNullable<typeof c> => !!c)
+        .map((c): [string, string] =>
+          c.memberIds.includes(me.id)
+            ? [`${CATEGORY_NAME[c.category]} ${formatRupees(c.totalPaise)}, split ${c.memberIds.length} ways`, formatRupees(c.perHeadPaise)]
+            : [CATEGORY_NAME[c.category], "Not charged"],
+        )
+    : me.shareFixed
+      ? [
+          [`Total ${formatRupees(kitty.totalPaise)}`, ""],
+          [`Your amount, set by ${org}`, formatRupees(me.sharePaise)],
+        ]
+      : fixed.length > 0
+        ? [
+            [`Total ${formatRupees(kitty.totalPaise)}`, ""],
+            [`Set by ${org} for ${fixed.map((m) => m.name).join(", ")}`, `−${formatRupees(fixedTotal)}`],
+            [`The rest, split ${splitWays} ways`, formatRupees(me.sharePaise)],
+          ]
+        : [[`Total ${formatRupees(kitty.totalPaise)}, split ${kitty.members.length} ways`, formatRupees(me.sharePaise)]];
+  if (kitty.bill) rows.push(["Your share", formatRupees(me.sharePaise), true]);
+  return (
+    <>
+      <div className="mt-3 border border-line bg-surface px-4">
+        {rows.map(([label, value, bold], i) => (
+          <div key={label} className={`flex min-h-[45px] items-center justify-between gap-3 ${i < rows.length - 1 ? "border-b border-line" : ""}`}>
+            <span className="text-base text-text">{label}</span>
+            <span className={`shrink-0 text-base text-ink ${bold ? "font-bold" : ""}`}>{value}</span>
+          </div>
+        ))}
+      </div>
+      {kitty.bill ? (
+        <>
+          <Small className="mt-2">Tax and service charge are spread across each dish before splitting, so amounts may differ by a few paise.</Small>
+          <Link href={`/k/${kitty.slug}?bill=1`} className={`${buttonClass.link} mt-4 block w-fit`}>
+            See the scanned bill
+          </Link>
+        </>
+      ) : null}
+    </>
+  );
+}
+
 function Breakdown({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
   const unfixed = kitty.members.filter((m) => !m.shareFixed).length;
   const rows: [string, string, boolean?][] = kitty.bill

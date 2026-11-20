@@ -1,5 +1,6 @@
 import {
   adjustedSplit,
+  formatRupees,
   isEqualSplit,
   parseRupees,
   type AdjustError,
@@ -26,9 +27,25 @@ export interface DraftPerson {
   drinks: boolean;
   /** Set when the organiser typed this person's amount on screen 4. */
   fixedPaise: Paise | null;
+  /** The database row, when editing a kitty that already exists. */
+  memberId?: string;
 }
 
-export type DraftPersonInput = Omit<DraftPerson, 'key' | 'fixedPaise'>;
+export type DraftPersonInput = Omit<DraftPerson, 'key' | 'fixedPaise' | 'memberId'>;
+
+/** A saved kitty loaded back into the form, to edit it until someone pays. */
+export interface ExistingKitty {
+  id: string;
+  status: 'draft' | 'shared';
+  kind: KittyKind;
+  goalPlan: GoalPlan;
+  partsCount: number | null;
+  title: string;
+  totalPaise: Paise;
+  dueDate: string;
+  upiId: string;
+  people: Omit<DraftPerson, 'key'>[];
+}
 
 export type Split =
   | { state: 'no-total' }
@@ -45,6 +62,8 @@ export type Split =
 export type GoalPlan = 'single' | 'parts';
 
 interface DraftKitty {
+  /** Set when editing a saved kitty instead of making a new one. */
+  editing: Pick<ExistingKitty, 'id' | 'status'> | null;
   /** Screen 2 (moment) or screen 22 (goal). */
   kind: KittyKind;
   setKind: (k: KittyKind) => void;
@@ -84,23 +103,28 @@ export function describePerson(p: Pick<DraftPerson, 'diet' | 'drinks'>): string 
 export function DraftKittyProvider({
   organiserName,
   upiId: initialUpi,
+  existing,
   children,
 }: {
   organiserName: string;
   upiId: string;
+  existing?: ExistingKitty | null;
   children: ReactNode;
 }) {
-  const [kind, setKind] = useState<KittyKind>('moment');
-  const [goalPlan, setGoalPlan] = useState<GoalPlan>('single');
-  const [partsCount, setPartsCount] = useState<number | null>(null);
-  const [title, setTitle] = useState('');
-  const [totalText, setTotalText] = useState('');
-  const [dueDate, setDueDate] = useState<string | null>(null);
-  const [upiId, setUpiId] = useState(initialUpi);
+  const [kind, setKind] = useState<KittyKind>(existing?.kind ?? 'moment');
+  const [goalPlan, setGoalPlan] = useState<GoalPlan>(existing?.goalPlan ?? 'single');
+  const [partsCount, setPartsCount] = useState<number | null>(existing?.partsCount ?? null);
+  const [title, setTitle] = useState(existing?.title ?? '');
+  const [totalText, setTotalText] = useState(existing ? formatRupees(existing.totalPaise).replace('₹', '') : '');
+  const [dueDate, setDueDate] = useState<string | null>(existing?.dueDate ?? null);
+  const [upiId, setUpiId] = useState(existing?.upiId ?? initialUpi);
   // The organiser is in their own kitty by default and can remove themselves (spec section 3).
-  const [people, setPeople] = useState<DraftPerson[]>(() => [
-    { key: newKey(), name: organiserName || 'You', phone: null, isOrganiser: true, diet: 'veg', drinks: false, fixedPaise: null },
-  ]);
+  const [people, setPeople] = useState<DraftPerson[]>(() =>
+    existing
+      ? existing.people.map((p) => ({ ...p, key: newKey() }))
+      : [{ key: newKey(), name: organiserName || 'You', phone: null, isOrganiser: true, diet: 'veg', drinks: false, fixedPaise: null }],
+  );
+  const editing = useMemo(() => (existing ? { id: existing.id, status: existing.status } : null), [existing]);
 
   const totalPaise = useMemo(() => {
     const p = parseRupees(totalText);
@@ -142,6 +166,7 @@ export function DraftKittyProvider({
 
   const value = useMemo(
     () => ({
+      editing,
       kind,
       setKind,
       goalPlan,
@@ -165,7 +190,7 @@ export function DraftKittyProvider({
       resetFixed,
       split,
     }),
-    [kind, goalPlan, partsCount, title, totalText, totalPaise, dueDate, upiId, people, addPerson, updatePerson, removePerson, setFixed, resetFixed, split],
+    [editing, kind, goalPlan, partsCount, title, totalText, totalPaise, dueDate, upiId, people, addPerson, updatePerson, removePerson, setFixed, resetFixed, split],
   );
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }

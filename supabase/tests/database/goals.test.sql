@@ -55,9 +55,10 @@ select is((
   where m.kitty_id = (select id from gift) and not m.is_organiser
 ), array['share 10000'], 'one share payment each');
 
--- Parts are locked once shared, like every amount.
+-- Parts are locked once someone has paid, like every amount.
+update public.payments set status = 'marked' where id = (select id from aisha order by due_date limit 1);
 select throws_ok($$ update public.kitties set parts_count = 2 where id = (select id from goa) $$,
-  '23514', 'amounts are locked once the kitty is shared', 'the number of parts is locked after sharing');
+  '23514', 'amounts are locked once someone has paid', 'the number of parts is locked once someone has paid');
 
 select * from finish();
 rollback;
