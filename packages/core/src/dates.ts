@@ -76,3 +76,30 @@ export function timeToGo(today: IsoDate, due: IsoDate): string {
   if (days < 14) return `${days} days to go`;
   return `${Math.floor(days / 7)} weeks to go`;
 }
+
+const pad2 = (n: number) => String(n).padStart(2, '0');
+
+function dayLabel(then: Date, now: Date): string {
+  const day = (d: Date) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+  const diff = daysBetween(day(then), day(now));
+  if (diff === 0) return 'today';
+  if (diff === 1) return 'yesterday';
+  return formatShortDate(day(then));
+}
+
+/** "7:42 pm" in the device's time zone. */
+export function formatClock(then: Date): string {
+  const h = then.getHours();
+  return `${h % 12 === 0 ? 12 : h % 12}:${pad2(then.getMinutes())} ${h < 12 ? 'am' : 'pm'}`;
+}
+
+/** "today 7:42 pm", "yesterday 9:05 am", "Thu 19 Nov 7:42 pm" (screens 7 and 8). */
+export function describeWhen(then: Date, now: Date = new Date()): string {
+  return `${dayLabel(then, now)} ${formatClock(then)}`;
+}
+
+/** "today", "yesterday", "on Thu 19 Nov" (screen 23: "opened the link yesterday"). */
+export function describeDay(then: Date, now: Date = new Date()): string {
+  const label = dayLabel(then, now);
+  return label === 'today' || label === 'yesterday' ? label : `on ${label}`;
+}
