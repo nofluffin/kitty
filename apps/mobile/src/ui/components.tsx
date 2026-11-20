@@ -285,7 +285,7 @@ export function Segmented<T extends string>({
             accessibilityState={{ checked: on }}
             style={[styles.segment, on ? styles.segmentOn : styles.segmentOff]}
           >
-            <Text style={on ? [type.button, styles.textOnDark] : [type.buttonSecondary, styles.textInk]}>{o.label}</Text>
+            <Text style={on ? [type.button, styles.textInk] : [type.buttonSecondary, styles.textInk]}>{o.label}</Text>
           </Pressable>
         );
       })}
@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.lg,
     borderWidth: layout.border,
   },
-  buttonPrimary: { backgroundColor: colors.ink, borderColor: colors.ink },
+  buttonPrimary: { backgroundColor: colors.action, borderColor: colors.action },
   buttonSecondary: { backgroundColor: colors.surface, borderColor: colors.line },
   buttonDisabled: { opacity: 0.4 },
   buttonPressed: { opacity: 0.8 },
@@ -441,7 +441,7 @@ const styles = StyleSheet.create({
   centerText: { textAlign: 'center' },
   segmented: { flexDirection: 'row', height: 44 },
   segment: { flex: 1, alignItems: 'center', justifyContent: 'center', borderWidth: layout.border },
-  segmentOn: { backgroundColor: colors.ink, borderColor: colors.ink },
+  segmentOn: { backgroundColor: colors.selected, borderColor: colors.selected },
   segmentOff: { backgroundColor: colors.surface, borderColor: colors.line },
   chip: {
     height: 35,
@@ -452,7 +452,7 @@ const styles = StyleSheet.create({
     borderRadius: 17.5,
     backgroundColor: colors.surface,
   },
-  chipFilled: { backgroundColor: colors.sunken },
+  chipFilled: { backgroundColor: colors.selected, borderColor: colors.selected },
   dashedButton: {
     height: 46,
     alignItems: 'center',

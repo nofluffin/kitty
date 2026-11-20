@@ -151,7 +151,7 @@ function ToggleRow({ label, on, onChange }: { label: string; on: boolean; onChan
         accessibilityState={{ checked: on }}
         style={[styles.pill, on ? styles.pillOn : styles.pillOff]}
       >
-        <Text style={[type.meta, on && styles.onDark]}>{on ? 'On' : 'Off'}</Text>
+        <Text style={[type.meta, on && styles.onSelected]}>{on ? 'On' : 'Off'}</Text>
       </Pressable>
     </View>
   );
@@ -177,8 +177,9 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.line,
   },
   pill: { width: 63, height: 43, borderRadius: 21.5, alignItems: 'center', justifyContent: 'center', borderWidth: layout.border },
-  pillOn: { backgroundColor: colors.ink, borderColor: colors.ink },
+  pillOn: { backgroundColor: colors.selected, borderColor: colors.selected },
   pillOff: { backgroundColor: colors.surface, borderColor: colors.line },
   onDark: { color: colors.inkOnDark },
+  onSelected: { color: colors.ink, fontFamily: type.bodyBold.fontFamily },
   note: { marginTop: 28 },
 });

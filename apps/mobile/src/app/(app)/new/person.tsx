@@ -103,10 +103,15 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
       title={editing ? (isOrganiser ? 'You' : `Edit ${editing.name}`) : 'Add a person'}
       back
       footer={
-        // Raj, 20 Nov 2026: it wasn't clear you go back a screen when you've added everyone.
-        <Button variant="secondary" onPress={() => router.back()}>
-          {`Done, ${k.people.length} ${k.people.length === 1 ? 'person' : 'people'} in`}
-        </Button>
+        // Raj, 20 Nov 2026: one pinned button. "Add to kitty" while someone is being filled in,
+        // then "Done, 4 people in" once the form is empty again.
+        editing ? (
+          <Button onPress={save}>Save changes</Button>
+        ) : name.trim() ? (
+          <Button onPress={save}>Add to kitty</Button>
+        ) : (
+          <Button onPress={() => router.back()}>{`Done, ${k.people.length} ${k.people.length === 1 ? 'person' : 'people'} in`}</Button>
+        )
       }
     >
       {!editing && Platform.OS !== 'web' ? (
@@ -213,9 +218,6 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
 
       <View style={styles.actions}>
         {added && !editing ? <Text style={[type.note, styles.added]}>{added} added. Add someone else, or tap Done.</Text> : null}
-        <Button onPress={save}>
-          {editing ? 'Save changes' : 'Add to kitty'}
-        </Button>
         {editing ? (
           <Button variant="secondary" onPress={remove}>
             {isOrganiser ? 'I’m not paying into this one' : 'Remove from kitty'}

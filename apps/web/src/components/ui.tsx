@@ -50,7 +50,7 @@ export function Small({ children, className = "" }: { children: ReactNode; class
 const buttonBase =
   "flex h-[51px] w-full items-center justify-center border px-4 text-base transition-opacity active:opacity-80 disabled:opacity-40";
 export const buttonClass = {
-  primary: `${buttonBase} border-ink bg-ink font-bold text-white`,
+  primary: `${buttonBase} border-action bg-action font-bold text-white`,
   secondary: `${buttonBase} border-line bg-surface text-ink`,
   small: "inline-flex h-11 items-center border border-line bg-surface px-[15px] text-sm text-ink active:opacity-80",
   link: "text-sm leading-[21px] text-ink underline underline-offset-2",

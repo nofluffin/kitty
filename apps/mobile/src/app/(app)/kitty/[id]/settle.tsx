@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.line,
   },
   action: { minHeight: 44, justifyContent: 'center', paddingHorizontal: 15, borderWidth: layout.border, maxWidth: 110 },
-  actionPrimary: { backgroundColor: colors.ink, borderColor: colors.ink },
+  actionPrimary: { backgroundColor: colors.action, borderColor: colors.action },
   actionSecondary: { backgroundColor: colors.surface, borderColor: colors.line },
   onDark: { color: colors.inkOnDark, fontFamily: type.bodyBold.fontFamily },
   pressed: { opacity: 0.6 },
