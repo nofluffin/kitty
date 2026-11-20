@@ -8,6 +8,7 @@ Choices made during the build that aren't in the spec, or that settle something 
 
 - **A kitty is editable until someone pays,** not just until it's shared. Total, pay by date, people, shares, goal plan and UPI ID can all change while it's a draft, and after sharing until anyone other than the organiser marks or pays anything. After that, amounts lock and changes go through settle up. This replaces the spec's "locked once shared" rule (spec section 4).
 - **Scanning the bill on a kitty nobody has paid yet replaces its total and shares** (screen 5), with no settle up. Once someone has paid, the scan goes through settle up as before.
+- **The pay page also lists each dish** under its veg, non-veg or alcohol line, and **everyone's share** with the total, so the group can see the whole split (decided with Raj, 20 Nov 2026). A typed total can't be broken down by type: Kitty only knows that from a scanned bill.
 - **The member pay page explains the share** under "How your share was worked out": the scanned split by veg, non-veg and alcohol with "See the scanned bill", or for a typed total "Total ₹4,500, split 3 ways", including amounts the organiser set by hand.
 
 **How it works**

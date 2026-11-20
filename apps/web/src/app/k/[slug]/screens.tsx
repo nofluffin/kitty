@@ -426,89 +426,136 @@ export function NotReceived({ kitty, me, refInvalid }: { kitty: OpenKitty; me: M
 
 const CATEGORY_NAME = { veg: "Veg dishes", nonveg: "Non-veg dishes", alcohol: "Alcohol" } as const;
 
-/** "How your share was worked out" (screens 17 and 18): by category for a scanned bill, otherwise the typed split. */
+interface BreakdownRow {
+  label: string;
+  value: string;
+  bold?: boolean;
+  /** Scanned bills: the dishes behind a veg, non-veg or alcohol line. */
+  dishes?: { label: string; amountPaise: number }[];
+}
+
+/** Veg, non-veg and alcohol from a scanned bill, each with its dishes (decided with Raj, 20 Nov 2026). */
+function categoryRows(kitty: OpenKitty, me: MemberRow): BreakdownRow[] {
+  const bill = kitty.bill!;
+  return (["veg", "nonveg", "alcohol"] as const)
+    .map((c) => bill.categories.find((x) => x.category === c))
+    .filter((c): c is NonNullable<typeof c> => !!c)
+    .map((c) => ({
+      ...(c.memberIds.includes(me.id)
+        ? { label: `${CATEGORY_NAME[c.category]} ${formatRupees(c.totalPaise)}, split ${c.memberIds.length} ways`, value: formatRupees(c.perHeadPaise) }
+        : { label: CATEGORY_NAME[c.category], value: "Not charged" }),
+      dishes: bill.lines.filter((l) => l.category === c.category),
+    }));
+}
+
+function BreakdownCard({ rows }: { rows: BreakdownRow[] }) {
+  return (
+    <div className="mt-3 border border-line bg-surface px-4">
+      {rows.map((r, i) => (
+        <div key={r.label} className={`py-3 ${i < rows.length - 1 ? "border-b border-line" : ""}`}>
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-base text-text">{r.label}</span>
+            <span className={`shrink-0 text-base text-ink ${r.bold ? "font-bold" : ""}`}>{r.value}</span>
+          </div>
+          {r.dishes && r.dishes.length > 0 ? (
+            <ul className="mt-1.5 space-y-0.5">
+              {r.dishes.map((d, j) => (
+                <li key={j} className="flex justify-between gap-3 text-sm leading-[21px] text-muted">
+                  <span>{d.label}</span>
+                  <span className="shrink-0">{formatRupees(d.amountPaise)}</span>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ScannedNote({ kitty }: { kitty: OpenKitty }) {
+  if (!kitty.bill) return null;
+  return (
+    <>
+      {kitty.bill.extrasPaise !== 0 ? (
+        <Small className="mt-2">
+          Tax, service and discounts ({formatRupees(kitty.bill.extrasPaise)}) are spread across each dish before splitting, so amounts may differ by a few paise.
+        </Small>
+      ) : null}
+      <Link href={`/k/${kitty.slug}?bill=1`} className={`${buttonClass.link} mt-4 block w-fit`}>
+        See the scanned bill
+      </Link>
+    </>
+  );
+}
+
 /** Screen 15: how the share being asked for was worked out, before any settle up. */
 function ShareBreakdown({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
   const org = kitty.organiser.name;
   const fixed = kitty.members.filter((m) => m.shareFixed);
   const fixedTotal = fixed.reduce((sum, m) => sum + m.sharePaise, 0);
   const splitWays = kitty.members.length - fixed.length;
-  const rows: [string, string, boolean?][] = kitty.bill
-    ? (["veg", "nonveg", "alcohol"] as const)
-        .map((c) => kitty.bill!.categories.find((x) => x.category === c))
-        .filter((c): c is NonNullable<typeof c> => !!c)
-        .map((c): [string, string] =>
-          c.memberIds.includes(me.id)
-            ? [`${CATEGORY_NAME[c.category]} ${formatRupees(c.totalPaise)}, split ${c.memberIds.length} ways`, formatRupees(c.perHeadPaise)]
-            : [CATEGORY_NAME[c.category], "Not charged"],
-        )
+  const total = { label: `Total ${formatRupees(kitty.totalPaise)}`, value: "" };
+  const rows: BreakdownRow[] = kitty.bill
+    ? [...categoryRows(kitty, me), { label: "Your share", value: formatRupees(me.sharePaise), bold: true }]
     : me.shareFixed
-      ? [
-          [`Total ${formatRupees(kitty.totalPaise)}`, ""],
-          [`Your amount, set by ${org}`, formatRupees(me.sharePaise)],
-        ]
+      ? [total, { label: `Your amount, set by ${org}`, value: formatRupees(me.sharePaise) }]
       : fixed.length > 0
         ? [
-            [`Total ${formatRupees(kitty.totalPaise)}`, ""],
-            [`Set by ${org} for ${fixed.map((m) => m.name).join(", ")}`, `−${formatRupees(fixedTotal)}`],
-            [`The rest, split ${splitWays} ways`, formatRupees(me.sharePaise)],
+            total,
+            { label: `Set by ${org} for ${fixed.map((m) => m.name).join(", ")}`, value: `−${formatRupees(fixedTotal)}` },
+            { label: `The rest, split ${splitWays} ways`, value: formatRupees(me.sharePaise) },
           ]
-        : [[`Total ${formatRupees(kitty.totalPaise)}, split ${kitty.members.length} ways`, formatRupees(me.sharePaise)]];
-  if (kitty.bill) rows.push(["Your share", formatRupees(me.sharePaise), true]);
+        : [{ label: `Total ${formatRupees(kitty.totalPaise)}, split ${kitty.members.length} ways`, value: formatRupees(me.sharePaise) }];
   return (
     <>
-      <div className="mt-3 border border-line bg-surface px-4">
-        {rows.map(([label, value, bold], i) => (
-          <div key={label} className={`flex min-h-[45px] items-center justify-between gap-3 ${i < rows.length - 1 ? "border-b border-line" : ""}`}>
-            <span className="text-base text-text">{label}</span>
-            <span className={`shrink-0 text-base text-ink ${bold ? "font-bold" : ""}`}>{value}</span>
-          </div>
-        ))}
-      </div>
-      {kitty.bill ? (
-        <>
-          <Small className="mt-2">Tax and service charge are spread across each dish before splitting, so amounts may differ by a few paise.</Small>
-          <Link href={`/k/${kitty.slug}?bill=1`} className={`${buttonClass.link} mt-4 block w-fit`}>
-            See the scanned bill
-          </Link>
-        </>
-      ) : null}
+      <BreakdownCard rows={rows} />
+      <ScannedNote kitty={kitty} />
+      <EveryonesShare kitty={kitty} me={me} />
     </>
   );
 }
 
-function Breakdown({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
-  const unfixed = kitty.members.filter((m) => !m.shareFixed).length;
-  const rows: [string, string, boolean?][] = kitty.bill
-    ? (["veg", "nonveg", "alcohol"] as const)
-        .map((c) => kitty.bill!.categories.find((x) => x.category === c))
-        .filter((c): c is NonNullable<typeof c> => !!c)
-        .map((c): [string, string] =>
-          c.memberIds.includes(me.id)
-            ? [`${CATEGORY_NAME[c.category]}, split ${c.memberIds.length} ways`, formatRupees(c.perHeadPaise)]
-            : [CATEGORY_NAME[c.category], "Not charged"],
-        )
-    : [
-        me.shareFixed
-          ? [`Your amount, set by ${kitty.organiser.name}`, formatRupees(me.finalSharePaise ?? 0)]
-          : [`Final bill ${formatRupees(kitty.finalBillPaise ?? 0)}, split ${unfixed} ways`, formatRupees(me.finalSharePaise ?? 0)],
-      ];
-  rows.push(["Your share", formatRupees(me.finalSharePaise ?? 0), true], ["You already paid", formatRupees(me.paidBeforePaise)]);
+/** Everyone's amount, so the group can see the whole split (decided with Raj, 20 Nov 2026). */
+function EveryonesShare({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
+  const list = [...kitty.members].sort((a, b) => (a.id === me.id ? -1 : b.id === me.id ? 1 : a.sortOrder - b.sortOrder));
   return (
     <>
-      <div className="mt-3 border border-line bg-surface px-4">
-        {rows.map(([label, value, bold], i) => (
-          <div key={label} className={`flex min-h-[45px] items-center justify-between gap-3 ${i < rows.length - 1 ? "border-b border-line" : ""}`}>
-            <span className="text-base text-text">{label}</span>
-            <span className={`text-base text-ink ${bold ? "font-bold" : ""}`}>{value}</span>
-          </div>
+      <Label className="mt-8">Everyone’s share</Label>
+      <ul className="mt-3 border-t border-line">
+        {list.map((m) => (
+          <li key={m.id} className="flex min-h-[45px] items-center justify-between gap-3 border-b border-line">
+            <span className="text-base text-ink">{m.id === me.id ? "You" : m.isOrganiser ? `${m.name} (organiser)` : m.name}</span>
+            <span className="text-base text-text">{formatRupees(m.sharePaise)}</span>
+          </li>
         ))}
-      </div>
-      {kitty.bill ? (
-        <Link href={`/k/${kitty.slug}?bill=1`} className={`${buttonClass.link} mt-4 block w-fit`}>
-          See the scanned bill
-        </Link>
-      ) : null}
+        <li className="flex min-h-[45px] items-center justify-between gap-3">
+          <span className="text-base font-bold text-ink">Total</span>
+          <span className="text-base font-bold text-ink">{formatRupees(kitty.totalPaise)}</span>
+        </li>
+      </ul>
+    </>
+  );
+}
+
+/** "How your share was worked out" (screens 17 and 18): by category for a scanned bill, otherwise the typed split. */
+function Breakdown({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
+  const unfixed = kitty.members.filter((m) => !m.shareFixed).length;
+  const rows: BreakdownRow[] = kitty.bill
+    ? categoryRows(kitty, me)
+    : [
+        me.shareFixed
+          ? { label: `Your amount, set by ${kitty.organiser.name}`, value: formatRupees(me.finalSharePaise ?? 0) }
+          : { label: `Final bill ${formatRupees(kitty.finalBillPaise ?? 0)}, split ${unfixed} ways`, value: formatRupees(me.finalSharePaise ?? 0) },
+      ];
+  rows.push(
+    { label: "Your share", value: formatRupees(me.finalSharePaise ?? 0), bold: true },
+    { label: "You already paid", value: formatRupees(me.paidBeforePaise) },
+  );
+  return (
+    <>
+      <BreakdownCard rows={rows} />
+      <ScannedNote kitty={kitty} />
     </>
   );
 }
