@@ -213,7 +213,35 @@ isOneToOne: false
                            },
 "share_kitty":
 { Args: { "p_kitty_id": string }; Returns: string
-                           }
+                           },
+"update_kitty":
+{ Args: { "p_due_date": string,"p_goal_plan"?: Database["public"]['Enums']["goal_plan"],"p_kind": Database["public"]['Enums']["kitty_kind"],"p_kitty_id": string,"p_members": Json,"p_parts_count"?: number,"p_title": string,"p_total_paise": number,"p_upi_id": string }; Returns: {
+              "amount_source": Database["public"]['Enums']["amount_source"],
+"closed_at": string | null,
+"created_at": string,
+"due_date": string,
+"final_bill_paise": number | null,
+"goal_plan": Database["public"]['Enums']["goal_plan"] | null,
+"id": string,
+"kind": Database["public"]['Enums']["kitty_kind"],
+"organiser_id": string,
+"parts_count": number | null,
+"remind_day_before": boolean,
+"remind_on_day": boolean,
+"share_slug": string,
+"shared_at": string | null,
+"status": Database["public"]['Enums']["kitty_status"],
+"title": string,
+"total_paise": number,
+"updated_at": string,
+"upi_id": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "kitties"
+        isOneToOne: true
+        isSetofReturn: false
+      } }
           }
           Enums: {
             "amount_source": "typed"|"scanned","bill_category": "veg"|"nonveg"|"alcohol"|"unsure","bill_status": "processing"|"needs_review"|"confirmed"|"failed","diet": "veg"|"nonveg","goal_plan": "single"|"parts","kitty_kind": "moment"|"goal","kitty_status": "draft"|"shared"|"settling"|"closed"|"cancelled","payment_direction": "in"|"out","payment_kind": "share"|"topup"|"refund"|"part","payment_status": "requested"|"marked"|"confirmed"|"not_received"|"written_off"

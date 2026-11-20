@@ -45,15 +45,15 @@ select is((select count(*)::int from public.kitties where title = 'Hijacked'), 0
 -- The share lock (spec section 4) ---------------------------------------------------
 select throws_ok(
   $$ update public.members set share_paise = 50000 where id = 'b0000000-0000-4000-8000-000000000004' $$,
-  '23514', 'shares are locked once the kitty is shared', 'shares cannot change on a shared kitty');
+  '23514', 'shares are locked once someone has paid', 'shares cannot change once someone has paid');
 
 select throws_ok(
   $$ insert into public.members (kitty_id, name) values ('a0000000-0000-4000-8000-000000000001', 'Late joiner') $$,
-  '23514', 'people are locked once the kitty is shared', 'people cannot be added to a shared kitty');
+  '23514', 'people are locked once someone has paid', 'people cannot be added once someone has paid');
 
 select throws_ok(
   $$ update public.kitties set total_paise = 1 where id = 'a0000000-0000-4000-8000-000000000001' $$,
-  '23514', 'amounts are locked once the kitty is shared', 'the total cannot change on a shared kitty');
+  '23514', 'amounts are locked once someone has paid', 'the total cannot change once someone has paid');
 
 select lives_ok(
   $$ update public.members set drinks = false where id = 'b0000000-0000-4000-8000-000000000003' $$,

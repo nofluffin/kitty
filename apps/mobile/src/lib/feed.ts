@@ -9,6 +9,7 @@ import {
   type PaymentStatus,
 } from '@kitty/core';
 
+import { isEditable } from './edit-kitty';
 import { supabase } from './supabase';
 
 /** Everything screens 7, 8 and 23 need about one kitty. */
@@ -28,6 +29,8 @@ export interface FeedKitty {
   finalBillPaise: number | null;
   /** Goals paid in parts. */
   partsCount: number | null;
+  /** Nobody but the organiser has paid yet, so amounts can still be edited (decided 20 Nov 2026). */
+  editable: boolean;
   members: FeedMember[];
 }
 
@@ -89,6 +92,10 @@ export async function loadFeed(kittyId: string): Promise<FeedKitty> {
     remindOnDay: data.remind_on_day,
     finalBillPaise: data.final_bill_paise,
     partsCount: data.parts_count,
+    editable: isEditable(
+      data.status,
+      data.members.flatMap((m) => m.payments.map((p) => ({ isOrganiser: m.is_organiser, status: p.status }))),
+    ),
     members: data.members.map((m) => {
       const adjustment = (kind: 'topup' | 'refund'): Adjustment | null => {
         const p = m.payments.find((x) => x.kind === kind);

@@ -81,6 +81,11 @@ export default function Feed() {
             </View>
           </ScrollView>
           <View style={styles.footer}>
+            {load.kitty.editable ? (
+              <TextLink onPress={() => router.push({ pathname: '/new', params: { edit: id } })}>
+                Nobody has paid yet. Edit the amounts or people
+              </TextLink>
+            ) : null}
             {load.kitty.status === 'settling' ? (
               <Button onPress={() => router.push({ pathname: '/kitty/[id]/settle', params: { id } })}>Open settle up</Button>
             ) : load.kitty.kind === 'goal' ? (

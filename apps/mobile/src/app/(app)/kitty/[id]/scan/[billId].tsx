@@ -49,7 +49,10 @@ export default function CheckBill() {
       </Screen>
     );
   }
-  const props = { bill, kitty, mode, reload, setStep };
+  // Decided 20 Nov 2026: while nobody has paid, scanning the bill just replaces the
+  // total and shares (screen 5). Once someone has paid, it goes through settle up.
+  const effectiveMode = mode === 'settle' && kitty.editable ? 'draft' : mode;
+  const props = { bill, kitty, mode: effectiveMode, reload, setStep };
   if (step === 'sort') return <SortLines {...props} />;
   if (step === 'shares') return <ScannedShares {...props} />;
   return <CheckLines {...props} />;

@@ -77,6 +77,37 @@ export default function NewKitty() {
       await supabase.from('kitties').delete().eq('id', scanDraft.current);
       scanDraft.current = null;
     }
+    const people = k.people.map((p) => ({
+      ...(p.memberId ? { id: p.memberId } : {}),
+      name: p.isOrganiser ? p.name : p.name.trim(),
+      phone: p.phone,
+      is_organiser: p.isOrganiser,
+      diet: p.diet,
+      drinks: p.drinks,
+      share_paise: shares.get(p.key)!.sharePaise,
+      share_fixed: shares.get(p.key)!.fixed,
+    }));
+    if (k.editing) {
+      const { error } = await supabase.rpc('update_kitty', {
+        p_kitty_id: k.editing.id,
+        p_kind: k.kind,
+        ...(goal ? { p_goal_plan: k.goalPlan, ...(parts ? { p_parts_count: parts } : {}) } : {}),
+        p_title: k.title.trim(),
+        p_due_date: k.dueDate,
+        p_total_paise: k.totalPaise,
+        p_upi_id: upi,
+        p_members: people,
+      });
+      setSaving(false);
+      if (error) {
+        setFormError(await explainFailure(error, 'save your changes'));
+        return;
+      }
+      refreshProfile();
+      // Back to where the edit started (the share screen or the feed), which reloads on focus.
+      router.back();
+      return;
+    }
     const { data, error } = await supabase.rpc('create_kitty', {
       p_kind: k.kind,
       ...(goal ? { p_goal_plan: k.goalPlan, ...(parts ? { p_parts_count: parts } : {}) } : {}),
@@ -84,15 +115,7 @@ export default function NewKitty() {
       p_due_date: k.dueDate,
       p_total_paise: k.totalPaise,
       p_upi_id: upi,
-      p_members: k.people.map((p) => ({
-        name: p.isOrganiser ? p.name : p.name.trim(),
-        phone: p.phone,
-        is_organiser: p.isOrganiser,
-        diet: p.diet,
-        drinks: p.drinks,
-        share_paise: shares.get(p.key)!.sharePaise,
-        share_fixed: shares.get(p.key)!.fixed,
-      })),
+      p_members: people,
     });
     setSaving(false);
     if (error || !data) {
@@ -139,13 +162,16 @@ export default function NewKitty() {
 
   return (
     <Screen
-      title="New kitty"
+      title={k.editing ? 'Edit kitty' : 'New kitty'}
       back
       footer={
         <>
           <ErrorText>{errors.form}</ErrorText>
+          {k.editing?.status === 'shared' ? (
+            <Small>Everyone’s link updates straight away. You can only edit until someone pays.</Small>
+          ) : null}
           <Button onPress={create} loading={saving}>
-            Create kitty
+            {k.editing ? 'Save changes' : 'Create kitty'}
           </Button>
         </>
       }
@@ -214,7 +240,7 @@ export default function NewKitty() {
           ) : null}
           <ErrorText>{inParts ? planProblem : null}</ErrorText>
         </View>
-      ) : (
+      ) : k.editing ? null : (
         <View style={styles.scanGap}>
           <DashedButton onPress={scanFirst}>
             {scanning ? 'Saving the kitty…' : 'Have the bill already? Scan it for exact shares'}

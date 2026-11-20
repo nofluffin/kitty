@@ -1,10 +1,11 @@
 import { addMonths, formatRupees, shareMessage, type KittyKind, type KittyStatus } from '@kitty/core';
 import * as Clipboard from 'expo-clipboard';
-import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { Linking, Platform, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { config } from '@/lib/config';
+import { isEditable } from '@/lib/edit-kitty';
 import { explainFailure } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
 import {
@@ -31,13 +32,15 @@ interface ShareKitty {
   slug: string;
   /** Goals paid in parts. */
   partsCount: number | null;
+  /** Editable until someone pays (decided 20 Nov 2026). */
+  editable: boolean;
   members: { name: string; sharePaise: number; isOrganiser: boolean }[];
 }
 
 async function loadKitty(id: string): Promise<ShareKitty> {
   const { data, error } = await supabase
     .from('kitties')
-    .select('id, title, kind, status, due_date, total_paise, share_slug, parts_count, members(name, share_paise, is_organiser, sort_order)')
+    .select('id, title, kind, status, due_date, total_paise, share_slug, parts_count, members(name, share_paise, is_organiser, sort_order, payments(status))')
     .eq('id', id)
     .single();
   if (error) throw error;
@@ -50,6 +53,10 @@ async function loadKitty(id: string): Promise<ShareKitty> {
     totalPaise: data.total_paise,
     slug: data.share_slug,
     partsCount: data.parts_count,
+    editable: isEditable(
+      data.status,
+      data.members.flatMap((m) => m.payments.map((p) => ({ isOrganiser: m.is_organiser, status: p.status }))),
+    ),
     members: [...data.members]
       .sort((a, b) => a.sort_order - b.sort_order)
       .map((m) => ({ name: m.name, sharePaise: m.share_paise, isOrganiser: m.is_organiser })),
@@ -63,15 +70,19 @@ export default function ShareScreen() {
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
 
-  useEffect(() => {
-    let current = true;
-    loadKitty(id)
-      .then((k) => current && setKitty(k))
-      .catch(() => current && setFailed(true));
-    return () => {
-      current = false;
-    };
-  }, [id, attempt]);
+  // Reloads on focus, so coming back from editing shows the new amounts.
+  useFocusEffect(
+    useCallback(() => {
+      let current = true;
+      void attempt; // "Try again" reloads too
+      loadKitty(id)
+        .then((k) => current && setKitty(k))
+        .catch(() => current && setFailed(true));
+      return () => {
+        current = false;
+      };
+    }, [id, attempt]),
+  );
 
   const load = () => {
     setFailed(false);
@@ -105,7 +116,8 @@ export default function ShareScreen() {
       </Screen>
     );
   }
-  return <ShareReady kitty={kitty} close={close} />;
+  // A new key after an edit, so the message is rebuilt from the new amounts.
+  return <ShareReady key={`${kitty.title}|${kitty.totalPaise}|${kitty.members.map((m) => m.sharePaise).join(',')}`} kitty={kitty} close={close} />;
 }
 
 function ShareReady({ kitty, close }: { kitty: ShareKitty; close?: () => void }) {
@@ -198,8 +210,13 @@ function ShareReady({ kitty, close }: { kitty: ShareKitty; close?: () => void })
         {equal
           ? 'Send the link to the group. Each person picks their name and pays their share to you.'
           : 'Amounts differ per person, so the message does not name one. Each person sees their own share on the link.'}{' '}
-        {locked ? 'Amounts are now locked.' : 'Amounts lock once you share.'}
+        {kitty.editable ? 'You can edit amounts and people until someone pays.' : 'Someone has paid, so amounts are locked.'}
       </Body>
+      {kitty.editable ? (
+        <View style={styles.editLink}>
+          <TextLink onPress={() => router.push({ pathname: '/new', params: { edit: kitty.id } })}>Edit the kitty</TextLink>
+        </View>
+      ) : null}
 
       <View style={styles.section}>
         <Label>Message preview</Label>
@@ -273,4 +290,5 @@ const styles = StyleSheet.create({
   editButton: { marginTop: 20, alignSelf: 'flex-start' },
   list: { marginTop: 12 },
   skip: { alignItems: 'center' },
+  editLink: { marginTop: 12, alignItems: 'flex-start' },
 });
