@@ -8,6 +8,13 @@ describe('normaliseIndianMobile', () => {
     }
   });
 
+  it('accepts numbers as phone contacts store them', () => {
+    // iPhone wraps numbers in invisible direction marks; some contacts use 0091 or non-breaking spaces.
+    for (const input of ['\u202a+91 98765 43210\u202c', '+91\u00a098765\u00a043210', '0091 98765 43210', '+91 (987) 654-3210', '+91 98765.43210']) {
+      expect(normaliseIndianMobile(input), input).toBe('+919876543210');
+    }
+  });
+
   it('rejects numbers that are not Indian mobiles', () => {
     for (const input of ['', '12345', '5876543210', '98765432101', '+1 415 555 0100', '98765abcde']) {
       expect(normaliseIndianMobile(input), input).toBeNull();

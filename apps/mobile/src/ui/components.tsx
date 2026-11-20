@@ -29,11 +29,13 @@ interface ScreenProps {
   headerRight?: ReactNode;
   children: ReactNode;
   footer?: ReactNode;
+  /** A tab screen: the tab bar below already keeps clear of the bottom edge. */
+  inTabs?: boolean;
 }
 
-export function Screen({ title, back, close, headerRight, children, footer }: ScreenProps) {
+export function Screen({ title, back, close, headerRight, children, footer, inTabs }: ScreenProps) {
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.safe} edges={inTabs ? ['top'] : ['top', 'bottom']}>
       <Header title={title} back={back} close={close} right={headerRight} />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">

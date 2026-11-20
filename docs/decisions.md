@@ -2,6 +2,31 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 20 Nov 2026: push notifications, Activity and the footer
+
+**Decided with Raj**
+
+- **A footer with Kitties, Activity and You**, only on those three screens. Creating a kitty, scanning, settling up and a kitty's feed open on top without it.
+- **Activity** (not in the wires) lists payments people say they've made across all kitties, with Confirm, then recent notifications. The Activity tab shows how many are waiting.
+
+**How push works** (spec section 10)
+
+- The database queues a notification when a member marks a payment as paid ("Kabir marked ₹1,000 as paid", with a "Confirm it arrived" button), and when the last payment is confirmed ("Everyone has paid for Friday dinner").
+- A scheduled job at 9 am India time adds the reminders: the day before and on the pay by date when switched on (screen 23), and 3 days before each goal part. "Still to pay" leaves out people who said they've paid.
+- Each notification is sent straight from the database to Expo's push service with pg_net. Expo's endpoint needs no key, so no secret is stored for this.
+- The phone asks for permission the first time you open a shared kitty's feed, the moment "tell me when people pay" makes sense. Activity offers "Turn on notifications" if it's off. Logging out stops the phone getting them.
+- Browsers (app.thekitty.app) don't get push; Activity still works there.
+
+**Not done yet**
+
+- iPhone push needs an Apple push key, created by `eas credentials` with your Apple login. Android push needs a Firebase project (FCM). Both are one-time setups.
+- Tokens for phones that uninstalled Kitty aren't cleaned up yet; Expo just rejects those sends.
+
+## 20 Nov 2026: picking contacts and adding people
+
+- **Picking a contact fills in their mobile number.** The phone's main number is tried first, then the first Indian mobile among the rest. Kitty uses the contact picker that hands over just the picked person's details, so it still never needs access to the whole address book. Numbers with hidden formatting from phone contacts (direction marks, non-breaking spaces, 0091) are now read correctly. If none of their numbers is an Indian mobile, Kitty says so.
+- **Screen 3 has a "Done, 4 people in" button** fixed at the bottom, and says "Aisha added" after each person, since it wasn't clear you go back a screen when you've finished (Raj, 20 Nov 2026).
+
 ## 20 Nov 2026: editing a kitty, and how shares are explained
 
 **Decided with Raj**

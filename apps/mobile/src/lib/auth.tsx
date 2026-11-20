@@ -2,6 +2,7 @@ import type { Row } from '@kitty/db';
 import type { Session } from '@supabase/supabase-js';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
+import { forgetPushToken } from './push';
 import { supabase } from './supabase';
 
 export type Profile = Row<'profiles'>;
@@ -100,6 +101,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [userId, applyProfile]);
 
   const signOut = useCallback(async () => {
+    // Stop this phone getting the organiser's notifications first, while still logged in.
+    await forgetPushToken().catch(() => {});
     // This phone only. Logging out shouldn't end the organiser's sessions on other devices.
     await supabase.auth.signOut({ scope: 'local' });
   }, []);
