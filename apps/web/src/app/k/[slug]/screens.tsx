@@ -46,7 +46,7 @@ function statusText(m: MemberRow, kitty: OpenKitty): string {
 
 /** Food and drink as small tags next to a name, so the group sees why amounts differ. */
 function DietTags({ m }: { m: MemberRow }) {
-  const tag = "inline-flex h-5 items-center rounded-full border border-line px-2 text-xs leading-4 text-text";
+  const tag = "inline-flex h-5 items-center rounded-[3px] border border-line px-1.5 text-xs leading-4 text-text";
   return (
     <span className="ml-2 inline-flex gap-1 align-middle">
       <span className={tag}>{m.diet === "veg" ? "Veg" : "Non-veg"}</span>
