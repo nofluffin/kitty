@@ -85,6 +85,9 @@ interface DraftKitty {
   /** Set by "Scan the bill" on screen 4; screen 2 picks it up and starts the scan. */
   scanRequested: boolean;
   setScanRequested: (v: boolean) => void;
+  /** "Added 3 from Family." after picking a saved group. */
+  groupNote: string | null;
+  setGroupNote: (v: string | null) => void;
   title: string;
   setTitle: (t: string) => void;
   totalText: string;
@@ -130,6 +133,7 @@ export function DraftKittyProvider({
   const [goalPlan, setGoalPlan] = useState<GoalPlan>(existing?.goalPlan ?? 'single');
   const [partsCount, setPartsCount] = useState<number | null>(existing?.partsCount ?? null);
   const [scanRequested, setScanRequested] = useState(false);
+  const [groupNote, setGroupNote] = useState<string | null>(null);
   const [title, setTitle] = useState(existing?.title ?? '');
   const [totalText, setTotalText] = useState(existing ? formatRupees(existing.totalPaise).replace('₹', '') : '');
   const [dueDate, setDueDate] = useState<string | null>(existing?.dueDate ?? null);
@@ -222,6 +226,8 @@ export function DraftKittyProvider({
       setPartsCount,
       scanRequested,
       setScanRequested,
+      groupNote,
+      setGroupNote,
       title,
       setTitle,
       totalText,
@@ -240,7 +246,7 @@ export function DraftKittyProvider({
       resetFixed,
       split,
     }),
-    [editing, kind, goalPlan, partsCount, scanRequested, title, totalText, totalPaise, dueDate, upiId, people, addPerson, addGroup, updatePerson, removePerson, setFixed, resetFixed, split],
+    [editing, kind, goalPlan, partsCount, scanRequested, groupNote, title, totalText, totalPaise, dueDate, upiId, people, addPerson, addGroup, updatePerson, removePerson, setFixed, resetFixed, split],
   );
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }

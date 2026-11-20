@@ -1,6 +1,6 @@
 -- Archiving and shared groups (20 Nov 2026). Run with: npm run db:test
 begin;
-select plan(13);
+select plan(15);
 
 insert into auth.users (id, email, raw_user_meta_data) values
   ('55555555-5555-4555-8555-555555555555', 'kabir@kitty.test', '{"name": "Kabir"}');
@@ -37,6 +37,11 @@ select isnt((select id from fam2), (select id from fam), 'and it is a new group'
 
 set local request.jwt.claims = '{"sub": "55555555-5555-4555-8555-555555555555", "role": "authenticated"}';
 select is((select id from public.groups), (select id from fam), 'Kabir keeps the Family he was given');
+
+update public.group_holders set favourite = true, last_used_at = now() where group_id = (select id from fam);
+select is((select favourite from public.group_holders where group_id = (select id from fam)), true, 'Kabir can star a group he has');
+select throws_ok($$ update public.group_holders set profile_id = '11111111-1111-4111-8111-111111111111' where group_id = (select id from fam) $$,
+  '42501', null, 'but not hand it to someone else');
 
 -- Kabir leaves: nobody holds the old Family, so it's deleted.
 delete from public.group_holders where group_id = (select id from fam);

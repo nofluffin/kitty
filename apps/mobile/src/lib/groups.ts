@@ -27,23 +27,43 @@ export interface SavedGroup {
   createdBy: { id: string; name: string };
   shareToken: string;
   people: GroupPerson[];
+  /** Starred by you (your own setting, not shared). */
+  favourite: boolean;
+  /** When you last added it to a kitty. */
+  lastUsedAt: string | null;
 }
 
 export async function loadGroups(): Promise<SavedGroup[]> {
   const { data, error } = await supabase
-    .from('groups')
-    .select('id, name, profile_id, created_by_name, share_token, group_members(name, phone, diet, drinks, paid_by_index, sort_order, profile_id)')
-    .order('name');
+    .from('group_holders')
+    .select(
+      'favourite, last_used_at, groups(id, name, profile_id, created_by_name, share_token, group_members(name, phone, diet, drinks, paid_by_index, sort_order, profile_id))',
+    );
   if (error) throw error;
-  return data.map((g) => ({
-    id: g.id,
-    name: g.name,
-    createdBy: { id: g.profile_id, name: g.created_by_name },
-    shareToken: g.share_token,
-    people: [...g.group_members]
-      .sort((a, b) => a.sort_order - b.sort_order)
-      .map((p) => ({ name: p.name, phone: p.phone, diet: p.diet as Diet, drinks: p.drinks, paidByIndex: p.paid_by_index, profileId: p.profile_id })),
-  }));
+  return data
+    .filter((h) => h.groups)
+    .map(({ groups: g, favourite, last_used_at }) => ({
+      id: g!.id,
+      name: g!.name,
+      createdBy: { id: g!.profile_id, name: g!.created_by_name },
+      shareToken: g!.share_token,
+      favourite,
+      lastUsedAt: last_used_at,
+      people: [...g!.group_members]
+        .sort((a, b) => a.sort_order - b.sort_order)
+        .map((p) => ({ name: p.name, phone: p.phone, diet: p.diet as Diet, drinks: p.drinks, paidByIndex: p.paid_by_index, profileId: p.profile_id })),
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export async function setFavourite(groupId: string, favourite: boolean) {
+  const { error } = await supabase.from('group_holders').update({ favourite }).eq('group_id', groupId);
+  return error;
+}
+
+/** For "Recent" on the groups screen. */
+export async function markGroupUsed(groupId: string) {
+  await supabase.from('group_holders').update({ last_used_at: new Date().toISOString() }).eq('group_id', groupId);
 }
 
 /** Saves the kitty's people, you included, as a new group. Your group with the same name is swapped for it. */

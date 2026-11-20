@@ -2,6 +2,13 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 20 Nov 2026: scanning locks once someone pays; the groups screen
+
+Decided with Raj:
+
+- **"Scan the bill" greys out once anyone (other than the organiser) has paid**, with a line saying why. This means a moment kitty can't be settled from the real bill after payments start: amounts stay as asked. (Raj chose this over keeping the scan for top-ups and refunds.) Goals keep "Enter the final cost".
+- **Saved groups get their own screen**: Favourites (starred, your own setting), Recent (the last three you used), then All groups. Each has a star, Share and Leave. From a new kitty, "Add a saved group" opens it and tapping a group adds everyone; Your details links to the same screen to manage them.
+
 ## 20 Nov 2026: scanning from the Shares screen
 
 - **Screen 4 (Shares) offers "Have the bill already? Scan it for exact shares"** as well as screen 2 (Raj). It returns to screen 2 to save the draft and open the camera, since that's where the name, date and UPI ID are checked. Its note now says amounts can change until someone pays, and that a scan replaces them with each person's exact share.

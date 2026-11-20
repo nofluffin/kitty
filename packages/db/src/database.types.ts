@@ -67,14 +67,14 @@ isOneToOne: false
                   ]
                 },"group_holders": {
                   Row: {
-                    "created_at": string,"group_id": string,"profile_id": string
+                    "created_at": string,"favourite": boolean,"group_id": string,"last_used_at": string | null,"profile_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"group_id": string,"profile_id": string
+                    "created_at"?: string,"favourite"?: boolean,"group_id": string,"last_used_at"?: string | null,"profile_id": string
                   }
                   Update: {
-                    "created_at"?: string,"group_id"?: string,"profile_id"?: string
+                    "created_at"?: string,"favourite"?: boolean,"group_id"?: string,"last_used_at"?: string | null,"profile_id"?: string
                   }
                   Relationships: [
                     {
