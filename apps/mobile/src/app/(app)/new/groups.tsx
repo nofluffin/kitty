@@ -18,7 +18,12 @@ export default function PickGroup() {
           const added = k.addGroup(
             g.people.map(({ profileId, ...p }) => ({ ...p, isMe: profileId === profile?.id || (!!p.phone && p.phone === profile?.phone) })),
           );
-          k.setGroupNote(added > 0 ? `Added ${added} from ${g.name}.` : `Everyone in ${g.name} is already in.`);
+          // Raj, 20 Nov 2026: people are copied in, so food and drink can change for this kitty only.
+          k.setGroupNote(
+            added > 0
+              ? `Added ${added} from ${g.name}. Tap anyone to change their food or drink for this kitty; ${g.name} stays as it is.`
+              : `Everyone in ${g.name} is already in.`,
+          );
           markGroupUsed(g.id);
           router.back();
         }}

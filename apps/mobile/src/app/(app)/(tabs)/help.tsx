@@ -80,6 +80,7 @@ const SECTIONS: { title: string; icon: IconName; topics: Topic[] }[] = [
         q: 'Using a group',
         a: [
           'On a new kitty, tap “Add a saved group”. Favourites (tap ☆ to star one) come first, then the groups you used recently, then the rest. Tap a group to add everyone except you, then add or remove people as usual.',
+          'Someone eating veg or not drinking this time? Tap their name in the kitty and change it. It changes that kitty only; the group keeps its settings.',
         ],
       },
       {
