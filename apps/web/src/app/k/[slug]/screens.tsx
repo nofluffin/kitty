@@ -33,7 +33,27 @@ function whenMarked(iso: string | null): string {
 
 const hasOpenRefund = (m: MemberRow) => m.refund?.status === "requested" || m.refund?.status === "marked";
 
-const STATUS_TEXT = { paid: "Paid ✓", waiting: "Waiting for", not_received: "Not received yet", unpaid: "Not paid yet" } as const;
+/** Screen 16's status line under each name (wording from Raj, 20 Nov 2026). */
+function statusText(m: MemberRow, kitty: OpenKitty): string {
+  const org = kitty.organiser.name;
+  if (m.paidById) return `${kitty.members.find((x) => x.id === m.paidById)?.name ?? "Someone"} pays for them`;
+  if (m.isOrganiser) return "Organiser";
+  if (m.state === "paid") return "Paid, confirmed ✓";
+  if (m.state === "waiting") return `Paid, waiting for ${org} to confirm`;
+  if (m.state === "not_received") return `${org} hasn’t received it yet`;
+  return "Not paid yet";
+}
+
+/** Food and drink as small tags next to a name, so the group sees why amounts differ. */
+function DietTags({ m }: { m: MemberRow }) {
+  const tag = "inline-flex h-5 items-center rounded-full border border-line px-2 text-xs leading-4 text-text";
+  return (
+    <span className="ml-2 inline-flex gap-1 align-middle">
+      <span className={tag}>{m.diet === "veg" ? "Veg" : "Non-veg"}</span>
+      {m.drinks ? <span className={tag}>Drinks</span> : null}
+    </span>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Screen 27: closed, cancelled, not found, no connection
@@ -352,14 +372,28 @@ export function Waiting({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
 
       <ul className="mt-6 border-t border-line">
         {statusList(kitty.members, me.id).map((m) => (
-          <li key={m.id} className="flex min-h-[49px] items-center justify-between border-b border-line">
-            <span className="text-base text-ink">{m.id === me.id ? "You" : m.name}</span>
-            <span className={`text-sm ${m.state === "paid" ? "text-muted" : "text-text"}`}>
-              {m.state === "waiting" ? `${STATUS_TEXT.waiting} ${org}` : STATUS_TEXT[m.state]}
+          <li key={m.id} className="flex items-start justify-between gap-3 border-b border-line py-3">
+            <div>
+              <p className="text-base leading-6 text-ink">
+                {m.id === me.id ? "You" : m.name}
+                <DietTags m={m} />
+              </p>
+              <p className={`mt-0.5 text-sm leading-[21px] ${m.state === "paid" && !m.paidById ? "text-muted" : "text-text"}`}>
+                {statusText(m, kitty)}
+              </p>
+            </div>
+            <span className="shrink-0 text-base leading-6 text-ink">
+              {formatRupees(m.paidById ? (m.finalSharePaise ?? m.sharePaise) : (m.finalAskPaise ?? m.askPaise))}
             </span>
           </li>
         ))}
       </ul>
+
+      {kitty.bill ? (
+        <Link href={`/k/${kitty.slug}?bill=1`} className={`${buttonClass.link} mt-4 block w-fit`}>
+          View receipt
+        </Link>
+      ) : null}
 
       <form action={forgetMe.bind(null, kitty.slug)} className="mt-6">
         <button type="submit" className={buttonClass.link}>
@@ -485,7 +519,7 @@ function ScannedNote({ kitty }: { kitty: OpenKitty }) {
         </Small>
       ) : null}
       <Link href={`/k/${kitty.slug}?bill=1`} className={`${buttonClass.link} mt-4 block w-fit`}>
-        See the scanned bill
+        View receipt
       </Link>
     </>
   );
@@ -546,6 +580,7 @@ function EveryonesShare({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
           <li key={m.id} className="flex min-h-[45px] items-center justify-between gap-3 border-b border-line">
             <span className="text-base text-ink">
               {m.id === me.id ? "You" : m.isOrganiser ? `${m.name} (organiser)` : m.name}
+              <DietTags m={m} />
               {m.paidById ? (
                 <span className="text-text">{m.paidById === me.id ? ", you pay" : `, ${kitty.members.find((x) => x.id === m.paidById)?.name} pays`}</span>
               ) : null}
@@ -593,14 +628,22 @@ function Breakdown({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
   );
 }
 
-/** "See the scanned bill": the lines Kitty read, never the photos (bill photos are private, spec section 12). */
-export function ScannedBill({ kitty }: { kitty: OpenKitty }) {
+/**
+ * "View receipt": the bill photo and the lines Kitty read. Decided with Raj, 20 Nov 2026:
+ * people with the kitty link may see the photo (it was lines only before). The photo
+ * links expire after 10 minutes.
+ */
+export function ScannedBill({ kitty, photos }: { kitty: OpenKitty; photos: string[] }) {
   const bill = kitty.bill!;
   const tag = { veg: "Veg", nonveg: "Non-veg", alcohol: "Alcohol", unsure: "Unsure" } as const;
   return (
     <Page header={<Header title={kitty.title} left={<Link href={`/k/${kitty.slug}`} aria-label="Back" className="-ml-1 flex h-11 w-9 items-center text-xl text-ink">←</Link>} />}>
-      <Title>The scanned bill</Title>
-      <Body>What {kitty.organiser.name} checked before Kitty worked out the shares.</Body>
+      <Title>The receipt</Title>
+      <Body>The bill {kitty.organiser.name} scanned, and the lines Kitty read from it.</Body>
+      {photos.map((src, i) => (
+        // eslint-disable-next-line @next/next/no-img-element -- short-lived storage links, nothing to optimise
+        <img key={i} src={src} alt={`Photo ${i + 1} of the bill`} className="mt-4 w-full border border-line" />
+      ))}
       <ul className="mt-6 border-t border-line">
         {bill.lines.map((l, i) => (
           <li key={i} className="flex min-h-[49px] items-center gap-3 border-b border-line">

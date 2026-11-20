@@ -2,6 +2,13 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 20 Nov 2026: the "Thanks" screen (screen 16) and the receipt
+
+Decided with Raj:
+
+- Each person in the list shows **Veg or Non-veg and Drinks** as small tags, **their amount** on the right, and their status underneath: "Paid, confirmed ✓", "Paid, waiting for Raj to confirm", "Not paid yet", or "Kabir pays for them".
+- **Members can see the bill photo.** "View receipt" (on screen 16 and under "How your share was worked out") opens the photo and the lines Kitty read. This replaces the earlier lines-only decision (spec section 12 kept photos private). The photo is shown through a link that expires after 10 minutes, and only to people with the kitty link.
+
 ## 20 Nov 2026: over-the-air updates for the phone apps
 
 - **Expo updates are on** (decided with Raj). A change that's only app code (screens, wording, fixes) reaches installed apps the next time they're opened twice: the first launch downloads it, the next one shows it. Publish with `npm run update:preview -- "what changed"` from `apps/mobile`.
@@ -235,7 +242,7 @@ Choices made during the build that aren't in the spec, or that settle something 
 | --- | --- | --- |
 | Screen 14 "My name is not here" | What happens? Ask the organiser, or let the member add themselves? Adding would break the share lock. | Step 5 |
 | Screen 17 "Something looks wrong, tell Rohan" | Push to the organiser, or open WhatsApp to them? | Step 7 |
-| Screen 17 "See the scanned bill" | Bill photos are private (spec 12). Lines only for now (step 8). Should members see the photo too? | Before pilot |
+| Screen 17 "See the scanned bill" | Decided 20 Nov 2026: members see the photo too ("View receipt"). | Done |
 | Screen 18 "I've got the ₹600" | Spec has only the organiser marking refunds sent. Does the member's tap confirm it, or is it just a signal? | Step 7 |
 | Spec 5, iPhone app links | `gpay://`, `phonepe://` and `paytmmp://` schemes in core are unverified. Test on real phones. | Step 5 |
 | Spec 13, Sentry | Not wired yet: needs a Sentry account and DSN. | Before pilot |
