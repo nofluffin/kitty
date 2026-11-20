@@ -179,7 +179,7 @@ Choices made during the build that aren't in the spec, or that settle something 
 - **Goal share messages drop "so the bill is covered before we sit down"**, which only suits a dinner. The text is otherwise the spec's.
 - **The database enforces the lock and status rules too**, with triggers, so a bug in either app can't change shares after sharing or move a payment backwards. Diet and drinks stay editable after sharing, for splitting the final bill.
 - **New column `members.final_share_paise`** holds each member's share after settle up, so screens 17 and 18 can show "Your share" next to "You already paid".
-- **App ID `app.thekitty`** for iPhone and Android (decided with Raj, 20 Nov 2026). It can't change after the first store submission.
+- **App ID `app.thekitty.organiser`** for iPhone and Android (decided with Raj, 20 Nov 2026). `app.thekitty` was taken by another Apple developer. It can't change after the first store submission.
 - **Local Supabase runs on ports 55321 to 55329**, because another local project uses the defaults.
 
 ## Gaps between the wires and the spec (to decide before the step that needs them)
