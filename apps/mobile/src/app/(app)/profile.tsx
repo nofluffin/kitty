@@ -1,12 +1,14 @@
 import { cleanName, formatIndianMobile, isValidUpiId, normaliseIndianMobile, normaliseUpiId } from '@kitty/core';
-import { router } from 'expo-router';
-import { useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 
+import { ask } from '@/lib/ask';
 import { useAuth, type Profile } from '@/lib/auth';
 import { explainFailure } from '@/lib/errors';
+import { deleteGroup, loadGroups, type SavedGroup } from '@/lib/groups';
 import { supabase } from '@/lib/supabase';
 import { versionLines } from '@/lib/version';
-import { Body, Button, CenteredState, ErrorText, Field, Gap, Label, Screen, Small, TextLink } from '@/ui/components';
+import { Body, Button, CenteredState, ErrorText, Field, Gap, Label, Row, Screen, Small, TextLink } from '@/ui/components';
 
 /** Organiser's own details. Not drawn in the wires: reached from the You picture at the top right of every screen. */
 export default function ProfileScreen() {
@@ -108,6 +110,8 @@ function ProfileForm({ profile }: { profile: Profile }) {
       <Label>Logged in as</Label>
       <Body ink>{session?.user.email ?? (session?.user.phone ? formatIndianMobile(`+${session.user.phone}`) : '')}</Body>
 
+      <YourGroups />
+
       <Gap size="xxl" />
       <TextLink onPress={() => router.push('/delete-account')}>Delete my account</TextLink>
 
@@ -117,5 +121,37 @@ function ProfileForm({ profile }: { profile: Profile }) {
         <Small key={line}>{line}</Small>
       ))}
     </Screen>
+  );
+}
+
+/** Saved groups (Raj, 20 Nov 2026). Made from the new kitty screen; deleted here. */
+function YourGroups() {
+  const [groups, setGroups] = useState<SavedGroup[]>([]);
+  useFocusEffect(
+    useCallback(() => {
+      loadGroups()
+        .then(setGroups)
+        .catch(() => setGroups([]));
+    }, []),
+  );
+  if (groups.length === 0) return null;
+  return (
+    <>
+      <Gap size="xxl" />
+      <Label>Your groups</Label>
+      {groups.map((g) => (
+        <Row
+          key={g.id}
+          left={g.name}
+          right={`${g.people.length} ${g.people.length === 1 ? 'person' : 'people'}, tap to delete`}
+          onPress={async () => {
+            if (!(await ask(`Delete ${g.name}?`, 'Kitties made with this group stay as they are.', 'Delete'))) return;
+            const e = await deleteGroup(g.id);
+            if (e) await explainFailure(e, 'delete the group');
+            setGroups(await loadGroups().catch(() => []));
+          }}
+        />
+      ))}
+    </>
   );
 }

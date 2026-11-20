@@ -35,6 +35,9 @@ export interface DraftPerson {
 
 export type DraftPersonInput = Omit<DraftPerson, 'key' | 'fixedPaise' | 'memberId'>;
 
+/** A person from a saved group: who pays for them is a place in the group's list. */
+export type GroupPersonInput = Omit<DraftPersonInput, 'paidByKey' | 'isOrganiser'> & { paidByIndex: number | null };
+
 /** A saved kitty loaded back into the form, to edit it until someone pays. */
 export interface ExistingKitty {
   id: string;
@@ -86,6 +89,8 @@ interface DraftKitty {
   setUpiId: (u: string) => void;
   people: DraftPerson[];
   addPerson: (p: DraftPersonInput) => void;
+  /** Adds a saved group's people, skipping names already in the kitty. Returns how many were added. */
+  addGroup: (people: GroupPersonInput[]) => number;
   updatePerson: (key: string, p: DraftPersonInput) => void;
   removePerson: (key: string) => void;
   setFixed: (key: string, paise: Paise | null) => void;
@@ -140,6 +145,30 @@ export function DraftKittyProvider({
   const addPerson = useCallback((p: DraftPersonInput) => {
     setPeople((list) => [...list, { ...p, key: newKey(), fixedPaise: null }]);
   }, []);
+  const addGroup = useCallback(
+    (group: GroupPersonInput[]) => {
+      const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+      // Everyone in the group gets a key (an existing person's if the name is already in), so
+      // "who pays for whom" can point at the right person.
+      const keys = group.map((g) => people.find((p) => !p.isOrganiser && sameName(p.name, g.name))?.key ?? newKey());
+      const fresh = group
+        .map((g, i) => ({ g, key: keys[i]! }))
+        .filter(({ g }) => !people.some((p) => !p.isOrganiser && sameName(p.name, g.name)))
+        .map(({ g, key }) => ({
+          key,
+          name: g.name,
+          phone: g.phone,
+          isOrganiser: false,
+          diet: g.diet,
+          drinks: g.drinks,
+          fixedPaise: null,
+          paidByKey: g.paidByIndex !== null ? (keys[g.paidByIndex] ?? null) : null,
+        }));
+      setPeople((list) => [...list, ...fresh]);
+      return fresh.length;
+    },
+    [people],
+  );
   const updatePerson = useCallback((key: string, p: DraftPersonInput) => {
     setPeople((list) => list.map((x) => (x.key === key ? { ...x, ...p } : x)));
   }, []);
@@ -191,13 +220,14 @@ export function DraftKittyProvider({
       setUpiId,
       people,
       addPerson,
+      addGroup,
       updatePerson,
       removePerson,
       setFixed,
       resetFixed,
       split,
     }),
-    [editing, kind, goalPlan, partsCount, title, totalText, totalPaise, dueDate, upiId, people, addPerson, updatePerson, removePerson, setFixed, resetFixed, split],
+    [editing, kind, goalPlan, partsCount, title, totalText, totalPaise, dueDate, upiId, people, addPerson, addGroup, updatePerson, removePerson, setFixed, resetFixed, split],
   );
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }

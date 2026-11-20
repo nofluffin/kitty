@@ -2,6 +2,14 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 20 Nov 2026: archiving, rescanning and saved groups
+
+Decided with Raj:
+
+- **Archive** sits under "Scan the bill" in a kitty. Archived kitties leave the home list and appear under **"Archived kitties (N)"** at the bottom of home, where they can be opened or unarchived. Friends' links keep working; archived kitties send no reminders.
+- **"Rescan the bill"** replaces "Scan the bill" once a kitty has a checked bill.
+- **Saved groups**: "Save these people as a group" on the new kitty screen keeps each person's name, number, food and drink, and who pays for whom (the organiser isn't stored; they're always in). Next time, tap the group under "Add a saved group" to add everyone not already in, then add or remove people as usual. Saving with an existing name replaces that group. Groups are listed, and deleted, in Your details.
+
 ## 20 Nov 2026: Help, account deletion, privacy policy and terms (step 10)
 
 Decided with Raj:

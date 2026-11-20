@@ -12,6 +12,8 @@ export interface KittySummary {
   collectedPaise: Paise;
   paidCount: number;
   memberCount: number;
+  /** Filed away by the organiser (Archived kitties). */
+  archivedAt: string | null;
 }
 
 /** Everything the home screen (screen 1) needs, newest due date first within each group. */
@@ -19,7 +21,7 @@ export async function loadKittySummaries(): Promise<KittySummary[]> {
   const { data, error } = await supabase
     .from('kitties')
     .select(
-      'id, title, kind, status, due_date, total_paise, members(id, share_paise, paid_by_member_id), payments(member_id, direction, status, amount_paise)',
+      'id, title, kind, status, due_date, total_paise, archived_at, members(id, share_paise, paid_by_member_id), payments(member_id, direction, status, amount_paise)',
     )
     .neq('status', 'cancelled')
     .order('due_date', { ascending: true });
@@ -48,6 +50,16 @@ export async function loadKittySummaries(): Promise<KittySummary[]> {
       collectedPaise: collected,
       paidCount: paid.filter((m) => m.share > 0 && m.net >= m.share).length,
       memberCount: k.members.length,
+      archivedAt: k.archived_at,
     };
   });
+}
+
+/** Archive: off the kitty list, into Archived kitties. Friends' links keep working. */
+export async function setArchived(kittyId: string, archived: boolean) {
+  const { error } = await supabase
+    .from('kitties')
+    .update({ archived_at: archived ? new Date().toISOString() : null })
+    .eq('id', kittyId);
+  return error;
 }

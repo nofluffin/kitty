@@ -7,6 +7,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { explainFailure } from '@/lib/errors';
 import { loadFeed, type FeedKitty, type FeedMember } from '@/lib/feed';
 import { registerForPush } from '@/lib/push';
+import { ask } from '@/lib/ask';
+import { setArchived } from '@/lib/kitties';
 import { Button, CenteredState, Header, Note, TextLink } from '@/ui/components';
 import { colors, layout, type } from '@/ui/theme';
 
@@ -35,6 +37,25 @@ export default function Feed() {
   );
 
   const kitty = load.state === 'ready' ? load.kitty : null;
+
+  async function toggleArchive(k: FeedKitty) {
+    if (!k.archivedAt) {
+      const sure = await ask(
+        `Archive ${k.title}?`,
+        'It moves off your kitty list into Archived kitties, at the bottom of home. Your friends’ link keeps working, and reminders stop.',
+        'Archive',
+      );
+      if (!sure) return;
+    }
+    const e = await setArchived(k.id, !k.archivedAt);
+    if (e) {
+      await explainFailure(e, k.archivedAt ? 'unarchive the kitty' : 'archive the kitty');
+      return;
+    }
+    if (k.archivedAt) await fetchFeed();
+    else if (router.canGoBack()) router.back();
+    else router.replace('/home');
+  }
 
   // The moment "tell me when people pay" makes sense: the first look at a shared kitty.
   // The phone shows its permission prompt once; after that this only registers.
@@ -107,12 +128,20 @@ export default function Feed() {
               </>
             ) : (
               <>
-                <Note>After the dinner, scan the bill. Kitty splits veg, non-veg and alcohol and works out who gets money back.</Note>
+                <Note>
+                  {load.kitty.hasBill
+                    ? 'The bill is scanned. Rescan it if something changed, and Kitty works the shares out again.'
+                    : 'After the dinner, scan the bill. Kitty splits veg, non-veg and alcohol and works out who gets money back.'}
+                </Note>
                 <Button variant="secondary" onPress={() => router.push({ pathname: '/kitty/[id]/scan', params: { id, mode: 'settle' } })}>
-                  Scan the bill
+                  {load.kitty.hasBill ? 'Rescan the bill' : 'Scan the bill'}
                 </Button>
               </>
             )}
+            {/* Raj, 20 Nov 2026: file a kitty away from the list. Found again under Archived kitties on home. */}
+            <Button variant="secondary" onPress={() => toggleArchive(load.kitty)}>
+              {load.kitty.archivedAt ? 'Unarchive' : 'Archive'}
+            </Button>
           </View>
         </>
       )}
