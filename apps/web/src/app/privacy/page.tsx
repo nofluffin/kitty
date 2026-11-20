@@ -41,8 +41,10 @@ export default function Privacy() {
           was last opened, the organiser&rsquo;s phone push notification token, and standard server logs.
         </p>
         <p>
-          The organiser picks contacts one at a time. Kitty only sees the people picked, never the whole address book. Kitty doesn&rsquo;t
-          read SMS messages.
+          The organiser picks contacts one at a time, and Kitty only sees the people picked. If the organiser adds people to a group
+          by voice, Kitty asks for permission to search their contacts and looks up the names they say, on their phone, to find
+          numbers. Only the people they choose to add are saved. Voice is turned into text by the phone&rsquo;s own speech service.
+          Kitty doesn&rsquo;t read SMS messages.
         </p>
       </section>
 

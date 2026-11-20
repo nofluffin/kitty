@@ -77,6 +77,14 @@ const SECTIONS: { title: string; icon: IconName; topics: Topic[] }[] = [
         ],
       },
       {
+        q: 'Adding people by voice',
+        a: [
+          'In a new group, tap “Add people by voice” and the mic, then say each name with their food and drink: “Devika, veg, alcohol. Kabir, non-veg, no alcohol.” Tap again to stop.',
+          'Kitty fills in food and drink from what you said, or from your groups and past kitties. Anything missing, it asks. If more than one contact has that name, pick the right one.',
+          'You can fix what Kitty heard, or type names, before adding them.',
+        ],
+      },
+      {
         q: 'Using a group',
         a: [
           'On a new kitty, tap “Add a saved group”. Favourites (tap ☆ to star one) come first, then the groups you used recently, then the rest. Tap a group to add everyone except you, then add or remove people as usual.',
