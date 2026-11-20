@@ -82,6 +82,8 @@ export interface OpenKitty {
 }
 
 export interface ScannedBillView {
+  /** Where the bill photos are stored. Shown through short-lived links only (receiptPhotoUrls). */
+  photoPaths: string[];
   lines: { label: string; amountPaise: number; category: BillCategory }[];
   extrasPaise: number;
   totalPaise: number;
@@ -106,7 +108,7 @@ export async function loadMemberView(slug: string, claimToken: string | undefine
   const { data: k, error } = await supabase
     .from("kitties")
     .select(
-      "id, title, kind, status, due_date, total_paise, upi_id, closed_at, final_bill_paise, parts_count, organiser:profiles(name, phone), bills(status, extras_paise, created_at, bill_lines(label, raw_text, amount_paise, category, created_at)), members(id, name, is_organiser, sort_order, share_paise, share_fixed, diet, drinks, final_share_paise, refund_upi_id, paid_by_member_id, member_claims(claim_token), payments(kind, direction, status, amount_paise, due_date, marked_at))",
+      "id, title, kind, status, due_date, total_paise, upi_id, closed_at, final_bill_paise, parts_count, organiser:profiles(name, phone), bills(status, extras_paise, created_at, image_paths, bill_lines(label, raw_text, amount_paise, category, created_at)), members(id, name, is_organiser, sort_order, share_paise, share_fixed, diet, drinks, final_share_paise, refund_upi_id, paid_by_member_id, member_claims(claim_token), payments(kind, direction, status, amount_paise, due_date, marked_at))",
     )
     .eq("share_slug", slug)
     .maybeSingle();
@@ -183,6 +185,7 @@ export async function loadMemberView(slug: string, claimToken: string | undefine
       .map((l, i) => ({ id: String(i), label: l.label || l.raw_text, amountPaise: l.amount_paise, category: l.category as BillCategory }));
     const split = billSplit(lines, confirmed.extras_paise, [...members].sort((a, b) => a.sortOrder - b.sortOrder).map((m) => ({ id: m.id, diet: m.diet, drinks: m.drinks })));
     bill = {
+      photoPaths: confirmed.image_paths ?? [],
       lines: lines.map(({ label, amountPaise, category }) => ({ label, amountPaise, category })),
       extrasPaise: confirmed.extras_paise,
       totalPaise: lines.reduce((s, l) => s + l.amountPaise, 0) + confirmed.extras_paise,
@@ -212,4 +215,16 @@ export async function loadMemberView(slug: string, claimToken: string | undefine
 /** Remember that a claimed member opened the link (the feed shows "opened the link"). */
 export async function touchMember(memberId: string): Promise<void> {
   await db()?.from("members").update({ last_opened_at: new Date().toISOString() }).eq("id", memberId);
+}
+
+/**
+ * "View receipt": links to the bill photos that work for 10 minutes. Decided with
+ * Raj, 20 Nov 2026: members with the kitty link may see the scanned bill's photo.
+ */
+export async function receiptPhotoUrls(paths: string[]): Promise<string[]> {
+  const supabase = db();
+  if (!supabase || paths.length === 0) return [];
+  const { data, error } = await supabase.storage.from("bills").createSignedUrls(paths, 600);
+  if (error || !data) return [];
+  return data.map((d) => d.signedUrl).filter((u): u is string => !!u);
 }
