@@ -2,6 +2,11 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 20 Nov 2026: scanning from the Shares screen
+
+- **Screen 4 (Shares) offers "Have the bill already? Scan it for exact shares"** as well as screen 2 (Raj). It returns to screen 2 to save the draft and open the camera, since that's where the name, date and UPI ID are checked. Its note now says amounts can change until someone pays, and that a scan replaces them with each person's exact share.
+- Fixed: scanning before sharing kept everyone but forgot who pays for whom. It now saves that too.
+
 ## 20 Nov 2026: archiving, rescanning and saved groups
 
 Decided with Raj:

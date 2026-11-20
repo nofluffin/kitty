@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { describePerson, useDraftKitty, type DraftPerson } from '@/lib/draft-kitty';
-import { Button, ErrorText, InfoBox, Note, Screen, TextLink } from '@/ui/components';
+import { Button, DashedButton, ErrorText, InfoBox, Note, Screen, TextLink } from '@/ui/components';
 import { colors, layout, type } from '@/ui/theme';
 
 const WORDS = ['no one', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
@@ -45,7 +45,21 @@ export default function AdjustShares() {
       back
       footer={
         <>
-          <Note>You can change amounts until you share the link. After that they are locked.</Note>
+          <Note>
+            You can change amounts until someone pays. Scan the bill and Kitty works out each person’s exact share from what they
+            had, replacing these amounts.
+          </Note>
+          {k.kind === 'moment' && !k.editing ? (
+            <DashedButton
+              onPress={() => {
+                // Screen 2 saves the kitty and opens the camera: it has the name, date and UPI ID.
+                k.setScanRequested(true);
+                router.back();
+              }}
+            >
+              Have the bill already? Scan it for exact shares
+            </DashedButton>
+          ) : null}
           <Button onPress={() => router.back()} disabled={split.state !== 'ok'}>
             Done
           </Button>

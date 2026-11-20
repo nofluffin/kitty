@@ -82,6 +82,9 @@ interface DraftKitty {
   /** Goals in parts: how many monthly parts. Null until the organiser picks, or a pay by date allows. */
   partsCount: number | null;
   setPartsCount: (n: number | null) => void;
+  /** Set by "Scan the bill" on screen 4; screen 2 picks it up and starts the scan. */
+  scanRequested: boolean;
+  setScanRequested: (v: boolean) => void;
   title: string;
   setTitle: (t: string) => void;
   totalText: string;
@@ -126,6 +129,7 @@ export function DraftKittyProvider({
   const [kind, setKind] = useState<KittyKind>(existing?.kind ?? 'moment');
   const [goalPlan, setGoalPlan] = useState<GoalPlan>(existing?.goalPlan ?? 'single');
   const [partsCount, setPartsCount] = useState<number | null>(existing?.partsCount ?? null);
+  const [scanRequested, setScanRequested] = useState(false);
   const [title, setTitle] = useState(existing?.title ?? '');
   const [totalText, setTotalText] = useState(existing ? formatRupees(existing.totalPaise).replace('₹', '') : '');
   const [dueDate, setDueDate] = useState<string | null>(existing?.dueDate ?? null);
@@ -216,6 +220,8 @@ export function DraftKittyProvider({
       setGoalPlan,
       partsCount,
       setPartsCount,
+      scanRequested,
+      setScanRequested,
       title,
       setTitle,
       totalText,
@@ -234,7 +240,7 @@ export function DraftKittyProvider({
       resetFixed,
       split,
     }),
-    [editing, kind, goalPlan, partsCount, title, totalText, totalPaise, dueDate, upiId, people, addPerson, addGroup, updatePerson, removePerson, setFixed, resetFixed, split],
+    [editing, kind, goalPlan, partsCount, scanRequested, title, totalText, totalPaise, dueDate, upiId, people, addPerson, addGroup, updatePerson, removePerson, setFixed, resetFixed, split],
   );
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }
