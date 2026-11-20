@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { confirmedNetPaid, settleUp, type PaymentForTotals, type SettleMemberInput } from '../src';
+import { confirmedNetPaid, settleUp, typedBillShares, type PaymentForTotals, type SettleMemberInput } from '../src';
 
 const member = (memberId: string, newSharePaise: number, confirmedPaidPaise: number, isOrganiser = false): SettleMemberInput => ({
   memberId,
@@ -81,5 +81,32 @@ describe('confirmedNetPaid', () => {
     ];
     expect(confirmedNetPaid(payments, 'a')).toBe(85000);
     expect(confirmedNetPaid(payments, 'c')).toBe(0);
+  });
+});
+
+describe('typedBillShares', () => {
+  it('keeps typed amounts and splits the rest equally', () => {
+    // ₹6,000 kitty where Aisha was fixed at ₹600; the bill came to ₹5,400.
+    const r = typedBillShares(540000, [
+      { id: 'you', sharePaise: 135000, fixed: false },
+      { id: 'aisha', sharePaise: 60000, fixed: true },
+      { id: 'kabir', sharePaise: 135000, fixed: false },
+      { id: 'dev', sharePaise: 135000, fixed: false },
+      { id: 'zoya', sharePaise: 135000, fixed: false },
+    ]);
+    expect(r.ok && r.value.shares.map((s) => s.sharePaise)).toEqual([120000, 60000, 120000, 120000, 120000]);
+  });
+
+  it('splits equally with leftover paise in sort order when nothing was typed', () => {
+    const r = typedBillShares(100000, ['a', 'b', 'c'].map((id) => ({ id, sharePaise: 50000, fixed: false })));
+    expect(r.ok && r.value.shares.map((s) => s.sharePaise)).toEqual([33334, 33333, 33333]);
+  });
+
+  it('refuses a bill smaller than the typed amounts', () => {
+    const r = typedBillShares(50000, [
+      { id: 'a', sharePaise: 60000, fixed: true },
+      { id: 'b', sharePaise: 10000, fixed: false },
+    ]);
+    expect(!r.ok && r.error.code).toBe('fixed_over_total');
   });
 });

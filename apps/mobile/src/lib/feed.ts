@@ -14,7 +14,16 @@ export interface FeedKitty {
   slug: string;
   remindDayBefore: boolean;
   remindOnDay: boolean;
+  /** Set once the organiser settles up (step 7). */
+  finalBillPaise: number | null;
   members: FeedMember[];
+}
+
+/** A top-up or refund after settle up. */
+export interface Adjustment {
+  status: PaymentStatus;
+  amountPaise: number;
+  markedAt: string | null;
 }
 
 export interface FeedMember {
@@ -30,13 +39,21 @@ export interface FeedMember {
   markedAt: string | null;
   upiRef: string | null;
   lastOpenedAt: string | null;
+  /** True when the organiser typed this share by hand. */
+  shareFixed: boolean;
+  /** New share after settle up. */
+  finalSharePaise: number | null;
+  /** Where the member asked for their refund to go (screen 18). */
+  refundUpiId: string | null;
+  topUp: Adjustment | null;
+  refund: Adjustment | null;
 }
 
 export async function loadFeed(kittyId: string): Promise<FeedKitty> {
   const { data, error } = await supabase
     .from('kitties')
     .select(
-      'id, title, kind, status, due_date, total_paise, upi_id, share_slug, remind_day_before, remind_on_day, members(id, name, phone, is_organiser, sort_order, share_paise, last_opened_at, payments(kind, direction, status, amount_paise, marked_at, upi_ref))',
+      'id, title, kind, status, due_date, total_paise, upi_id, share_slug, remind_day_before, remind_on_day, final_bill_paise, members(id, name, phone, is_organiser, sort_order, share_paise, share_fixed, final_share_paise, refund_upi_id, last_opened_at, payments(kind, direction, status, amount_paise, marked_at, upi_ref))',
     )
     .eq('id', kittyId)
     .single();
@@ -53,7 +70,12 @@ export async function loadFeed(kittyId: string): Promise<FeedKitty> {
     slug: data.share_slug,
     remindDayBefore: data.remind_day_before,
     remindOnDay: data.remind_on_day,
+    finalBillPaise: data.final_bill_paise,
     members: data.members.map((m) => {
+      const adjustment = (kind: 'topup' | 'refund'): Adjustment | null => {
+        const p = m.payments.find((x) => x.kind === kind);
+        return p ? { status: p.status as PaymentStatus, amountPaise: p.amount_paise, markedAt: p.marked_at } : null;
+      };
       const shares = m.payments.filter((p) => p.direction === 'in' && (p.kind === 'share' || p.kind === 'part'));
       const marked = shares.map((p) => p.marked_at).filter((t): t is string => !!t).sort();
       return {
@@ -70,6 +92,11 @@ export async function loadFeed(kittyId: string): Promise<FeedKitty> {
         markedAt: marked.at(-1) ?? null,
         upiRef: shares.map((p) => p.upi_ref).find(Boolean) ?? null,
         lastOpenedAt: m.last_opened_at,
+        shareFixed: m.share_fixed,
+        finalSharePaise: m.final_share_paise,
+        refundUpiId: m.refund_upi_id,
+        topUp: adjustment('topup'),
+        refund: adjustment('refund'),
       };
     }),
   };

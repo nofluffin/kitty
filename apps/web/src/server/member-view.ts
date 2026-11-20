@@ -10,6 +10,13 @@ export const isSlug = (s: string) => /^[A-Za-z0-9]{12,32}$/.test(s);
 /** One cookie per kitty, scoped to its link, holding this browser's claim token. */
 export const claimCookie = (slug: string) => ({ name: `kitty_${slug}`, path: `/k/${slug}` });
 
+/** A top-up or refund after settle up. */
+export interface Adjustment {
+  status: PaymentStatus;
+  amountPaise: number;
+  markedAt: string | null;
+}
+
 export interface MemberRow {
   id: string;
   name: string;
@@ -20,6 +27,14 @@ export interface MemberRow {
   /** When they last marked their share as paid. */
   markedAt: string | null;
   claimed: boolean;
+  shareFixed: boolean;
+  /** New share after settle up. */
+  finalSharePaise: number | null;
+  /** Confirmed towards the original share, before any top-up or refund. */
+  paidBeforePaise: number;
+  refundUpiId: string | null;
+  topUp: Adjustment | null;
+  refund: Adjustment | null;
 }
 
 export interface OpenKitty {
@@ -31,6 +46,7 @@ export interface OpenKitty {
   dueDate: string;
   totalPaise: number;
   upiId: string;
+  finalBillPaise: number | null;
   organiser: { name: string; phone: string | null };
   members: MemberRow[];
   /** The member this browser picked, if any. */
@@ -55,7 +71,7 @@ export async function loadMemberView(slug: string, claimToken: string | undefine
   const { data: k, error } = await supabase
     .from("kitties")
     .select(
-      "id, title, status, due_date, total_paise, upi_id, closed_at, organiser:profiles(name, phone), members(id, name, is_organiser, sort_order, share_paise, member_claims(claim_token), payments(kind, direction, status, marked_at))",
+      "id, title, status, due_date, total_paise, upi_id, closed_at, final_bill_paise, organiser:profiles(name, phone), members(id, name, is_organiser, sort_order, share_paise, share_fixed, final_share_paise, refund_upi_id, member_claims(claim_token), payments(kind, direction, status, amount_paise, marked_at))",
     )
     .eq("share_slug", slug)
     .maybeSingle();
@@ -73,15 +89,30 @@ export async function loadMemberView(slug: string, claimToken: string | undefine
     const tokens = m.member_claims.map((c) => c.claim_token);
     if (claimToken && tokens.includes(claimToken)) meId = m.id;
     const marked = shares.map((p) => p.marked_at).filter((t): t is string => !!t).sort();
+    const adjustment = (kind: "topup" | "refund"): Adjustment | null => {
+      const p = m.payments.find((x) => x.kind === kind);
+      return p ? { status: p.status as PaymentStatus, amountPaise: p.amount_paise, markedAt: p.marked_at } : null;
+    };
+    const topUp = adjustment("topup");
+    const refund = adjustment("refund");
+    const shareState = m.share_paise === 0 ? "paid" : memberPayState(shares.map((p) => p.status as PaymentStatus));
     return {
       id: m.id,
       name: m.name,
       isOrganiser: m.is_organiser,
       sortOrder: m.sort_order,
       sharePaise: m.share_paise,
-      state: m.share_paise === 0 ? "paid" : memberPayState(shares.map((p) => p.status as PaymentStatus)),
-      markedAt: marked.at(-1) ?? null,
+      // After settle up, a top-up decides how the member stands: their original request was
+      // written off and replaced by it. A refund means they paid, so they count as paid.
+      state: topUp ? memberPayState([topUp.status]) : shareState,
+      markedAt: topUp?.markedAt ?? marked.at(-1) ?? null,
       claimed: tokens.length > 0,
+      shareFixed: m.share_fixed,
+      finalSharePaise: m.final_share_paise,
+      paidBeforePaise: shares.filter((p) => p.status === "confirmed").reduce((sum, p) => sum + p.amount_paise, 0),
+      refundUpiId: m.refund_upi_id,
+      topUp,
+      refund,
     };
   });
 
@@ -94,6 +125,7 @@ export async function loadMemberView(slug: string, claimToken: string | undefine
     dueDate: k.due_date,
     totalPaise: k.total_paise,
     upiId: k.upi_id,
+    finalBillPaise: k.final_bill_paise,
     organiser: { name: organiserName, phone: k.organiser?.phone ?? null },
     members,
     me: members.find((m) => m.id === meId) ?? null,

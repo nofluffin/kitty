@@ -1,4 +1,5 @@
 import { assertPaise, sumPaise } from './money';
+import { adjustedSplit } from './split';
 import type { Paise, PaymentDirection, PaymentStatus } from './types';
 
 /** A payment as far as settle up cares. */
@@ -90,4 +91,24 @@ export function settleUp(finalBillPaise: Paise, members: readonly SettleMemberIn
     toRefundPaise,
     square: toComeInPaise === 0 && toRefundPaise === 0,
   };
+}
+
+export interface TypedBillMember {
+  id: string;
+  /** What they were asked for when the kitty was shared. */
+  sharePaise: Paise;
+  /** True when the organiser typed this amount by hand (`share_fixed`). */
+  fixed: boolean;
+}
+
+/**
+ * New shares when the organiser types the final bill (spec section 4, settle up step 2).
+ * Decided 20 Nov 2026: amounts the organiser typed by hand stay as they were, and the
+ * rest of the final bill is split equally across everyone else (the screen 4 rule).
+ */
+export function typedBillShares(finalBillPaise: Paise, members: readonly TypedBillMember[]) {
+  return adjustedSplit(
+    finalBillPaise,
+    members.map((m) => ({ id: m.id, fixedPaise: m.fixed ? m.sharePaise : null })),
+  );
 }

@@ -73,3 +73,20 @@ export function whatsAppUrl(phone: string, text: string): string | null {
 export function groupReminderMessage({ title, link }: { title: string; link: string }): string {
   return `Quick reminder for ${title}: if you haven’t paid your share yet, it takes a minute: ${link}`;
 }
+
+export interface TopUpMessageInput {
+  memberName: string;
+  title: string;
+  newSharePaise: Paise;
+  paidPaise: Paise;
+  link: string;
+}
+
+/**
+ * "Ask" for a top-up on screens 12 and 13. Not worded in the spec; written in
+ * the nudge's tone. Someone who paid nothing gets the plain nudge instead.
+ */
+export function topUpMessage({ memberName, title, newSharePaise, paidPaise, link }: TopUpMessageInput): string {
+  if (paidPaise <= 0) return nudgeMessage({ memberName, title, amountPaise: newSharePaise, link });
+  return `Hi ${memberName}, ${title} came to a bit more. Your share is ${formatRupees(newSharePaise)} and you paid ${formatRupees(paidPaise)}, so it’s ${formatRupees(newSharePaise - paidPaise)} more: ${link}`;
+}

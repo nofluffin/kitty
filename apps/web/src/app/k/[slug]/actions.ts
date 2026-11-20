@@ -5,6 +5,8 @@ import { randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { isValidUpiId, normaliseUpiId } from "@kitty/core";
+
 import { db } from "@/server/db";
 import { claimCookie, isSlug } from "@/server/member-view";
 
@@ -51,7 +53,10 @@ export async function claimName(slug: string, formData: FormData) {
     .select("id, kitty_id, is_organiser, member_claims(claim_token), payments(status, kind, direction)")
     .eq("id", memberId)
     .maybeSingle();
+  // Paid names can't be picked, unless money is coming back to them after settle up.
+  const refundOpen = member?.payments.some((p) => p.kind === "refund" && (p.status === "requested" || p.status === "marked"));
   const paid =
+    !refundOpen &&
     member?.payments.some((p) => p.direction === "in" && p.kind === "share") &&
     member.payments.filter((p) => p.direction === "in" && p.kind === "share").every((p) => p.status === "confirmed");
   if (!member || member.kitty_id !== open.kittyId || member.is_organiser || paid) redirect(`/k/${slug}`);
@@ -93,7 +98,7 @@ export async function markPaid(slug: string) {
       .update({ status: "marked" })
       .eq("member_id", me.memberId)
       .eq("direction", "in")
-      .in("kind", ["share", "part"])
+      .in("kind", ["share", "part", "topup"])
       .in("status", ["requested", "not_received"]);
     // The push notification to the organiser comes with step 6.
   }
@@ -111,8 +116,31 @@ export async function sendReference(slug: string, formData: FormData) {
       .update({ status: "marked", upi_ref: ref })
       .eq("member_id", me.memberId)
       .eq("direction", "in")
-      .in("kind", ["share", "part"])
+      .in("kind", ["share", "part", "topup"])
       .eq("status", "not_received");
+  }
+  redirect(`/k/${slug}`);
+}
+
+/** Screen 18: "Send my UPI ID to Rohan". Only the organiser sees it. */
+export async function saveRefundUpi(slug: string, formData: FormData) {
+  const upi = normaliseUpiId(String(formData.get("refundUpi") ?? ""));
+  if (!isValidUpiId(upi)) redirect(`/k/${slug}?upi=invalid`);
+  const me = await claimedMember(slug);
+  if (me) await me.supabase.from("members").update({ refund_upi_id: upi }).eq("id", me.memberId);
+  redirect(`/k/${slug}?upi=saved`);
+}
+
+/** Screen 18: "I've got the ₹600". Decided 20 Nov 2026: this or the organiser's "Mark sent" finishes a refund. */
+export async function gotRefund(slug: string) {
+  const me = await claimedMember(slug);
+  if (me) {
+    await me.supabase
+      .from("payments")
+      .update({ status: "confirmed" })
+      .eq("member_id", me.memberId)
+      .eq("kind", "refund")
+      .in("status", ["requested", "marked"]);
   }
   redirect(`/k/${slug}`);
 }

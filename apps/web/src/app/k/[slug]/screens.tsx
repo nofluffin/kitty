@@ -17,7 +17,7 @@ import { CopyButton, PaySection } from "@/components/pay-section";
 import { Body, buttonClass, Card, GetKitty, Header, Label, NoInstall, Note, Page, Progress, Small, Title } from "@/components/ui";
 import type { MemberRow, MemberView, OpenKitty } from "@/server/member-view";
 
-import { claimName, forgetMe, markPaid, sendReference } from "./actions";
+import { claimName, forgetMe, gotRefund, markPaid, saveRefundUpi, sendReference } from "./actions";
 
 /** "today at 7:42 pm", "Thu 19 Nov at 7:42 pm", in India time. */
 function whenMarked(iso: string | null): string {
@@ -29,6 +29,8 @@ function whenMarked(iso: string | null): string {
   const today = new Date().toLocaleDateString("en-CA", { timeZone: tz });
   return `${day === today ? "today" : formatShortDate(day)} at ${time.replace(/\s/g, " ")}`;
 }
+
+const hasOpenRefund = (m: MemberRow) => m.refund?.status === "requested" || m.refund?.status === "marked";
 
 const STATUS_TEXT = { paid: "Paid ✓", waiting: "Waiting for", not_received: "Not received yet", unpaid: "Not paid yet" } as const;
 
@@ -125,7 +127,7 @@ export function PickName({ kitty, confirmId, notListed }: { kitty: OpenKitty; co
       <h2 className="mt-6 text-xl leading-6 font-bold text-ink">Who are you?</h2>
       <ul className="mt-4 flex flex-col gap-2">
         {pickList(kitty.members).map((m, i) =>
-          m.state === "paid" ? (
+          m.state === "paid" && !hasOpenRefund(m) ? (
             <li
               key={m.id}
               className="flex h-[52px] items-center justify-between border border-dashed border-line bg-sunken px-4 text-text"
@@ -143,7 +145,13 @@ export function PickName({ kitty, confirmId, notListed }: { kitty: OpenKitty; co
                 >
                   <span className="text-base text-ink">{m.name}</span>
                   <span className="text-sm text-muted">
-                    {m.state === "waiting" ? `Waiting for ${kitty.organiser.name}` : i === 0 ? "→" : ""}
+                    {hasOpenRefund(m)
+                      ? "Money back"
+                      : m.state === "waiting"
+                        ? `Waiting for ${kitty.organiser.name}`
+                        : i === 0
+                          ? "→"
+                          : ""}
                   </span>
                 </button>
               </form>
@@ -250,12 +258,19 @@ export function Waiting({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
   const progress = payProgress(kitty.members);
   const amount = formatRupees(me.sharePaise);
   const org = kitty.organiser.name;
-  const body =
-    me.sharePaise === 0
-      ? `${org} set your share to nothing, so there’s nothing to pay.`
-      : me.state === "paid"
-        ? `${org} confirmed your ${amount}. You’re all done.`
-        : `You marked ${amount} as paid. ${org} will confirm once it lands.`;
+  const body = me.refund?.status === "confirmed"
+    ? `Your ${formatRupees(me.refund.amountPaise)} back is sorted. You’re square.`
+    : me.topUp?.status === "marked"
+      ? `You marked ${formatRupees(me.topUp.amountPaise)} as paid. ${org} will confirm once it lands.`
+      : me.topUp?.status === "confirmed"
+        ? `${org} confirmed your ${formatRupees(me.topUp.amountPaise)}. You’re square.`
+        : kitty.status === "settling" && !me.topUp && !me.refund
+          ? `Your share came to exactly what you paid. You’re square.`
+          : me.sharePaise === 0
+            ? `${org} set your share to nothing, so there’s nothing to pay.`
+            : me.state === "paid"
+              ? `${org} confirmed your ${amount}. You’re all done.`
+              : `You marked ${amount} as paid. ${org} will confirm once it lands.`;
 
   return (
     <Page
@@ -264,11 +279,7 @@ export function Waiting({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
     >
       <Title>Thanks, {me.name}</Title>
       <Body>{body}</Body>
-      {kitty.status === "settling" ? (
-        <div className="mt-4">
-          <Note>{org} is settling up the final bill. If your share changes, this page will say so.</Note>
-        </div>
-      ) : null}
+
 
       <Card className="mt-6">
         <Progress value={progress.total ? progress.paid / progress.total : 0} />
@@ -309,9 +320,10 @@ export function Waiting({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
 // ---------------------------------------------------------------------------
 
 export function NotReceived({ kitty, me, refInvalid }: { kitty: OpenKitty; me: MemberRow; refInvalid?: boolean }) {
-  const amount = formatRupees(me.sharePaise);
+  const owed = me.topUp ? me.topUp.amountPaise : me.sharePaise;
+  const amount = formatRupees(owed);
   const org = kitty.organiser.name;
-  const uri = buildUpiUri({ payeeUpiId: kitty.upiId, payeeName: org, amountPaise: me.sharePaise, note: kittyPaymentNote(kitty.title) });
+  const uri = buildUpiUri({ payeeUpiId: kitty.upiId, payeeName: org, amountPaise: owed, note: kittyPaymentNote(kitty.title) });
   return (
     <Page header={<Header title="Kitty" right={<NoInstall />} />}>
       <Title>
@@ -349,6 +361,135 @@ export function NotReceived({ kitty, me, refInvalid }: { kitty: OpenKitty; me: M
         )}
         <button type="submit" className={`${buttonClass.secondary} mt-4 font-bold`}>
           Send the reference to {org}
+        </button>
+      </form>
+    </Page>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Screens 17 and 18: after the final bill
+// ---------------------------------------------------------------------------
+
+/** "How your share was worked out" for a typed final bill. The scanned breakdown comes in step 8. */
+function Breakdown({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
+  const unfixed = kitty.members.filter((m) => !m.shareFixed).length;
+  const rows: [string, string, boolean?][] = [
+    me.shareFixed
+      ? [`Your amount, set by ${kitty.organiser.name}`, formatRupees(me.finalSharePaise ?? 0)]
+      : [`Final bill ${formatRupees(kitty.finalBillPaise ?? 0)}, split ${unfixed} ways`, formatRupees(me.finalSharePaise ?? 0)],
+    ["Your share", formatRupees(me.finalSharePaise ?? 0), true],
+    ["You already paid", formatRupees(me.paidBeforePaise)],
+  ];
+  return (
+    <div className="mt-3 border border-line bg-surface px-4">
+      {rows.map(([label, value, bold], i) => (
+        <div key={label} className={`flex min-h-[45px] items-center justify-between gap-3 ${i < rows.length - 1 ? "border-b border-line" : ""}`}>
+          <span className="text-base text-text">{label}</span>
+          <span className={`text-base text-ink ${bold ? "font-bold" : ""}`}>{value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function TellOrganiser({ kitty }: { kitty: OpenKitty }) {
+  const url = whatsAppUrl(kitty.organiser.phone ?? "", `Hi ${kitty.organiser.name}, something looks wrong with my share for ${kitty.title} on Kitty. Can you check?`);
+  return url ? (
+    <a href={url} className={`${buttonClass.link} mx-auto w-fit`}>
+      Something looks wrong, tell {kitty.organiser.name}
+    </a>
+  ) : (
+    <Small className="text-center">Something looks wrong? Message {kitty.organiser.name} directly.</Small>
+  );
+}
+
+/** Screen 17: the bill came to more for this member. */
+export async function TopUp({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
+  const owed = me.topUp!.amountPaise;
+  const amount = formatRupees(owed);
+  const payment = { payeeUpiId: kitty.upiId, payeeName: kitty.organiser.name, amountPaise: owed, note: kittyPaymentNote(kitty.title) };
+  const paid = markPaid.bind(null, kitty.slug);
+  const neverPaid = me.paidBeforePaise <= 0;
+  return (
+    <Page
+      header={<Header title="Kitty" right={<NoInstall />} />}
+      footer={
+        <>
+          <PaySection uri={buildUpiUri(payment)} appLinks={buildUpiAppLinks(payment)} label={`Pay ${amount} with a UPI app`} markPaid={paid} />
+          <form action={paid}>
+            <button type="submit" className={`${buttonClass.secondary} font-bold`}>
+              I’ve paid
+            </button>
+          </form>
+          <TellOrganiser kitty={kitty} />
+        </>
+      }
+    >
+      <p className="text-base leading-6 text-text">
+        {me.name}, {neverPaid ? `your share of ${kitty.title}` : `${kitty.title} came to a bit more`}
+      </p>
+      <p className="mt-0.5 text-[40px] leading-[48px] font-bold text-ink">{neverPaid ? amount : `${amount} more`}</p>
+      <p className="mt-1 text-sm leading-[21px] text-text">
+        To {kitty.organiser.name}, {kitty.upiId}
+      </p>
+      <Label className="mt-8">How your share was worked out</Label>
+      <Breakdown kitty={kitty} me={me} />
+    </Page>
+  );
+}
+
+/** Screen 18: the bill came to less for this member. */
+export function Refund({ kitty, me, upiState }: { kitty: OpenKitty; me: MemberRow; upiState?: string }) {
+  const amount = formatRupees(me.refund!.amountPaise);
+  const org = kitty.organiser.name;
+  return (
+    <Page
+      header={<Header title="Kitty" right={<NoInstall />} />}
+      footer={
+        <>
+          <form action={gotRefund.bind(null, kitty.slug)}>
+            <button type="submit" className={buttonClass.secondary}>
+              I’ve got the {amount}
+            </button>
+          </form>
+        </>
+      }
+    >
+      <p className="text-base leading-6 text-text">
+        {me.name}, {kitty.title} came to less for you
+      </p>
+      <p className="mt-0.5 text-[40px] leading-[48px] font-bold text-ink">{amount} back</p>
+      <p className="mt-1 text-sm leading-[21px] text-text">{org} sends it by UPI</p>
+
+      <Label className="mt-8">How your share was worked out</Label>
+      <Breakdown kitty={kitty} me={me} />
+
+      <form action={saveRefundUpi.bind(null, kitty.slug)} className="mt-6">
+        <label htmlFor="refundUpi" className="block text-xs leading-4 font-bold tracking-[1.1px] text-text uppercase">
+          Where should {org} send it
+        </label>
+        <input
+          id="refundUpi"
+          name="refundUpi"
+          defaultValue={me.refundUpiId ?? ""}
+          autoComplete="off"
+          autoCapitalize="none"
+          placeholder="yourname@bank"
+          aria-invalid={upiState === "invalid" || undefined}
+          className={`mt-1.5 h-[47px] w-full rounded-[3px] border bg-surface px-3 text-base text-ink placeholder:text-muted ${upiState === "invalid" ? "border-danger" : "border-line"}`}
+        />
+        {upiState === "invalid" ? (
+          <p className="mt-1.5 text-sm text-danger" role="alert">
+            That doesn’t look like a UPI ID. It should look like name@bank.
+          </p>
+        ) : upiState === "saved" ? (
+          <Small className="mt-[7px]">Sent. {org} will see it.</Small>
+        ) : (
+          <Small className="mt-[7px]">Only {org} sees this.</Small>
+        )}
+        <button type="submit" className={`${buttonClass.primary} mt-4`}>
+          Send my UPI ID to {org}
         </button>
       </form>
     </Page>
