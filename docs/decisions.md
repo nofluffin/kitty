@@ -19,7 +19,8 @@ Choices made during the build that aren't in the spec, or that settle something 
 
 **Not done yet**
 
-- iPhone push needs an Apple push key, created by `eas credentials` with your Apple login. Android push needs a Firebase project (FCM). Both are one-time setups.
+- iPhone push needs an Apple push key, created by `eas credentials` with your Apple login.
+- Android push uses Firebase project `kitty-4d440`. Its `apps/mobile/google-services.json` is committed: it only identifies the app and isn't secret. The service account key that lets Expo send is uploaded to Expo by Raj and never stored in the repo.
 - Tokens for phones that uninstalled Kitty aren't cleaned up yet; Expo just rejects those sends.
 
 ## 20 Nov 2026: picking contacts and adding people
