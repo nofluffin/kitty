@@ -3,7 +3,8 @@ import { DMSans_700Bold } from '@expo-google-fonts/dm-sans/700Bold';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { useEffect, type ReactNode } from 'react';
+import { Platform, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider, useAuth } from '@/lib/auth';
@@ -36,12 +37,37 @@ function RootStack() {
   );
 }
 
+/** On a desktop browser (app.thekitty.app), keep the phone layout in a centred column. */
+function PhoneFrame({ children }: { children: ReactNode }) {
+  if (Platform.OS !== 'web') return children;
+  return (
+    <View style={styles.backdrop}>
+      <View style={styles.column}>{children}</View>
+    </View>
+  );
+}
+
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <RootStack />
+        <PhoneFrame>
+          <RootStack />
+        </PhoneFrame>
       </AuthProvider>
     </SafeAreaProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  backdrop: { flex: 1, alignItems: 'center', backgroundColor: colors.sunken },
+  column: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 480,
+    backgroundColor: colors.page,
+    borderLeftWidth: StyleSheet.hairlineWidth,
+    borderRightWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.line,
+  },
+});
