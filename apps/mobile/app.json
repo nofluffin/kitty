@@ -9,7 +9,7 @@
     "userInterfaceStyle": "light",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "app.thekitty",
+      "bundleIdentifier": "app.thekitty.organiser",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -22,7 +22,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "app.thekitty"
+      "package": "app.thekitty.organiser"
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
