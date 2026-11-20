@@ -42,6 +42,7 @@ async function MemberScreen({ params, searchParams }: PageProps<"/k/[slug]">) {
         kitty={view}
         confirmId={typeof query.confirm === "string" ? query.confirm : undefined}
         notListed={query.missing === "1"}
+        forId={typeof query.for === "string" ? query.for : undefined}
       />
     );
   }

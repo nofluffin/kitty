@@ -94,13 +94,25 @@ export function Gone({ view }: { view: Exclude<MemberView, OpenKitty> }) {
 // Screen 14: open the link, pick your name
 // ---------------------------------------------------------------------------
 
-export function PickName({ kitty, confirmId, notListed }: { kitty: OpenKitty; confirmId?: string; notListed?: boolean }) {
+export function PickName({
+  kitty,
+  confirmId,
+  notListed,
+  forId,
+}: {
+  kitty: OpenKitty;
+  confirmId?: string;
+  notListed?: boolean;
+  /** A personal link from a nudge (?for=<member>): that person's name is ready to tap. */
+  forId?: string;
+}) {
   // What each payer is asked for (someone paying for a child is asked for both).
   const shares = kitty.members.filter((m) => !m.paidById).map((m) => m.askPaise);
   const equal = isEqualSplit(shares);
   const progress = payProgress(kitty.members);
   const claim = claimName.bind(null, kitty.slug);
   const confirming = kitty.members.find((m) => m.id === confirmId && !m.isOrganiser && m.state !== "paid");
+  const forMe = kitty.members.find((m) => m.id === forId && !m.isOrganiser && !m.paidById && (m.state !== "paid" || hasOpenRefund(m)));
 
   if (confirming) {
     return (
@@ -146,10 +158,19 @@ export function PickName({ kitty, confirmId, notListed }: { kitty: OpenKitty; co
         </p>
       </Card>
 
-      <h2 className="mt-6 text-xl leading-6 font-bold text-ink">Who are you?</h2>
+      {forMe ? (
+        <form action={claim} className="mt-6">
+          <input type="hidden" name="memberId" value={forMe.id} />
+          <button type="submit" className={buttonClass.primary}>
+            I’m {forMe.name}, continue
+          </button>
+        </form>
+      ) : null}
+
+      <h2 className="mt-6 text-xl leading-6 font-bold text-ink">{forMe ? `Not ${forMe.name}? Pick your name` : "Who are you?"}</h2>
       <ul className="mt-4 flex flex-col gap-2">
         {/* People paid for by someone else never pay themselves, so they aren't listed. */}
-        {pickList(kitty.members.filter((m) => !m.paidById)).map((m, i) =>
+        {pickList(kitty.members.filter((m) => !m.paidById)).map((m) =>
           m.state === "paid" && !hasOpenRefund(m) ? (
             <li
               key={m.id}
@@ -164,7 +185,7 @@ export function PickName({ kitty, confirmId, notListed }: { kitty: OpenKitty; co
                 <input type="hidden" name="memberId" value={m.id} />
                 <button
                   type="submit"
-                  className={`flex h-[52px] w-full items-center justify-between border bg-surface px-4 text-left active:opacity-80 ${i === 0 ? "border-ink" : "border-line"}`}
+                  className={`flex h-[52px] w-full items-center justify-between border bg-surface px-4 text-left active:opacity-80 ${m.id === forMe?.id ? "border-ink" : "border-line"}`}
                 >
                   <span className="text-base text-ink">{m.name}</span>
                   <span className="text-sm text-muted">
@@ -172,9 +193,7 @@ export function PickName({ kitty, confirmId, notListed }: { kitty: OpenKitty; co
                       ? "Money back"
                       : m.state === "waiting"
                         ? `Waiting for ${kitty.organiser.name}`
-                        : i === 0
-                          ? "→"
-                          : ""}
+                        : "→"}
                   </span>
                 </button>
               </form>
