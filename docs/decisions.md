@@ -2,6 +2,24 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 20 Nov 2026: step 7, settle up (screens 12, 13, 17, 18)
+
+**Decided with Raj**
+
+- **Typed final bill:** amounts the organiser typed by hand stay as they were; the rest of the final bill is split equally among everyone else (the screen 4 rule), not a plain equal split.
+- **Unconfirmed payments are confirmed first.** Settle up won't start while anyone's "I've paid" is waiting, so top-ups and refunds come from money that really arrived.
+- **A refund is finished by either side:** the organiser's "Mark sent" or the member's "I've got the ₹600", whichever comes first.
+
+**How it works**
+
+- `settle_kitty` and `close_kitty` are single database calls. The shares come from `typedBillShares` in packages/core; the database checks they add up to the bill.
+- Settling writes off what's still owed on the original shares and replaces it with each person's difference, so someone who never paid owes their whole new share (spec section 4). Written-off amounts stay on record.
+- "Scan the bill" in the feed goes to a "Final bill" screen for typing the total until the bill scan (step 8) puts the camera in front of it. That screen isn't in the wires.
+- Screen 12 leads with refunds; screen 13 (someone never paid) leads with money still to come in, as drawn.
+- **Ask** opens WhatsApp with a top-up message. Its wording isn't in the spec: "Hi Kabir, Friday dinner came to a bit more. Your share is ₹1,250 and you paid ₹1,000, so it's ₹250 more: [link]". Someone who never paid gets the usual nudge.
+- People owed a refund can still pick their name on the member page ("Money back"), so they can claim it from a new phone.
+- Screens 17 and 18 explain a typed bill as "Final bill ₹5,000, split 5 ways". The veg, non-veg and alcohol breakdown and "See the scanned bill" come with step 8.
+
 ## 20 Nov 2026: production domain and login emails
 
 - **Domain: `thekitty.app`**, bought by Raj at GoDaddy, with DNS moved to Vercel. The member page is served at `https://thekitty.app`, and `www` forwards there.

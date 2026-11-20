@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canMoveKitty, canMovePayment, groupReminderMessage, nudgeMessage, shareMessage, sharesEditable, whatsAppUrl } from '../src';
+import { canMoveKitty, canMovePayment, groupReminderMessage, nudgeMessage, shareMessage, sharesEditable, topUpMessage, whatsAppUrl } from '../src';
 
 const link = 'https://kitty.example/k/abc123def456';
 
@@ -107,6 +107,19 @@ describe('groupReminderMessage', () => {
   it('reminds the group without naming anyone', () => {
     expect(groupReminderMessage({ title: 'Friday dinner', link })).toBe(
       `Quick reminder for Friday dinner: if you haven’t paid your share yet, it takes a minute: ${link}`,
+    );
+  });
+});
+
+describe('topUpMessage', () => {
+  it('explains the top-up (screen 12, Ask)', () => {
+    expect(topUpMessage({ memberName: 'Kabir', title: 'Friday dinner', newSharePaise: 125000, paidPaise: 100000, link })).toBe(
+      `Hi Kabir, Friday dinner came to a bit more. Your share is ₹1,250 and you paid ₹1,000, so it’s ₹250 more: ${link}`,
+    );
+  });
+  it('uses the plain nudge for someone who never paid (screen 13)', () => {
+    expect(topUpMessage({ memberName: 'Zoya', title: 'Friday dinner', newSharePaise: 85000, paidPaise: 0, link })).toBe(
+      `Hi Zoya, ₹850 for Friday dinner is still open. It takes a minute to pay: ${link}`,
     );
   });
 });

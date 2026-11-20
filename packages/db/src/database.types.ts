@@ -171,7 +171,10 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "create_kitty":
+            "close_kitty":
+{ Args: { "p_kitty_id": string,"p_write_off"?: boolean }; Returns: undefined
+                           },
+"create_kitty":
 { Args: { "p_due_date": string,"p_kind": Database["public"]['Enums']["kitty_kind"],"p_members": Json,"p_title": string,"p_total_paise": number,"p_upi_id": string }; Returns: {
               "amount_source": Database["public"]['Enums']["amount_source"],
 "closed_at": string | null,
@@ -202,8 +205,8 @@ isOneToOne: false
 "generate_share_slug":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
-"owns_kitty":
-{ Args: { "target_kitty_id": string }; Returns: boolean
+"settle_kitty":
+{ Args: { "p_final_bill_paise": number,"p_kitty_id": string,"p_shares": Json }; Returns: undefined
                            },
 "share_kitty":
 { Args: { "p_kitty_id": string }; Returns: string

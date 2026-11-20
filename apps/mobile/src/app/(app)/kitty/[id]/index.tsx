@@ -6,7 +6,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { explainFailure } from '@/lib/errors';
 import { loadFeed, type FeedKitty, type FeedMember } from '@/lib/feed';
-import { notify } from '@/lib/notify';
 import { Button, CenteredState, Header, Note, TextLink } from '@/ui/components';
 import { colors, layout, type } from '@/ui/theme';
 
@@ -82,13 +81,17 @@ export default function Feed() {
             </View>
           </ScrollView>
           <View style={styles.footer}>
-            <Note>After the dinner, scan the bill. Kitty splits veg, non-veg and alcohol and works out who gets money back.</Note>
-            <Button
-              variant="secondary"
-              onPress={() => notify('Coming soon', 'Scanning the bill and settling up come in steps 7 and 8 of the build.')}
-            >
-              Scan the bill
-            </Button>
+            {load.kitty.status === 'settling' ? (
+              <Button onPress={() => router.push({ pathname: '/kitty/[id]/settle', params: { id } })}>Open settle up</Button>
+            ) : (
+              <>
+                <Note>After the dinner, scan the bill. Kitty splits veg, non-veg and alcohol and works out who gets money back.</Note>
+                {/* Until the bill scan (step 8), this goes straight to typing the final bill. */}
+                <Button variant="secondary" onPress={() => router.push({ pathname: '/kitty/[id]/final-bill', params: { id } })}>
+                  Scan the bill
+                </Button>
+              </>
+            )}
           </View>
         </>
       )}

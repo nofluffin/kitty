@@ -152,12 +152,14 @@ function KittyCard({ kitty, today }: { kitty: KittySummary; today: string }) {
       onPress={() =>
         isDraft
           ? router.push({ pathname: '/kitty/[id]/share', params: { id: kitty.id } })
-          : router.push({ pathname: '/kitty/[id]', params: { id: kitty.id } })
+          : kitty.status === 'settling'
+            ? router.push({ pathname: '/kitty/[id]/settle', params: { id: kitty.id } })
+            : router.push({ pathname: '/kitty/[id]', params: { id: kitty.id } })
       }
     >
       <View style={styles.cardTop}>
         <Text style={[type.cardTitle, styles.cardTitle]}>{kitty.title}</Text>
-        <Badge>{isDraft ? 'Draft' : kitty.kind}</Badge>
+        <Badge>{isDraft ? 'Draft' : kitty.status === 'settling' ? 'Settling' : kitty.kind}</Badge>
       </View>
       <Text style={[type.metaMuted, styles.cardDate]}>
         {formatShortDate(kitty.dueDate)}, {timeToGo(today, kitty.dueDate)}
