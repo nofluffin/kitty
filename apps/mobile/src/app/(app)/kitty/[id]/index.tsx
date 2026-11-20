@@ -84,7 +84,8 @@ export default function Feed() {
           >
             <Summary kitty={load.kitty} />
             <View style={styles.rows}>
-              {feedOrder(load.kitty.members).map((m) => (
+              {/* People paid for by someone else show under their payer, not as rows of their own. */}
+              {feedOrder(load.kitty.members.filter((m) => !m.paidById)).map((m) => (
                 <FeedRow key={m.id} kitty={load.kitty} member={m} />
               ))}
             </View>
@@ -144,7 +145,8 @@ function Summary({ kitty }: { kitty: FeedKitty }) {
 }
 
 function FeedRow({ kitty, member: m }: { kitty: FeedKitty; member: FeedMember }) {
-  const amount = formatRupees(m.sharePaise);
+  const amount = formatRupees(m.askPaise);
+  const paysFor = m.paysFor.length > 0 ? `Pays for ${m.paysFor.join(', ')} too` : null;
   const name = m.isOrganiser ? 'You' : m.name;
   // Goals in parts: talk about the part that's due, not the whole share.
   const next = m.parts?.next ?? null;
@@ -153,7 +155,10 @@ function FeedRow({ kitty, member: m }: { kitty: FeedKitty; member: FeedMember })
   if (m.isOrganiser || m.state === 'paid') {
     return (
       <View style={styles.row}>
-        <Text style={[type.bodyInk, styles.flex]}>{name}</Text>
+        <View style={styles.flex}>
+          <Text style={type.bodyInk}>{name}</Text>
+          {paysFor ? <Text style={type.note}>{paysFor}</Text> : null}
+        </View>
         <Text style={type.metaMuted}>{m.isOrganiser ? `Your share, ${amount} ✓` : `Paid ${amount} ✓`}</Text>
       </View>
     );
@@ -182,6 +187,7 @@ function FeedRow({ kitty, member: m }: { kitty: FeedKitty; member: FeedMember })
     <View style={styles.row}>
       <View style={styles.flex}>
         <Text style={type.bodyInk}>{name}</Text>
+        {paysFor ? <Text style={type.note}>{paysFor}</Text> : null}
         <Text style={type.note}>{detail}</Text>
       </View>
       <Pressable

@@ -18,7 +18,7 @@ export async function loadEditableKitty(id: string): Promise<ExistingKitty | nul
   const { data, error } = await supabase
     .from('kitties')
     .select(
-      'id, status, kind, goal_plan, parts_count, title, total_paise, due_date, upi_id, members(id, name, phone, is_organiser, diet, drinks, share_paise, share_fixed, sort_order, payments(status))',
+      'id, status, kind, goal_plan, parts_count, title, total_paise, due_date, upi_id, members(id, name, phone, is_organiser, diet, drinks, share_paise, share_fixed, sort_order, paid_by_member_id, payments(status))',
     )
     .eq('id', id)
     .single();
@@ -47,6 +47,7 @@ export async function loadEditableKitty(id: string): Promise<ExistingKitty | nul
         diet: m.diet as Diet,
         drinks: m.drinks,
         fixedPaise: m.share_fixed ? m.share_paise : null,
+        paidByMemberId: m.paid_by_member_id,
       })),
   };
 }

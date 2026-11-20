@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { feedOrder, memberPayState, payProgress, pickList, statusList, type MemberLike } from '../src';
+import { combineByPayer, dependantsOf, feedOrder, memberPayState, payerIdOf, payProgress, pickList, statusList, type MemberLike } from '../src';
 
 describe('memberPayState', () => {
   it('reads a single share payment', () => {
@@ -67,5 +67,23 @@ describe('feedOrder', () => {
   it('puts "not received" between said-paid and unpaid', () => {
     const list = [m('a', 0, 'unpaid'), m('b', 1, 'not_received'), m('c', 2, 'waiting'), m('o', 3, 'unpaid', true)];
     expect(feedOrder(list).map((x) => x.id)).toEqual(['c', 'b', 'a', 'o']);
+  });
+});
+
+describe('paying for someone else', () => {
+  const people = [
+    { id: 'kabir', paidById: null, share: 100000 },
+    { id: 'aarav', paidById: 'kabir', share: 50000 },
+    { id: 'zoya', paidById: null, share: 100000 },
+  ];
+
+  it('asks each payer for their own share plus those they pay for', () => {
+    expect(Object.fromEntries(combineByPayer(people, (m) => m.share))).toEqual({ kabir: 150000, zoya: 100000 });
+  });
+
+  it('knows who pays and who is paid for', () => {
+    expect(payerIdOf(people[1]!)).toBe('kabir');
+    expect(payerIdOf(people[2]!)).toBe('zoya');
+    expect(dependantsOf(people, 'kabir').map((m) => m.id)).toEqual(['aarav']);
   });
 });

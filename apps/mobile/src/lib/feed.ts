@@ -66,17 +66,70 @@ export interface FeedMember {
   refund: Adjustment | null;
   /** Goals paid in parts: how many are paid and which is next. */
   parts: PartsProgress | null;
+  /** Who pays this person's share, if someone else does (e.g. a parent). */
+  paidById: string | null;
+  /** The people this person pays for, by name. */
+  paysFor: string[];
+  /** What this person is asked for: their own share plus those they pay for. Zero if someone else pays. */
+  askPaise: number;
 }
 
 export async function loadFeed(kittyId: string): Promise<FeedKitty> {
   const { data, error } = await supabase
     .from('kitties')
     .select(
-      'id, title, kind, status, due_date, total_paise, upi_id, share_slug, amount_source, remind_day_before, remind_on_day, final_bill_paise, parts_count, members(id, name, phone, is_organiser, sort_order, share_paise, share_fixed, diet, drinks, final_share_paise, refund_upi_id, last_opened_at, payments(kind, direction, status, amount_paise, due_date, marked_at, upi_ref))',
+      'id, title, kind, status, due_date, total_paise, upi_id, share_slug, amount_source, remind_day_before, remind_on_day, final_bill_paise, parts_count, members(id, name, phone, is_organiser, sort_order, share_paise, share_fixed, diet, drinks, final_share_paise, refund_upi_id, last_opened_at, paid_by_member_id, payments(kind, direction, status, amount_paise, due_date, marked_at, upi_ref))',
     )
     .eq('id', kittyId)
     .single();
   if (error) throw error;
+
+  const members: FeedMember[] = data.members.map((m) => {
+    const adjustment = (kind: 'topup' | 'refund'): Adjustment | null => {
+      const p = m.payments.find((x) => x.kind === kind);
+      return p ? { status: p.status as PaymentStatus, amountPaise: p.amount_paise, markedAt: p.marked_at } : null;
+    };
+    const shares = m.payments.filter((p) => p.direction === 'in' && (p.kind === 'share' || p.kind === 'part'));
+    const marked = shares.map((p) => p.marked_at).filter((t): t is string => !!t).sort();
+    const dependants = data.members.filter((x) => x.paid_by_member_id === m.id);
+    return {
+      id: m.id,
+      name: m.name,
+      phone: m.phone,
+      isOrganiser: m.is_organiser,
+      sortOrder: m.sort_order,
+      sharePaise: m.share_paise,
+      state: m.share_paise + dependants.reduce((s, d) => s + d.share_paise, 0) === 0 ? 'paid' : memberPayState(shares.map((p) => p.status as PaymentStatus)),
+      paidPaise: m.payments
+        .filter((p) => p.status === 'confirmed')
+        .reduce((sum, p) => sum + (p.direction === 'in' ? p.amount_paise : -p.amount_paise), 0),
+      markedAt: marked.at(-1) ?? null,
+      upiRef: shares.map((p) => p.upi_ref).find(Boolean) ?? null,
+      lastOpenedAt: m.last_opened_at,
+      shareFixed: m.share_fixed,
+      diet: m.diet,
+      drinks: m.drinks,
+      finalSharePaise: m.final_share_paise,
+      refundUpiId: m.refund_upi_id,
+      topUp: adjustment('topup'),
+      refund: adjustment('refund'),
+      parts: data.parts_count
+        ? partsProgress(
+            m.payments
+              .filter((p) => p.kind === 'part' && p.due_date)
+              .map((p) => ({ amountPaise: p.amount_paise, dueDate: p.due_date!, status: p.status as PaymentStatus })),
+          )
+        : null,
+      paidById: m.paid_by_member_id,
+      paysFor: [...dependants].sort((a, b) => a.sort_order - b.sort_order).map((d) => d.name),
+      askPaise: m.paid_by_member_id ? 0 : m.share_paise + dependants.reduce((s, d) => s + d.share_paise, 0),
+    };
+  });
+  // Someone paid for by another person stands wherever their payer stands.
+  for (const m of members) {
+    const payer = m.paidById ? members.find((x) => x.id === m.paidById) : null;
+    if (payer) m.state = payer.state;
+  }
 
   return {
     id: data.id,
@@ -96,43 +149,7 @@ export async function loadFeed(kittyId: string): Promise<FeedKitty> {
       data.status,
       data.members.flatMap((m) => m.payments.map((p) => ({ isOrganiser: m.is_organiser, status: p.status }))),
     ),
-    members: data.members.map((m) => {
-      const adjustment = (kind: 'topup' | 'refund'): Adjustment | null => {
-        const p = m.payments.find((x) => x.kind === kind);
-        return p ? { status: p.status as PaymentStatus, amountPaise: p.amount_paise, markedAt: p.marked_at } : null;
-      };
-      const shares = m.payments.filter((p) => p.direction === 'in' && (p.kind === 'share' || p.kind === 'part'));
-      const marked = shares.map((p) => p.marked_at).filter((t): t is string => !!t).sort();
-      return {
-        id: m.id,
-        name: m.name,
-        phone: m.phone,
-        isOrganiser: m.is_organiser,
-        sortOrder: m.sort_order,
-        sharePaise: m.share_paise,
-        state: m.share_paise === 0 ? 'paid' : memberPayState(shares.map((p) => p.status as PaymentStatus)),
-        paidPaise: m.payments
-          .filter((p) => p.status === 'confirmed')
-          .reduce((sum, p) => sum + (p.direction === 'in' ? p.amount_paise : -p.amount_paise), 0),
-        markedAt: marked.at(-1) ?? null,
-        upiRef: shares.map((p) => p.upi_ref).find(Boolean) ?? null,
-        lastOpenedAt: m.last_opened_at,
-        shareFixed: m.share_fixed,
-        diet: m.diet,
-        drinks: m.drinks,
-        finalSharePaise: m.final_share_paise,
-        refundUpiId: m.refund_upi_id,
-        topUp: adjustment('topup'),
-        refund: adjustment('refund'),
-        parts: data.parts_count
-          ? partsProgress(
-              m.payments
-                .filter((p) => p.kind === 'part' && p.due_date)
-                .map((p) => ({ amountPaise: p.amount_paise, dueDate: p.due_date!, status: p.status as PaymentStatus })),
-            )
-          : null,
-      };
-    }),
+    members,
   };
 }
 

@@ -53,7 +53,10 @@ function SettleReady({ kitty, reload }: { kitty: FeedKitty; reload: () => Promis
   const [error, setError] = useState<string | null>(null);
   const link = `${config.memberPageUrl}/k/${kitty.slug}`;
   const me = kitty.members.find((m) => m.isOrganiser);
-  const others = kitty.members.filter((m) => !m.isOrganiser).sort((a, b) => a.sortOrder - b.sortOrder);
+  // One line per payer: someone paying for a child settles for both.
+  const others = kitty.members.filter((m) => !m.isOrganiser && !m.paidById).sort((a, b) => a.sortOrder - b.sortOrder);
+  const finalOf = (m: FeedMember) =>
+    kitty.members.filter((x) => x.id === m.id || x.paidById === m.id).reduce((sum, x) => sum + (x.finalSharePaise ?? 0), 0);
 
   const toComeIn = others.filter((m) => m.topUp && OPEN.includes(m.topUp.status));
   const toSendBack = others.filter((m) => m.refund && OPEN.includes(m.refund.status));
@@ -61,7 +64,7 @@ function SettleReady({ kitty, reload }: { kitty: FeedKitty; reload: () => Promis
   const neverPaid = toComeIn.some((m) => paidBefore(m) <= 0);
   const covering = toComeIn.reduce((sum, m) => sum + (m.topUp?.amountPaise ?? 0), 0);
   const collected = kitty.members.reduce((sum, m) => sum + paidBefore(m), 0);
-  const paidCount = kitty.members.filter((m) => paidBefore(m) > 0 || m.isOrganiser).length;
+  const paidCount = kitty.members.filter((m) => !m.paidById && (paidBefore(m) > 0 || m.isOrganiser)).length;
   const square = toComeIn.length === 0 && toSendBack.length === 0;
 
   async function run(key: string, action: () => Promise<unknown>, what: string) {
@@ -74,7 +77,7 @@ function SettleReady({ kitty, reload }: { kitty: FeedKitty; reload: () => Promis
   }
 
   async function askForTopUp(m: FeedMember) {
-    const text = topUpMessage({ memberName: m.name, title: kitty.title, newSharePaise: m.finalSharePaise ?? 0, paidPaise: paidBefore(m), link });
+    const text = topUpMessage({ memberName: m.name, title: kitty.title, newSharePaise: finalOf(m), paidPaise: paidBefore(m), link });
     const url = (m.phone && whatsAppUrl(m.phone, text)) || `https://wa.me/?text=${encodeURIComponent(text)}`;
     try {
       await Linking.openURL(url);
@@ -105,7 +108,7 @@ function SettleReady({ kitty, reload }: { kitty: FeedKitty; reload: () => Promis
   const comeIn = toComeIn.length > 0 && (
     <Section label="Still to come in" key="in">
       {toComeIn.map((m) => {
-        const share = formatRupees(m.finalSharePaise ?? 0);
+        const share = formatRupees(finalOf(m));
         const before = paidBefore(m);
         const said = m.topUp?.status === 'marked';
         return (
@@ -143,7 +146,7 @@ function SettleReady({ kitty, reload }: { kitty: FeedKitty; reload: () => Promis
         <ActionRow
           key={m.id}
           title={`${m.name}, ${formatRupees(m.refund!.amountPaise)} back`}
-          detail={`Share ${formatRupees(m.finalSharePaise ?? 0)}, paid ${formatRupees(paidBefore(m))}. ${m.refundUpiId ? `Send to ${m.refundUpiId}` : 'No UPI ID from them yet'}`}
+          detail={`Share ${formatRupees(finalOf(m))}, paid ${formatRupees(paidBefore(m))}. ${m.refundUpiId ? `Send to ${m.refundUpiId}` : 'No UPI ID from them yet'}`}
           action="Mark sent"
           busy={busy === m.id}
           onPress={() => run(m.id, () => markRefundSent(m.id), 'mark the refund as sent')}
@@ -169,7 +172,7 @@ function SettleReady({ kitty, reload }: { kitty: FeedKitty; reload: () => Promis
       <View style={styles.summary}>
         <SummaryRow label="Final bill" value={formatRupees(kitty.finalBillPaise ?? 0)} bold />
         <SummaryRow
-          label={neverPaid ? `Collected so far, ${paidCount} of ${kitty.members.length}` : 'Collected before'}
+          label={neverPaid ? `Collected so far, ${paidCount} of ${others.length + 1}` : 'Collected before'}
           value={formatRupees(collected)}
           last={covering === 0}
         />
@@ -192,7 +195,7 @@ function SettleReady({ kitty, reload }: { kitty: FeedKitty; reload: () => Promis
         </Section>
       ) : null}
 
-      {me?.finalSharePaise != null ? <Text style={[type.metaMuted, styles.own]}>Your own share is {formatRupees(me.finalSharePaise)}.</Text> : null}
+      {me?.finalSharePaise != null ? <Text style={[type.metaMuted, styles.own]}>Your own share is {formatRupees(finalOf(me))}.</Text> : null}
     </Screen>
   );
 }

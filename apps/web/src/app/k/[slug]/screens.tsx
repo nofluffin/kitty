@@ -75,7 +75,8 @@ export function Gone({ view }: { view: Exclude<MemberView, OpenKitty> }) {
 // ---------------------------------------------------------------------------
 
 export function PickName({ kitty, confirmId, notListed }: { kitty: OpenKitty; confirmId?: string; notListed?: boolean }) {
-  const shares = kitty.members.map((m) => m.sharePaise);
+  // What each payer is asked for (someone paying for a child is asked for both).
+  const shares = kitty.members.filter((m) => !m.paidById).map((m) => m.askPaise);
   const equal = isEqualSplit(shares);
   const progress = payProgress(kitty.members);
   const claim = claimName.bind(null, kitty.slug);
@@ -127,7 +128,8 @@ export function PickName({ kitty, confirmId, notListed }: { kitty: OpenKitty; co
 
       <h2 className="mt-6 text-xl leading-6 font-bold text-ink">Who are you?</h2>
       <ul className="mt-4 flex flex-col gap-2">
-        {pickList(kitty.members).map((m, i) =>
+        {/* People paid for by someone else never pay themselves, so they aren't listed. */}
+        {pickList(kitty.members.filter((m) => !m.paidById)).map((m, i) =>
           m.state === "paid" && !hasOpenRefund(m) ? (
             <li
               key={m.id}
@@ -189,7 +191,7 @@ export function PickName({ kitty, confirmId, notListed }: { kitty: OpenKitty; co
 export async function PayShare({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
   // Goals in parts: ask for the next part, not the whole share.
   const next = me.parts?.next ?? null;
-  const owed = next?.amountPaise ?? me.sharePaise;
+  const owed = next?.amountPaise ?? me.askPaise;
   const amount = formatRupees(owed);
   const paid = markPaid.bind(null, kitty.slug);
 
@@ -239,7 +241,7 @@ function PartsList({ me }: { me: MemberRow }) {
   return (
     <>
       <Label className="mt-8">
-        Your {parts.total} parts, {formatRupees(me.sharePaise)} in all
+        Your {parts.total} parts, {formatRupees(me.askPaise)} in all
       </Label>
       <ul className="mt-3 border-t border-line">
         {parts.list.map((p, i) => (
@@ -307,7 +309,7 @@ function BackToNames({ slug }: { slug: string }) {
 
 export function Waiting({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
   const progress = payProgress(kitty.members);
-  const amount = formatRupees(me.sharePaise);
+  const amount = formatRupees(me.askPaise);
   const org = kitty.organiser.name;
   const body = me.refund?.status === "confirmed"
     ? `Your ${formatRupees(me.refund.amountPaise)} back is sorted. You’re square.`
@@ -317,7 +319,7 @@ export function Waiting({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
         ? `${org} confirmed your ${formatRupees(me.topUp.amountPaise)}. You’re square.`
         : kitty.status === "settling" && !me.topUp && !me.refund
           ? `Your share came to exactly what you paid. You’re square.`
-          : me.sharePaise === 0
+          : me.askPaise === 0
             ? `${org} set your share to nothing, so there’s nothing to pay.`
             : me.state === "paid"
               ? `${org} confirmed your ${amount}. You’re all done.`
@@ -373,7 +375,7 @@ export function Waiting({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
 // ---------------------------------------------------------------------------
 
 export function NotReceived({ kitty, me, refInvalid }: { kitty: OpenKitty; me: MemberRow; refInvalid?: boolean }) {
-  const owed = me.topUp ? me.topUp.amountPaise : (me.parts?.next?.amountPaise ?? me.sharePaise);
+  const owed = me.topUp ? me.topUp.amountPaise : (me.parts?.next?.amountPaise ?? me.askPaise);
   const amount = formatRupees(owed);
   const org = kitty.organiser.name;
   const uri = buildUpiUri({ payeeUpiId: kitty.upiId, payeeName: org, amountPaise: owed, note: kittyPaymentNote(kitty.title) });
@@ -489,27 +491,44 @@ function ScannedNote({ kitty }: { kitty: OpenKitty }) {
   );
 }
 
-/** Screen 15: how the share being asked for was worked out, before any settle up. */
-function ShareBreakdown({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
+/** How one person's share was worked out, before any settle up. */
+function personRows(kitty: OpenKitty, p: MemberRow, isMe: boolean): BreakdownRow[] {
   const org = kitty.organiser.name;
   const fixed = kitty.members.filter((m) => m.shareFixed);
   const fixedTotal = fixed.reduce((sum, m) => sum + m.sharePaise, 0);
   const splitWays = kitty.members.length - fixed.length;
   const total = { label: `Total ${formatRupees(kitty.totalPaise)}`, value: "" };
-  const rows: BreakdownRow[] = kitty.bill
-    ? [...categoryRows(kitty, me), { label: "Your share", value: formatRupees(me.sharePaise), bold: true }]
-    : me.shareFixed
-      ? [total, { label: `Your amount, set by ${org}`, value: formatRupees(me.sharePaise) }]
-      : fixed.length > 0
-        ? [
-            total,
-            { label: `Set by ${org} for ${fixed.map((m) => m.name).join(", ")}`, value: `−${formatRupees(fixedTotal)}` },
-            { label: `The rest, split ${splitWays} ways`, value: formatRupees(me.sharePaise) },
-          ]
-        : [{ label: `Total ${formatRupees(kitty.totalPaise)}, split ${kitty.members.length} ways`, value: formatRupees(me.sharePaise) }];
+  const whose = isMe ? "Your" : `${p.name}’s`;
+  if (kitty.bill) return [...categoryRows(kitty, p), { label: `${whose} share`, value: formatRupees(p.sharePaise), bold: true }];
+  if (p.shareFixed) return [total, { label: `${whose} amount, set by ${org}`, value: formatRupees(p.sharePaise) }];
+  if (fixed.length > 0) {
+    return [
+      total,
+      { label: `Set by ${org} for ${fixed.map((m) => m.name).join(", ")}`, value: `−${formatRupees(fixedTotal)}` },
+      { label: `The rest, split ${splitWays} ways`, value: formatRupees(p.sharePaise) },
+    ];
+  }
+  return [{ label: `Total ${formatRupees(kitty.totalPaise)}, split ${kitty.members.length} ways`, value: formatRupees(p.sharePaise) }];
+}
+
+/** Screen 15: how the share being asked for was worked out, for you and anyone you pay for. */
+function ShareBreakdown({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
+  const paysFor = me.paysForIds.map((id) => kitty.members.find((m) => m.id === id)!);
   return (
     <>
-      <BreakdownCard rows={rows} />
+      {paysFor.length === 0 ? (
+        <BreakdownCard rows={personRows(kitty, me, true)} />
+      ) : (
+        <>
+          {[me, ...paysFor].map((p, i) => (
+            <div key={p.id} className={i === 0 ? "mt-3" : "mt-5"}>
+              <p className="text-sm leading-[21px] font-bold text-ink">{i === 0 ? "For you" : `For ${p.name}`}</p>
+              <BreakdownCard rows={personRows(kitty, p, i === 0)} />
+            </div>
+          ))}
+          <BreakdownCard rows={[{ label: `For you and ${paysFor.map((p) => p.name).join(", ")}`, value: formatRupees(me.askPaise), bold: true }]} />
+        </>
+      )}
       <ScannedNote kitty={kitty} />
       <EveryonesShare kitty={kitty} me={me} />
     </>
@@ -525,7 +544,12 @@ function EveryonesShare({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
       <ul className="mt-3 border-t border-line">
         {list.map((m) => (
           <li key={m.id} className="flex min-h-[45px] items-center justify-between gap-3 border-b border-line">
-            <span className="text-base text-ink">{m.id === me.id ? "You" : m.isOrganiser ? `${m.name} (organiser)` : m.name}</span>
+            <span className="text-base text-ink">
+              {m.id === me.id ? "You" : m.isOrganiser ? `${m.name} (organiser)` : m.name}
+              {m.paidById ? (
+                <span className="text-text">{m.paidById === me.id ? ", you pay" : `, ${kitty.members.find((x) => x.id === m.paidById)?.name} pays`}</span>
+              ) : null}
+            </span>
             <span className="text-base text-text">{formatRupees(m.sharePaise)}</span>
           </li>
         ))}
@@ -549,7 +573,16 @@ function Breakdown({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
           : { label: `Final bill ${formatRupees(kitty.finalBillPaise ?? 0)}, split ${unfixed} ways`, value: formatRupees(me.finalSharePaise ?? 0) },
       ];
   rows.push(
-    { label: "Your share", value: formatRupees(me.finalSharePaise ?? 0), bold: true },
+    // Paying for someone else: their new shares, then the total for the group.
+    ...me.paysForIds.map((id) => {
+      const p = kitty.members.find((m) => m.id === id)!;
+      return { label: `${p.name}’s share`, value: formatRupees(p.finalSharePaise ?? 0) };
+    }),
+    {
+      label: me.paysForIds.length > 0 ? "Your share and theirs" : "Your share",
+      value: formatRupees(me.finalAskPaise ?? me.finalSharePaise ?? 0),
+      bold: true,
+    },
     { label: "You already paid", value: formatRupees(me.paidBeforePaise) },
   );
   return (

@@ -55,12 +55,17 @@ function FinalBillForm({ kitty }: { kitty: FeedKitty }) {
     bill && shares?.ok
       ? settleUp(
           bill,
-          kitty.members.map((m) => ({
-            memberId: m.id,
-            isOrganiser: m.isOrganiser,
-            newSharePaise: shares.value.shares.find((s) => s.memberId === m.id)!.sharePaise,
-            confirmedPaidPaise: m.paidPaise,
-          })),
+          // One line per payer: their new share plus those of anyone they pay for.
+          kitty.members
+            .filter((m) => !m.paidById)
+            .map((m) => ({
+              memberId: m.id,
+              isOrganiser: m.isOrganiser,
+              newSharePaise: kitty.members
+                .filter((x) => x.id === m.id || x.paidById === m.id)
+                .reduce((sum, x) => sum + shares.value.shares.find((s) => s.memberId === x.id)!.sharePaise, 0),
+              confirmedPaidPaise: m.paidPaise,
+            })),
         )
       : null;
 

@@ -86,6 +86,8 @@ export default function NewKitty() {
       drinks: p.drinks,
       share_paise: shares.get(p.key)!.sharePaise,
       share_fixed: shares.get(p.key)!.fixed,
+      // Paying for someone else: the payer's place in the list.
+      ...(p.paidByKey ? { paid_by_index: k.people.findIndex((x) => x.key === p.paidByKey) } : {}),
     }));
     if (k.editing) {
       const { error } = await supabase.rpc('update_kitty', {

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "15734640020",
+    "project_id": "kitty-4d440",
+    "storage_bucket": "kitty-4d440.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:15734640020:android:eb6e10c2f0022e08d6d381",
+        "android_client_info": {
+          "package_name": "app.thekitty.organiser"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA2w6x1jQ7pxBAPLDSQLIuVLGB2SZdahSk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
