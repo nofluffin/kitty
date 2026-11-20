@@ -152,13 +152,16 @@ function FeedRow({ kitty, member: m }: { kitty: FeedKitty; member: FeedMember })
   const next = m.parts?.next ?? null;
   const partLabel = next && m.parts ? `part ${next.partNumber} of ${m.parts.total}, ${formatRupees(next.amountPaise)}` : null;
 
+  // Tapping the name shows how their share was worked out (Raj, 20 Nov 2026).
+  const openPerson = () => router.push({ pathname: '/kitty/[id]/person/[memberId]', params: { id: kitty.id, memberId: m.id } });
+
   if (m.isOrganiser || m.state === 'paid') {
     return (
       <View style={styles.row}>
-        <View style={styles.flex}>
+        <Pressable onPress={openPerson} accessibilityRole="button" accessibilityLabel={`See ${name === 'You' ? 'your share' : m.name}`} style={styles.flex}>
           <Text style={type.bodyInk}>{name}</Text>
           {paysFor ? <Text style={type.note}>{paysFor}</Text> : null}
-        </View>
+        </Pressable>
         <Text style={type.metaMuted}>{m.isOrganiser ? `Your share, ${amount} ✓` : `Paid ${amount} ✓`}</Text>
       </View>
     );
@@ -185,11 +188,11 @@ function FeedRow({ kitty, member: m }: { kitty: FeedKitty; member: FeedMember })
 
   return (
     <View style={styles.row}>
-      <View style={styles.flex}>
+      <Pressable onPress={openPerson} accessibilityRole="button" accessibilityLabel={`See ${m.name}`} style={styles.flex}>
         <Text style={type.bodyInk}>{name}</Text>
         {paysFor ? <Text style={type.note}>{paysFor}</Text> : null}
         <Text style={type.note}>{detail}</Text>
-      </View>
+      </Pressable>
       <Pressable
         onPress={go}
         accessibilityRole="button"

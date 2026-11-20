@@ -106,6 +106,20 @@ export async function loadBill(billId: string): Promise<ScannedBill> {
   };
 }
 
+/** The kitty's checked bill, if it has one: the latest confirmed scan. */
+export async function loadConfirmedBill(kittyId: string): Promise<ScannedBill | null> {
+  const { data, error } = await supabase
+    .from('bills')
+    .select('id')
+    .eq('kitty_id', kittyId)
+    .eq('status', 'confirmed')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? loadBill(data.id) : null;
+}
+
 export async function updateLine(lineId: string, change: { label?: string; category?: BillCategory; amountPaise?: number }) {
   const { error } = await supabase
     .from('bill_lines')

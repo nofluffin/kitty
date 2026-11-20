@@ -2,6 +2,10 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 20 Nov 2026: a person's breakdown for the organiser
+
+- **Tap anyone in a kitty's feed** to see their food and drink, their share and status, and how the share was worked out: veg, non-veg and alcohol with the dishes for a scanned bill, or the typed split. It's the same breakdown they see on their pay page, so the organiser can answer "why is mine ₹1,250?". Confirm or Nudge sits at the bottom. Someone paying for others shows a block for each person; someone paid for links to their payer. Not in the wires.
+
 ## 20 Nov 2026: personal links in nudges
 
 - **The group link no longer singles anyone out.** Every name in "Who are you?" (screen 14) has an arrow; the wire's highlighted first name was only illustrating a tappable row.
