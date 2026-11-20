@@ -1,6 +1,6 @@
 import { formatRupees, formatShortDate, goalParts, isValidUpiId, localIsoDate, maxGoalParts, normaliseUpiId } from '@kitty/core';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { useAuth } from '@/lib/auth';
@@ -141,6 +141,16 @@ export default function NewKitty() {
   }
 
   /** "Have the bill already? Scan it": save the draft now so the photos have a home; the scan sets the total. */
+  // "Scan the bill" tapped on screen 4: start the scan here, where the name, date and UPI ID are.
+  const scanFirstRef = useRef<() => void>(() => {});
+  useFocusEffect(
+    useCallback(() => {
+      if (!k.scanRequested) return;
+      k.setScanRequested(false);
+      scanFirstRef.current();
+    }, [k]),
+  );
+
   async function scanFirst() {
     setTried(true);
     setFormError(null);
@@ -162,6 +172,7 @@ export default function NewKitty() {
         drinks: p.drinks,
         share_paise: 0,
         share_fixed: false,
+        ...(p.paidByKey ? { paid_by_index: k.people.findIndex((x) => x.key === p.paidByKey) } : {}),
       })),
     });
     setScanning(false);
@@ -173,6 +184,10 @@ export default function NewKitty() {
     refreshProfile();
     router.push({ pathname: '/kitty/[id]/scan', params: { id: data.id, mode: 'draft' } });
   }
+
+  useEffect(() => {
+    scanFirstRef.current = scanFirst;
+  });
 
   return (
     <Screen
