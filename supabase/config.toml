@@ -437,3 +437,62 @@ enabled = true
 # formatted with uppercase keywords, indent 2, max width 180, trailing commas,
 # and column/key alignment. Set to "null" to emit raw, unformatted SQL.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":180,\"commaStyle\":\"trailing\"}"
+
+# ---------------------------------------------------------------------------
+# Production (kitty-production, Mumbai). `supabase config push` applies the base
+# settings above plus these overrides to the hosted project. Values that only
+# make sense on a laptop are overridden here, so production keeps safe defaults.
+# Always run `supabase config diff` first and check every change.
+# ---------------------------------------------------------------------------
+[remotes.production]
+project_id = "joxasbrnkxsvdhdrrbxg"
+
+[remotes.production.auth]
+site_url = "https://thekitty.app"
+additional_redirect_urls = []
+
+[remotes.production.auth.email]
+# Same 6 digit, 10 minute codes as local, but at most one code a minute per email.
+enable_confirmations = true
+max_frequency = "1m0s"
+otp_length = 6
+otp_expiry = 600
+
+[remotes.production.auth.email.template.magic_link]
+subject = "Your Kitty code"
+content_path = "./supabase/templates/login_code.html"
+
+[remotes.production.auth.email.template.confirmation]
+subject = "Your Kitty code"
+content_path = "./supabase/templates/login_code.html"
+
+# Login codes are sent through Resend from mail.thekitty.app. The API key is read
+# from the RESEND_API_KEY environment variable at push time (it lives in the
+# macOS keychain as "Kitty Resend API key"); it is never written in this file.
+[remotes.production.auth.email.smtp]
+enabled = true
+host = "smtp.resend.com"
+port = 465
+user = "resend"
+pass = "env(RESEND_API_KEY)"
+admin_email = "login@mail.thekitty.app"
+sender_name = "Kitty"
+
+[remotes.production.auth.sms]
+enable_confirmations = true
+
+[remotes.production.auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
+[remotes.production.db.pooler]
+default_pool_size = 15
+max_client_conn = 200
+
+[remotes.production.storage.vector]
+enabled = false
+
+# Locally only a few emails a minute are needed; in production every organiser login
+# sends one. Supabase's default with custom SMTP is 30 an hour; allow 60 for the pilot.
+[remotes.production.auth.rate_limit]
+email_sent = 60
