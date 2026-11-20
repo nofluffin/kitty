@@ -49,7 +49,7 @@ export default function Feed() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
-      <Header title={kitty?.title ?? 'Kitty'} back right={kitty ? shareLink : undefined} />
+      <Header title={kitty?.title ?? 'Kitty'} back right={kitty ? shareLink : undefined} hideAvatar />
       {load.state === 'loading' ? (
         <CenteredState />
       ) : load.state === 'error' ? (
