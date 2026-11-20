@@ -125,6 +125,38 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"notifications": {
+                  Row: {
+                    "body": string,"created_at": string,"dedupe_key": string | null,"id": string,"kind": string,"kitty_id": string | null,"member_id": string | null,"profile_id": string,"read_at": string | null,"title": string,"updated_at": string,"url": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "body": string,"created_at"?: string,"dedupe_key"?: string | null,"id"?: string,"kind": string,"kitty_id"?: string | null,"member_id"?: string | null,"profile_id": string,"read_at"?: string | null,"title": string,"updated_at"?: string,"url"?: string | null
+                  }
+                  Update: {
+                    "body"?: string,"created_at"?: string,"dedupe_key"?: string | null,"id"?: string,"kind"?: string,"kitty_id"?: string | null,"member_id"?: string | null,"profile_id"?: string,"read_at"?: string | null,"title"?: string,"updated_at"?: string,"url"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "notifications_kitty_id_fkey"
+      columns: ["kitty_id"]
+isOneToOne: false
+      referencedRelation: "kitties"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "notifications_member_id_fkey"
+      columns: ["member_id"]
+isOneToOne: false
+      referencedRelation: "members"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "notifications_profile_id_fkey"
+      columns: ["profile_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"payments": {
                   Row: {
                     "amount_paise": number,"confirmed_at": string | null,"created_at": string,"direction": Database["public"]['Enums']["payment_direction"],"due_date": string | null,"id": string,"kind": Database["public"]['Enums']["payment_kind"],"kitty_id": string,"marked_at": string | null,"member_id": string,"status": Database["public"]['Enums']["payment_status"],"updated_at": string,"upi_ref": string | null
@@ -207,6 +239,9 @@ isOneToOne: false
       } },
 "generate_share_slug":
 { Args: Record<PropertyKey, never>; Returns: string
+                           },
+"register_device_token":
+{ Args: { "p_platform": string,"p_token": string }; Returns: undefined
                            },
 "settle_kitty":
 { Args: { "p_final_bill_paise": number,"p_kitty_id": string,"p_shares": Json }; Returns: undefined

@@ -1,11 +1,12 @@
 import { describeWhen, feedOrder, formatRupees, formatShortDate, localIsoDate, payProgress, timeToGo } from '@kitty/core';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { explainFailure } from '@/lib/errors';
 import { loadFeed, type FeedKitty, type FeedMember } from '@/lib/feed';
+import { registerForPush } from '@/lib/push';
 import { Button, CenteredState, Header, Note, TextLink } from '@/ui/components';
 import { colors, layout, type } from '@/ui/theme';
 
@@ -34,6 +35,14 @@ export default function Feed() {
   );
 
   const kitty = load.state === 'ready' ? load.kitty : null;
+
+  // The moment "tell me when people pay" makes sense: the first look at a shared kitty.
+  // The phone shows its permission prompt once; after that this only registers.
+  const shared = kitty?.status === 'shared';
+  useEffect(() => {
+    if (shared) registerForPush({ ask: true });
+  }, [shared]);
+
   const shareLink = (
     <TextLink onPress={() => router.push({ pathname: '/kitty/[id]/share', params: { id } })}>Share link</TextLink>
   );

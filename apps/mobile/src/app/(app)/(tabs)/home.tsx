@@ -40,7 +40,7 @@ export default function Home() {
   const today = localIsoDate();
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.safe} edges={['top']}>
       <Header title="Kitty" right={<Avatar text="You" onPress={() => router.push('/profile')} />} />
 
       {load.state === 'loading' ? (

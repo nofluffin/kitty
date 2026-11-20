@@ -12,7 +12,7 @@ export default function ProfileScreen() {
   const { profile } = useAuth();
   if (!profile) {
     return (
-      <Screen title="Your details" back>
+      <Screen title="Your details" inTabs>
         <CenteredState />
       </Screen>
     );
@@ -60,7 +60,7 @@ function ProfileForm({ profile }: { profile: Profile }) {
   return (
     <Screen
       title="Your details"
-      back
+      inTabs
       footer={
         <>
           <ErrorText>{errors.form}</ErrorText>
