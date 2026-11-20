@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ErrorText, Label } from './components';
-import { colors, layout, space, type } from './theme';
+import { colors, fonts, layout, space, type } from './theme';
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
@@ -150,8 +150,8 @@ const styles = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap' },
   cell: { width: `${100 / 7}%`, height: 42, alignItems: 'center', justifyContent: 'center' },
   weekday: { textAlign: 'center', lineHeight: 42 },
-  selected: { backgroundColor: colors.ink, borderRadius: 21 },
-  selectedText: { color: colors.inkOnDark },
+  selected: { backgroundColor: colors.selected, borderRadius: 21 },
+  selectedText: { color: colors.ink, fontFamily: fonts.bold },
   faded: { color: colors.track },
   quick: { flexDirection: 'row', gap: space.sm, marginTop: space.md },
   quickButton: {

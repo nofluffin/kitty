@@ -2,6 +2,16 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 20 Nov 2026: colour for actions and selections
+
+Decided with Raj:
+
+- **Main action buttons are green, #52A447**, with white text, in the app and on the pay page (Create kitty, Add to kitty, Confirm, I've paid and so on). Secondary buttons stay outlined.
+- **Selected options are stone, #9F9484**: Moment/Goal, Veg/Non-veg, Drinks, people chips, the chosen date, reminder switches. Text on stone is ink, because white on that stone is hard to read.
+- The bill-line tags (veg, non-veg, alcohol) keep the wire's black, grey and white: they're a colour code, not a selection.
+- **Add a person has one pinned green button**: "Add to kitty" while a name is being filled in, "Done, 4 people in" once the form is empty, "Save changes" when editing.
+- Note: white on #52A447 is about 3:1 contrast, below the usual 4.5:1 for 16 pt text. A slightly darker green (#3E8A35) would pass if that matters for the pilot.
+
 ## 20 Nov 2026: scanning locks once someone pays; the groups screen
 
 Decided with Raj:

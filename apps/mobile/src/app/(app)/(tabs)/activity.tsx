@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: layout.border,
     borderBottomColor: colors.line,
   },
-  action: { backgroundColor: colors.ink, paddingHorizontal: 14, height: 40, justifyContent: 'center' },
+  action: { backgroundColor: colors.action, paddingHorizontal: 14, height: 40, justifyContent: 'center' },
   onDark: { color: colors.surface },
   pressed: { opacity: 0.8 },
 });

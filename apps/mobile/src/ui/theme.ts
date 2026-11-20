@@ -21,7 +21,7 @@ export const colors = {
   surface: '#FFFFFF',
   /** Avatar fill. */
   sunken: '#EDEBE6',
-  /** Headings, values, primary buttons. */
+  /** Headings, values and text on selected options. */
   ink: '#0A0A0A',
   inkOnDark: '#FFFFFF',
   /** Body copy and section labels. */
@@ -34,6 +34,10 @@ export const colors = {
   track: '#D4D4D4',
   /** Not in the greyscale wires; errors need to stand out. */
   danger: '#B42318',
+  /** Main action buttons (Raj, 20 Nov 2026), with white text. */
+  action: '#52A447',
+  /** Selected options: Veg/Non-veg, Moment/Goal, chips (Raj, 20 Nov 2026), with ink text. */
+  selected: '#9F9484',
 } as const;
 
 export const layout = {

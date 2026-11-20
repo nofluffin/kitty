@@ -153,9 +153,9 @@ function Segmented3({ value, onChange, label }: { value: BillCategory; onChange:
             onPress={() => onChange(c)}
             accessibilityRole="radio"
             accessibilityState={{ checked: on }}
-            style={[styles.seg3Item, on ? styles.on : styles.off]}
+            style={[styles.seg3Item, on ? styles.picked : styles.off]}
           >
-            <Text style={[type.meta, on && styles.onText]}>{CATEGORY_LABEL[c]}</Text>
+            <Text style={[type.meta, on && styles.pickedText]}>{CATEGORY_LABEL[c]}</Text>
           </Pressable>
         );
       })}
@@ -465,6 +465,9 @@ const styles = StyleSheet.create({
   seg3: { flexDirection: 'row', height: 44 },
   seg3Item: { flex: 1, alignItems: 'center', justifyContent: 'center', borderWidth: layout.border },
   on: { backgroundColor: colors.ink, borderColor: colors.ink },
+  // Selected option (Raj, 20 Nov 2026): stone with ink text.
+  picked: { backgroundColor: colors.selected, borderColor: colors.selected },
+  pickedText: { color: colors.ink, fontFamily: type.bodyBold.fontFamily },
   off: { backgroundColor: colors.surface, borderColor: colors.line },
   onText: { color: colors.inkOnDark, fontFamily: type.bodyBold.fontFamily },
   tagGrey: { backgroundColor: colors.track, borderColor: colors.line },
