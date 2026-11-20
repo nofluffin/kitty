@@ -374,8 +374,21 @@ export function Waiting({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
       <Title>Thanks, {me.name}</Title>
       <Body>{body}</Body>
 
-
+      {/* Raj, 20 Nov 2026: an overview of your own share, with the group list tucked away. */}
       <Card className="mt-6">
+        <p className="text-sm leading-[21px] text-text">{me.paysForIds.length > 0 ? "Your share, with those you pay for" : "Your share"}</p>
+        <p className="mt-0.5 text-[32px] leading-10 font-bold text-ink">{formatRupees(me.finalAskPaise ?? me.askPaise)}</p>
+        <p className="mt-1 text-sm leading-[21px] text-text">{statusText(me, kitty)}</p>
+      </Card>
+
+      <Label className="mt-8">How your share was worked out</Label>
+      {kitty.status === "settling" && me.finalSharePaise !== null ? (
+        <Breakdown kitty={kitty} me={me} />
+      ) : (
+        <ShareBreakdown kitty={kitty} me={me} showEveryone={false} />
+      )}
+
+      <Card className="mt-8">
         <Progress value={progress.total ? progress.paid / progress.total : 0} />
         <div className="mt-2.5 flex justify-between text-sm leading-[21px] text-text">
           <span>
@@ -389,30 +402,30 @@ export function Waiting({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
         </div>
       </Card>
 
-      <ul className="mt-6 border-t border-line">
-        {statusList(kitty.members, me.id).map((m) => (
-          <li key={m.id} className="flex items-start justify-between gap-3 border-b border-line py-3">
-            <div>
-              <p className="text-base leading-6 text-ink">
-                {m.id === me.id ? "You" : m.name}
-                <DietTags m={m} />
-              </p>
-              <p className={`mt-0.5 text-sm leading-[21px] ${m.state === "paid" && !m.paidById ? "text-muted" : "text-text"}`}>
-                {statusText(m, kitty)}
-              </p>
-            </div>
-            <span className="shrink-0 text-base leading-6 text-ink">
-              {formatRupees(m.paidById ? (m.finalSharePaise ?? m.sharePaise) : (m.finalAskPaise ?? m.askPaise))}
-            </span>
-          </li>
-        ))}
-      </ul>
-
-      {kitty.bill ? (
-        <Link href={`/k/${kitty.slug}?bill=1`} className={`${buttonClass.link} mt-4 block w-fit`}>
-          View receipt
-        </Link>
-      ) : null}
+      <details className="group mt-4">
+        <summary className={`${buttonClass.link} w-fit cursor-pointer list-none [&::-webkit-details-marker]:hidden`}>
+          <span className="group-open:hidden">See who’s paid</span>
+          <span className="hidden group-open:inline">Hide who’s paid</span>
+        </summary>
+        <ul className="mt-3 border-t border-line">
+          {statusList(kitty.members, me.id).map((m) => (
+            <li key={m.id} className="flex items-start justify-between gap-3 border-b border-line py-3">
+              <div>
+                <p className="text-base leading-6 text-ink">
+                  {m.id === me.id ? "You" : m.name}
+                  <DietTags m={m} />
+                </p>
+                <p className={`mt-0.5 text-sm leading-[21px] ${m.state === "paid" && !m.paidById ? "text-muted" : "text-text"}`}>
+                  {statusText(m, kitty)}
+                </p>
+              </div>
+              <span className="shrink-0 text-base leading-6 text-ink">
+                {formatRupees(m.paidById ? (m.finalSharePaise ?? m.sharePaise) : (m.finalAskPaise ?? m.askPaise))}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </details>
 
       <form action={forgetMe.bind(null, kitty.slug)} className="mt-6">
         <button type="submit" className={buttonClass.link}>
@@ -565,7 +578,7 @@ function personRows(kitty: OpenKitty, p: MemberRow, isMe: boolean): BreakdownRow
 }
 
 /** Screen 15: how the share being asked for was worked out, for you and anyone you pay for. */
-function ShareBreakdown({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
+function ShareBreakdown({ kitty, me, showEveryone = true }: { kitty: OpenKitty; me: MemberRow; showEveryone?: boolean }) {
   const paysFor = me.paysForIds.map((id) => kitty.members.find((m) => m.id === id)!);
   return (
     <>
@@ -583,7 +596,7 @@ function ShareBreakdown({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
         </>
       )}
       <ScannedNote kitty={kitty} />
-      <EveryonesShare kitty={kitty} me={me} />
+      {showEveryone ? <EveryonesShare kitty={kitty} me={me} /> : null}
     </>
   );
 }

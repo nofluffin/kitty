@@ -11,7 +11,8 @@ Choices made during the build that aren't in the spec, or that settle something 
 
 Decided with Raj:
 
-- Each person in the list shows **Veg or Non-veg and Drinks** as small tags, **their amount** on the right, and their status underneath: "Paid, confirmed ✓", "Paid, waiting for Raj to confirm", "Not paid yet", or "Kabir pays for them".
+- **Screen 16 is now an overview** (Raj, later the same day): "Your share" with its status, then how it was worked out (veg, non-veg and alcohol with dishes for a scanned bill, or the typed split), then the group progress bar. The list of everyone sits behind "See who's paid". The pay screen (15) keeps "Everyone's share", where people check the split before paying.
+- In that list, each person shows **Veg or Non-veg and Drinks** as small tags, **their amount** on the right, and their status underneath: "Paid, confirmed ✓", "Paid, waiting for Raj to confirm", "Not paid yet", or "Kabir pays for them".
 - **Members can see the bill photo.** "View receipt" (on screen 16 and under "How your share was worked out") opens the photo and the lines Kitty read. This replaces the earlier lines-only decision (spec section 12 kept photos private). The photo is shown through a link that expires after 10 minutes, and only to people with the kitty link.
 
 ## 20 Nov 2026: over-the-air updates for the phone apps
