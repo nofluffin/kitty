@@ -46,6 +46,19 @@
           "color": "#0A0A0A",
           "defaultChannel": "default"
         }
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Kitty uses the microphone when you add people to a group by voice.",
+          "speechRecognitionPermission": "Kitty turns what you say into names, like \u201cDevika, veg, alcohol\u201d."
+        }
+      ],
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "When you add people by voice, Kitty looks up the names you say in your contacts on this phone, to find their numbers."
+        }
       ]
     ],
     "experiments": {

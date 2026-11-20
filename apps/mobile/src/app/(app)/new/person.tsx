@@ -122,7 +122,7 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
             Pick from contacts
           </Button>
           <View style={styles.privacy}>
-            <Small>Kitty only sees the people you pick, not your whole address book.</Small>
+            <Small>Picking a contact shares only that person with Kitty.</Small>
           </View>
         </>
       ) : null}

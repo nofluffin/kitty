@@ -23,6 +23,7 @@
     "expo-linking": "~58.0.17",
     "expo-notifications": "~58.1.9",
     "expo-router": "~58.0.32",
+    "expo-speech-recognition": "^58.0.1",
     "expo-splash-screen": "~58.0.14",
     "expo-status-bar": "~58.0.5",
     "expo-symbols": "~58.0.5",

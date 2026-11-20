@@ -11,3 +11,4 @@ export * from './messages';
 export * from './status';
 export * from './identity';
 export * from './member';
+export * from './voice';

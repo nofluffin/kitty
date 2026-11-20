@@ -2,6 +2,15 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 20 Nov 2026: adding people by voice
+
+Decided with Raj:
+
+- **"Add people by voice" on New group**: an in-app mic button (expo-speech-recognition, Indian English) with live text you can correct or type, then "Find these people".
+- **Kitty reads names with food and drink**: "Devika, veg, alcohol. Kabir, non-veg, no alcohol" (`parseSpokenPeople` in packages/core). Tags come from what was said, else from the organiser's groups and past kitties (when one match), else Kitty asks. "Add N people" waits until everyone has both.
+- **Contacts search** (Raj chose it): Kitty asks once for permission to search the phone's contacts, looks up each spoken name on the phone, and asks "Which Devika in your contacts?" when several match. Only the people added are saved. This replaced the "Kitty only sees the people you pick" promise; the privacy policy says so.
+- **Needs a new app build** (speech recognition and the contacts permission are native). Builds from before this keep working but stop getting over-the-air updates until reinstalled.
+
 ## 20 Nov 2026: Groups tab, tab icons, profile photo, orange MOMENT tag
 
 Decided with Raj:

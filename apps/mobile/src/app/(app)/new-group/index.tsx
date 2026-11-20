@@ -60,6 +60,10 @@ export default function NewGroup() {
         <View style={styles.add}>
           <DashedButton onPress={() => router.push('/new-group/person')}>Add or edit people</DashedButton>
         </View>
+        <View style={styles.add}>
+          {/* Raj, 20 Nov 2026: say names and food and drink instead of typing them. */}
+          <DashedButton onPress={() => router.push('/new-group/voice')}>Add people by voice</DashedButton>
+        </View>
       </View>
     </Screen>
   );
