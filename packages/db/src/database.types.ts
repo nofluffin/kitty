@@ -65,16 +65,88 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"kitties": {
+                },"group_holders": {
                   Row: {
-                    "amount_source": Database["public"]['Enums']["amount_source"],"closed_at": string | null,"created_at": string,"due_date": string,"final_bill_paise": number | null,"goal_plan": Database["public"]['Enums']["goal_plan"] | null,"id": string,"kind": Database["public"]['Enums']["kitty_kind"],"organiser_id": string,"parts_count": number | null,"remind_day_before": boolean,"remind_on_day": boolean,"share_slug": string,"shared_at": string | null,"status": Database["public"]['Enums']["kitty_status"],"title": string,"total_paise": number,"updated_at": string,"upi_id": string
+                    "created_at": string,"group_id": string,"profile_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "amount_source"?: Database["public"]['Enums']["amount_source"],"closed_at"?: string | null,"created_at"?: string,"due_date": string,"final_bill_paise"?: number | null,"goal_plan"?: Database["public"]['Enums']["goal_plan"] | null,"id"?: string,"kind": Database["public"]['Enums']["kitty_kind"],"organiser_id": string,"parts_count"?: number | null,"remind_day_before"?: boolean,"remind_on_day"?: boolean,"share_slug"?: string,"shared_at"?: string | null,"status"?: Database["public"]['Enums']["kitty_status"],"title": string,"total_paise": number,"updated_at"?: string,"upi_id": string
+                    "created_at"?: string,"group_id": string,"profile_id": string
                   }
                   Update: {
-                    "amount_source"?: Database["public"]['Enums']["amount_source"],"closed_at"?: string | null,"created_at"?: string,"due_date"?: string,"final_bill_paise"?: number | null,"goal_plan"?: Database["public"]['Enums']["goal_plan"] | null,"id"?: string,"kind"?: Database["public"]['Enums']["kitty_kind"],"organiser_id"?: string,"parts_count"?: number | null,"remind_day_before"?: boolean,"remind_on_day"?: boolean,"share_slug"?: string,"shared_at"?: string | null,"status"?: Database["public"]['Enums']["kitty_status"],"title"?: string,"total_paise"?: number,"updated_at"?: string,"upi_id"?: string
+                    "created_at"?: string,"group_id"?: string,"profile_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "group_holders_group_id_fkey"
+      columns: ["group_id"]
+isOneToOne: false
+      referencedRelation: "groups"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "group_holders_profile_id_fkey"
+      columns: ["profile_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"group_members": {
+                  Row: {
+                    "created_at": string,"diet": Database["public"]['Enums']["diet"],"drinks": boolean,"group_id": string,"id": string,"name": string,"paid_by_index": number | null,"phone": string | null,"profile_id": string | null,"sort_order": number,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"diet"?: Database["public"]['Enums']["diet"],"drinks"?: boolean,"group_id": string,"id"?: string,"name": string,"paid_by_index"?: number | null,"phone"?: string | null,"profile_id"?: string | null,"sort_order"?: number,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"diet"?: Database["public"]['Enums']["diet"],"drinks"?: boolean,"group_id"?: string,"id"?: string,"name"?: string,"paid_by_index"?: number | null,"phone"?: string | null,"profile_id"?: string | null,"sort_order"?: number,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "group_members_group_id_fkey"
+      columns: ["group_id"]
+isOneToOne: false
+      referencedRelation: "groups"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "group_members_profile_id_fkey"
+      columns: ["profile_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"groups": {
+                  Row: {
+                    "created_at": string,"created_by_name": string,"id": string,"name": string,"profile_id": string,"share_token": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"created_by_name"?: string,"id"?: string,"name": string,"profile_id": string,"share_token"?: string,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by_name"?: string,"id"?: string,"name"?: string,"profile_id"?: string,"share_token"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "groups_profile_id_fkey"
+      columns: ["profile_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"kitties": {
+                  Row: {
+                    "amount_source": Database["public"]['Enums']["amount_source"],"archived_at": string | null,"closed_at": string | null,"created_at": string,"due_date": string,"final_bill_paise": number | null,"goal_plan": Database["public"]['Enums']["goal_plan"] | null,"id": string,"kind": Database["public"]['Enums']["kitty_kind"],"organiser_id": string,"parts_count": number | null,"remind_day_before": boolean,"remind_on_day": boolean,"share_slug": string,"shared_at": string | null,"status": Database["public"]['Enums']["kitty_status"],"title": string,"total_paise": number,"updated_at": string,"upi_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "amount_source"?: Database["public"]['Enums']["amount_source"],"archived_at"?: string | null,"closed_at"?: string | null,"created_at"?: string,"due_date": string,"final_bill_paise"?: number | null,"goal_plan"?: Database["public"]['Enums']["goal_plan"] | null,"id"?: string,"kind": Database["public"]['Enums']["kitty_kind"],"organiser_id": string,"parts_count"?: number | null,"remind_day_before"?: boolean,"remind_on_day"?: boolean,"share_slug"?: string,"shared_at"?: string | null,"status"?: Database["public"]['Enums']["kitty_status"],"title": string,"total_paise": number,"updated_at"?: string,"upi_id": string
+                  }
+                  Update: {
+                    "amount_source"?: Database["public"]['Enums']["amount_source"],"archived_at"?: string | null,"closed_at"?: string | null,"created_at"?: string,"due_date"?: string,"final_bill_paise"?: number | null,"goal_plan"?: Database["public"]['Enums']["goal_plan"] | null,"id"?: string,"kind"?: Database["public"]['Enums']["kitty_kind"],"organiser_id"?: string,"parts_count"?: number | null,"remind_day_before"?: boolean,"remind_on_day"?: boolean,"share_slug"?: string,"shared_at"?: string | null,"status"?: Database["public"]['Enums']["kitty_status"],"title"?: string,"total_paise"?: number,"updated_at"?: string,"upi_id"?: string
                   }
                   Relationships: [
                     {
@@ -218,6 +290,7 @@ isOneToOne: false
 "create_kitty":
 { Args: { "p_due_date": string,"p_goal_plan"?: Database["public"]['Enums']["goal_plan"],"p_kind": Database["public"]['Enums']["kitty_kind"],"p_members": Json,"p_parts_count"?: number,"p_title": string,"p_total_paise": number,"p_upi_id": string }; Returns: {
               "amount_source": Database["public"]['Enums']["amount_source"],
+"archived_at": string | null,
 "closed_at": string | null,
 "created_at": string,
 "due_date": string,
@@ -249,9 +322,41 @@ isOneToOne: false
 "generate_share_slug":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
+"join_group":
+{ Args: { "p_token": string }; Returns: {
+              "created_at": string,
+"created_by_name": string,
+"id": string,
+"name": string,
+"profile_id": string,
+"share_token": string,
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "groups"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "register_device_token":
 { Args: { "p_platform": string,"p_token": string }; Returns: undefined
                            },
+"save_group":
+{ Args: { "p_name": string,"p_people": Json }; Returns: {
+              "created_at": string,
+"created_by_name": string,
+"id": string,
+"name": string,
+"profile_id": string,
+"share_token": string,
+"updated_at": string
+            }
+                          SetofOptions: {
+        from: "*"
+        to: "groups"
+        isOneToOne: true
+        isSetofReturn: false
+      } },
 "settle_kitty":
 { Args: { "p_final_bill_paise": number,"p_kitty_id": string,"p_shares": Json }; Returns: undefined
                            },
@@ -261,6 +366,7 @@ isOneToOne: false
 "update_kitty":
 { Args: { "p_due_date": string,"p_goal_plan"?: Database["public"]['Enums']["goal_plan"],"p_kind": Database["public"]['Enums']["kitty_kind"],"p_kitty_id": string,"p_members": Json,"p_parts_count"?: number,"p_title": string,"p_total_paise": number,"p_upi_id": string }; Returns: {
               "amount_source": Database["public"]['Enums']["amount_source"],
+"archived_at": string | null,
 "closed_at": string | null,
 "created_at": string,
 "due_date": string,

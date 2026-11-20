@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { explainFailure } from '@/lib/errors';
 import { loadKittySummaries, type KittySummary } from '@/lib/kitties';
-import { Badge, Body, Button, CenteredState, Header, Label, Title } from '@/ui/components';
+import { Badge, TextLink, Body, Button, CenteredState, Header, Label, Title } from '@/ui/components';
 import { colors, layout, type } from '@/ui/theme';
 
 type Load = { state: 'loading' } | { state: 'error' } | { state: 'ready'; kitties: KittySummary[] };
@@ -34,7 +34,10 @@ export default function Home() {
 
   const startKitty = () => router.push('/new');
 
-  const kitties = load.state === 'ready' ? load.kitties : [];
+  const all = load.state === 'ready' ? load.kitties : [];
+  // Archived kitties live on their own list (Raj, 20 Nov 2026).
+  const kitties = all.filter((k) => !k.archivedAt);
+  const archivedCount = all.length - kitties.length;
   const collecting = kitties.filter((k) => k.status !== 'closed');
   const done = kitties.filter((k) => k.status === 'closed');
   const today = localIsoDate();
@@ -74,7 +77,7 @@ export default function Home() {
             />
           }
         >
-          {kitties.length === 0 ? (
+          {all.length === 0 ? (
             <EmptyHome />
           ) : (
             <>
@@ -99,6 +102,12 @@ export default function Home() {
                       </View>
                     ))}
                   </View>
+                </View>
+              ) : null}
+              {kitties.length === 0 ? <Text style={type.note}>Nothing on your list. Your kitties are all archived.</Text> : null}
+              {archivedCount > 0 ? (
+                <View style={styles.archivedLink}>
+                  <TextLink onPress={() => router.push('/archived')}>{`Archived kitties (${archivedCount})`}</TextLink>
                 </View>
               ) : null}
             </>
@@ -178,6 +187,7 @@ function KittyCard({ kitty, today }: { kitty: KittySummary; today: string }) {
 }
 
 const styles = StyleSheet.create({
+  archivedLink: { marginTop: 28, alignItems: 'flex-start' },
   safe: { flex: 1, backgroundColor: colors.page },
   body: { paddingHorizontal: layout.gutter, paddingTop: layout.top, paddingBottom: 24, flexGrow: 1 },
   footer: { paddingHorizontal: layout.gutter, paddingTop: 16, paddingBottom: layout.gutter },

@@ -31,6 +31,10 @@ export interface FeedKitty {
   partsCount: number | null;
   /** Nobody but the organiser has paid yet, so amounts can still be edited (decided 20 Nov 2026). */
   editable: boolean;
+  /** A bill has been scanned and checked, so the button says "Rescan the bill". */
+  hasBill: boolean;
+  /** Filed away by the organiser (Archived kitties). */
+  archivedAt: string | null;
   members: FeedMember[];
 }
 
@@ -78,7 +82,7 @@ export async function loadFeed(kittyId: string): Promise<FeedKitty> {
   const { data, error } = await supabase
     .from('kitties')
     .select(
-      'id, title, kind, status, due_date, total_paise, upi_id, share_slug, amount_source, remind_day_before, remind_on_day, final_bill_paise, parts_count, members(id, name, phone, is_organiser, sort_order, share_paise, share_fixed, diet, drinks, final_share_paise, refund_upi_id, last_opened_at, paid_by_member_id, payments(kind, direction, status, amount_paise, due_date, marked_at, upi_ref))',
+      'id, title, kind, status, due_date, total_paise, upi_id, share_slug, amount_source, remind_day_before, remind_on_day, final_bill_paise, parts_count, archived_at, bills(status), members(id, name, phone, is_organiser, sort_order, share_paise, share_fixed, diet, drinks, final_share_paise, refund_upi_id, last_opened_at, paid_by_member_id, payments(kind, direction, status, amount_paise, due_date, marked_at, upi_ref))',
     )
     .eq('id', kittyId)
     .single();
@@ -145,6 +149,8 @@ export async function loadFeed(kittyId: string): Promise<FeedKitty> {
     remindOnDay: data.remind_on_day,
     finalBillPaise: data.final_bill_paise,
     partsCount: data.parts_count,
+    hasBill: data.bills.some((b) => b.status === 'confirmed'),
+    archivedAt: data.archived_at,
     editable: isEditable(
       data.status,
       data.members.flatMap((m) => m.payments.map((p) => ({ isOrganiser: m.is_organiser, status: p.status }))),

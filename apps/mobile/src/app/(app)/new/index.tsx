@@ -1,11 +1,12 @@
 import { formatRupees, formatShortDate, goalParts, isValidUpiId, localIsoDate, maxGoalParts, normaliseUpiId } from '@kitty/core';
-import { router } from 'expo-router';
-import { useRef, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { useAuth } from '@/lib/auth';
 import { useDraftKitty, type GoalPlan, type Split } from '@/lib/draft-kitty';
 import { explainFailure } from '@/lib/errors';
+import { loadGroups, type SavedGroup } from '@/lib/groups';
 import { supabase } from '@/lib/supabase';
 import {
   Button,
@@ -18,6 +19,7 @@ import {
   Segmented,
   Small,
   SmallButton,
+  TextLink,
 } from '@/ui/components';
 import { DateField } from '@/ui/date-field';
 import { colors, layout, type } from '@/ui/theme';
@@ -29,13 +31,23 @@ const MAX_PARTS_OFFERED = 12;
 
 /** Screen 2 (moment) and screen 22 (goal). */
 export default function NewKitty() {
-  const { refreshProfile } = useAuth();
+  const { refreshProfile, profile } = useAuth();
   const k = useDraftKitty();
   // Errors show after the first "Create kitty" tap, then update live as each field is fixed.
   const [tried, setTried] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [scanning, setScanning] = useState(false);
+  // Saved groups (Raj, 20 Nov 2026): add everyone in one tap, then add or remove people as usual.
+  const [groups, setGroups] = useState<SavedGroup[]>([]);
+  const [groupNote, setGroupNote] = useState<string | null>(null);
+  useFocusEffect(
+    useCallback(() => {
+      loadGroups()
+        .then(setGroups)
+        .catch(() => setGroups([]));
+    }, []),
+  );
   // A draft saved by "Scan it" that the organiser then backed out of. Removed if they create normally.
   const scanDraft = useRef<string | null>(null);
   const today = localIsoDate();
@@ -266,6 +278,36 @@ export default function NewKitty() {
         <View style={styles.addGap}>
           <DashedButton onPress={() => router.push('/new/person')}>Add or edit people</DashedButton>
         </View>
+        {groups.length > 0 ? (
+          <View style={styles.groups}>
+            <Small>Add a saved group</Small>
+            <View style={styles.chips}>
+              {groups.map((g) => (
+                <Chip
+                  key={g.id}
+                  onPress={() => {
+                    // You're already in as You: leave out your own row (by login, or by your mobile number).
+                    const added = k.addGroup(
+                      g.people.map(({ profileId, ...p }) => ({
+                        ...p,
+                        isMe: profileId === profile?.id || (!!p.phone && p.phone === profile?.phone),
+                      })),
+                    );
+                    setGroupNote(added > 0 ? `Added ${added} from ${g.name}.` : `Everyone in ${g.name} is already in.`);
+                  }}
+                >
+                  {g.name}
+                </Chip>
+              ))}
+            </View>
+            {groupNote ? <Small>{groupNote}</Small> : null}
+          </View>
+        ) : null}
+        {others > 0 ? (
+          <View style={styles.saveGroup}>
+            <TextLink onPress={() => router.push('/new/save-group')}>Save these people as a group</TextLink>
+          </View>
+        ) : null}
         <ErrorText>{errors.people}</ErrorText>
       </View>
 
@@ -346,6 +388,8 @@ const styles = StyleSheet.create({
   section: { marginTop: 16 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 9, marginTop: 11 },
   addGap: { marginTop: 9 },
+  groups: { marginTop: 14, gap: 4 },
+  saveGroup: { marginTop: 12, alignItems: 'flex-start' },
   summaryGap: { marginTop: 13 },
   summary: {
     flexDirection: 'row',
