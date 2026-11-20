@@ -72,7 +72,7 @@ const SECTIONS: { title: string; icon: IconName; topics: Topic[] }[] = [
       {
         q: 'Saving a group',
         a: [
-          'After adding people to a kitty, tap “Save these people as a group” and give it a name, like Family or Office lunch. Numbers, food and drink, and who pays for whom are kept, and you’re in it too.',
+          'In the Groups tab, tap “New group”, give it a name like Family or Office lunch, and add people. Or, after adding people to a kitty, tap “Save these people as a group”. Numbers, food and drink, and who pays for whom are kept, and you’re in it too.',
           'Saving again with the same name makes a new group and swaps your old one for it. Anyone you shared the old one with keeps theirs.',
         ],
       },
