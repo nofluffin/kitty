@@ -31,7 +31,7 @@ const MAX_PARTS_OFFERED = 12;
 
 /** Screen 2 (moment) and screen 22 (goal). */
 export default function NewKitty() {
-  const { refreshProfile, profile } = useAuth();
+  const { refreshProfile } = useAuth();
   const k = useDraftKitty();
   // Errors show after the first "Create kitty" tap, then update live as each field is fixed.
   const [tried, setTried] = useState(false);
@@ -40,7 +40,6 @@ export default function NewKitty() {
   const [scanning, setScanning] = useState(false);
   // Saved groups (Raj, 20 Nov 2026): add everyone in one tap, then add or remove people as usual.
   const [groups, setGroups] = useState<SavedGroup[]>([]);
-  const [groupNote, setGroupNote] = useState<string | null>(null);
   useFocusEffect(
     useCallback(() => {
       loadGroups()
@@ -295,27 +294,8 @@ export default function NewKitty() {
         </View>
         {groups.length > 0 ? (
           <View style={styles.groups}>
-            <Small>Add a saved group</Small>
-            <View style={styles.chips}>
-              {groups.map((g) => (
-                <Chip
-                  key={g.id}
-                  onPress={() => {
-                    // You're already in as You: leave out your own row (by login, or by your mobile number).
-                    const added = k.addGroup(
-                      g.people.map(({ profileId, ...p }) => ({
-                        ...p,
-                        isMe: profileId === profile?.id || (!!p.phone && p.phone === profile?.phone),
-                      })),
-                    );
-                    setGroupNote(added > 0 ? `Added ${added} from ${g.name}.` : `Everyone in ${g.name} is already in.`);
-                  }}
-                >
-                  {g.name}
-                </Chip>
-              ))}
-            </View>
-            {groupNote ? <Small>{groupNote}</Small> : null}
+            <DashedButton onPress={() => router.push('/new/groups')}>Add a saved group</DashedButton>
+            {k.groupNote ? <Small>{k.groupNote}</Small> : null}
           </View>
         ) : null}
         {others > 0 ? (

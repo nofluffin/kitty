@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import Feather from '@expo/vector-icons/Feather';
+import { useState, type ComponentProps } from 'react';
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -15,9 +16,12 @@ interface Topic {
   a: string[];
 }
 
-const SECTIONS: { title: string; topics: Topic[] }[] = [
+type IconName = ComponentProps<typeof Feather>['name'];
+
+const SECTIONS: { title: string; icon: IconName; topics: Topic[] }[] = [
   {
     title: 'Getting started',
+    icon: 'flag',
     topics: [
       {
         q: 'What Kitty does',
@@ -34,6 +38,7 @@ const SECTIONS: { title: string; topics: Topic[] }[] = [
   },
   {
     title: 'Starting a kitty',
+    icon: 'plus-circle',
     topics: [
       {
         q: 'Moment or goal',
@@ -48,19 +53,47 @@ const SECTIONS: { title: string; topics: Topic[] }[] = [
           'Tap “Add or edit people”. Pick from your contacts or type a name. Their mobile number is optional; it lets you message them on WhatsApp.',
           'Set each person’s food (veg or non-veg) and whether they drink. Kitty uses this when you scan the bill.',
           'Paying for someone else, like a child? Under “Who pays for them”, pick the person who pays. They’re asked for both shares together.',
+          'Splitting with the same people again? Tap “Add a saved group” to add everyone at once (see Saved groups).',
         ],
       },
       {
         q: 'Changing amounts',
         a: [
           'Kitty splits the total equally. Tap “Adjust” to set someone’s amount by hand; the rest is split among everyone else.',
-          'Have the bill already? Scan it before sharing and Kitty works out exact shares: veg eaters don’t pay for non-veg dishes, and only drinkers pay for alcohol.',
+          'Have the bill already? Tap “Have the bill already? Scan it for exact shares”, on the new kitty screen or under Adjust. Veg eaters don’t pay for non-veg dishes, and only drinkers pay for alcohol.',
+        ],
+      },
+    ],
+  },
+  {
+    title: 'Saved groups',
+    icon: 'users',
+    topics: [
+      {
+        q: 'Saving a group',
+        a: [
+          'After adding people to a kitty, tap “Save these people as a group” and give it a name, like Family or Office lunch. Numbers, food and drink, and who pays for whom are kept, and you’re in it too.',
+          'Saving again with the same name makes a new group and swaps your old one for it. Anyone you shared the old one with keeps theirs.',
+        ],
+      },
+      {
+        q: 'Using a group',
+        a: [
+          'On a new kitty, tap “Add a saved group”. Favourites (tap ☆ to star one) come first, then the groups you used recently, then the rest. Tap a group to add everyone except you, then add or remove people as usual.',
+        ],
+      },
+      {
+        q: 'Sharing and leaving',
+        a: [
+          'Tap Share next to a group to send it on WhatsApp. When a friend who organises with Kitty opens the link, the group is added to their Kitty, with you in it, so you can take turns organising.',
+          'Tap Leave to take a group out of your Kitty. Others who have it keep it. Manage your groups from the You picture, then Your groups.',
         ],
       },
     ],
   },
   {
     title: 'Sharing and getting paid',
+    icon: 'send',
     topics: [
       {
         q: 'Sharing the link',
@@ -84,37 +117,55 @@ const SECTIONS: { title: string; topics: Topic[] }[] = [
         q: 'Seeing someone’s share',
         a: ['Tap anyone’s name in a kitty to see their food and drink, their share, and how it was worked out.'],
       },
+    ],
+  },
+  {
+    title: 'Changing and archiving',
+    icon: 'archive',
+    topics: [
       {
         q: 'Changing a kitty after sharing',
         a: [
           'Until anyone pays, tap “Edit the amounts or people” in the kitty. The link stays the same and everyone sees the new amounts.',
-          'Once someone has paid, amounts lock. Use the final bill to settle up instead.',
+          'Once someone has paid, amounts are locked.',
+        ],
+      },
+      {
+        q: 'Archiving',
+        a: [
+          'Tap Archive at the bottom of a kitty to take it off your list. Find it again under “Archived kitties” at the bottom of the Kitties tab, where you can open it or tap Unarchive.',
+          'Friends’ links keep working, and archived kitties stop sending reminders.',
         ],
       },
     ],
   },
   {
-    title: 'The bill and settling up',
+    title: 'The bill',
+    icon: 'file-text',
     topics: [
       {
         q: 'Scanning the bill',
         a: [
           'Tap “Scan the bill” and photograph it, up to three photos for a long one. Kitty reads each line and sorts it into veg, non-veg or alcohol.',
-          'Check the lines and tap a tag if Kitty got one wrong. Lines Kitty isn’t sure about are asked first.',
+          'Check the lines and tap a tag if Kitty got one wrong. Lines Kitty isn’t sure about are asked first. Kitty then works out everyone’s exact share.',
         ],
       },
       {
-        q: 'Top-ups and refunds',
+        q: 'Scan before anyone pays',
         a: [
-          'After the meal, scan or type the final bill. Kitty works out who owes a bit more and who gets money back.',
-          'Tap “Ask” to message someone for a top-up. For refunds, send the money by UPI and tap “Mark sent”.',
-          'If nobody has paid yet, scanning the bill simply replaces everyone’s share.',
+          'Scanning replaces everyone’s share, so it only works until someone pays. After that the button is greyed out and amounts stay as they are.',
+          'Already scanned and something changed? Tap “Rescan the bill”, again before anyone pays.',
         ],
+      },
+      {
+        q: 'Friends see the receipt',
+        a: ['On their link, friends can tap “View receipt” to see the bill photo and the lines Kitty read.'],
       },
     ],
   },
   {
     title: 'Goals and monthly parts',
+    icon: 'target',
     topics: [
       {
         q: 'How parts work',
@@ -123,34 +174,43 @@ const SECTIONS: { title: string; topics: Topic[] }[] = [
           'Friends pay one part at a time, and you confirm each one. You get a reminder three days before each part is due.',
         ],
       },
+      {
+        q: 'When the cost changes',
+        a: ['Once you’ve paid for it, tap “Enter the final cost”. Kitty works out who pays a bit more and who gets money back.'],
+      },
     ],
   },
   {
     title: 'What your friends see',
+    icon: 'smartphone',
     topics: [
       {
         q: 'Paying',
         a: [
-          'They pick their name and see their share. The easiest way to pay is the QR code: take a screenshot, then scan it from photos in GPay, PhonePe or Paytm.',
+          'They pick their name, or tap “I’m Nathan, continue” on a nudge link, and see their share. The easiest way to pay is the QR code: take a screenshot, then scan it from photos in GPay, PhonePe or Paytm.',
           'Some UPI apps refuse payment buttons to personal UPI IDs with a “bank limit” message. Scanning the QR code works.',
         ],
       },
       {
-        q: 'How their share was worked out',
-        a: ['They see the breakdown by veg, non-veg and alcohol, can view the receipt, and see everyone’s share before paying.'],
+        q: 'Their share and the group',
+        a: [
+          'Before paying they see how their share was worked out (veg, non-veg and alcohol for a scanned bill) and everyone’s share.',
+          'After paying they see their share, its status, and “See who’s paid”.',
+        ],
       },
     ],
   },
   {
     title: 'Your account',
+    icon: 'user',
     topics: [
       {
         q: 'Your details and UPI ID',
-        a: ['Tap the You picture at the top right to change your name, mobile number or UPI ID, log out, or delete your account.'],
+        a: ['Tap the You picture at the top right to change your name, mobile number or UPI ID, see your groups, log out, or delete your account.'],
       },
       {
         q: 'Updates',
-        a: ['Kitty updates itself. A new version downloads when you open the app and starts the next time. Your details screen shows which version you have.'],
+        a: ['Kitty updates itself. A new version downloads when you open the app and starts the next time. Your details shows which version you have.'],
       },
     ],
   },
@@ -164,7 +224,10 @@ export default function Help() {
       <ScrollView contentContainerStyle={styles.body}>
         {SECTIONS.map((section) => (
           <View key={section.title} style={styles.section}>
-            <Text style={[type.label, styles.sectionTitle]}>{section.title.toUpperCase()}</Text>
+            <View style={styles.sectionHead}>
+              <Feather name={section.icon} size={16} color={colors.ink} />
+              <Text style={type.label}>{section.title}</Text>
+            </View>
             <View style={styles.list}>
               {section.topics.map((t) => {
                 const key = `${section.title}:${t.q}`;
@@ -197,7 +260,10 @@ export default function Help() {
         ))}
 
         <View style={styles.section}>
-          <Text style={[type.label, styles.sectionTitle]}>PRIVACY AND CONTACT</Text>
+          <View style={styles.sectionHead}>
+            <Feather name="shield" size={16} color={colors.ink} />
+            <Text style={type.label}>Privacy and contact</Text>
+          </View>
           <Text style={[type.body, styles.contact]}>Questions, problems or ideas? Email us and a person replies.</Text>
           <View style={styles.links}>
             <TextLink onPress={() => Linking.openURL(`mailto:${CONTACT}`)}>{CONTACT}</TextLink>
@@ -215,7 +281,7 @@ const styles = StyleSheet.create({
   body: { padding: layout.gutter, paddingBottom: 40 },
   flex: { flex: 1 },
   section: { marginBottom: 28 },
-  sectionTitle: { marginBottom: 10 },
+  sectionHead: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
   list: { borderTopWidth: layout.border, borderTopColor: colors.line },
   topic: { borderBottomWidth: layout.border, borderBottomColor: colors.line },
   question: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 50, paddingVertical: 12 },
