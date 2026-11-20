@@ -6,7 +6,7 @@ import { countWaiting } from '@/lib/activity';
 import { colors, layout, type } from '@/ui/theme';
 
 /**
- * The footer (decided with Raj, 20 Nov 2026): Kitties, Activity and You.
+ * The footer (decided with Raj, 20 Nov 2026): Kitties, Activity and Help (Help replaced You on 20 Nov; You is the picture at the top right).
  * Only on these three screens; creating a kitty, scanning, settling up and a
  * kitty's feed open on top without it, so they stay focused.
  */
@@ -15,7 +15,7 @@ export default function TabsLayout() {
     <Tabs screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: colors.page } }} tabBar={(props) => <TabBar {...props} />}>
       <Tabs.Screen name="home" options={{ title: 'Kitties' }} />
       <Tabs.Screen name="activity" options={{ title: 'Activity' }} />
-      <Tabs.Screen name="profile" options={{ title: 'You' }} />
+      <Tabs.Screen name="help" options={{ title: 'Help' }} />
     </Tabs>
   );
 }

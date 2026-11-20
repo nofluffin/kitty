@@ -14,6 +14,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useAuth } from '@/lib/auth';
+
 import { colors, fonts, layout, space, TOUCH, type } from './theme';
 
 // ---------------------------------------------------------------------------
@@ -31,12 +33,13 @@ interface ScreenProps {
   footer?: ReactNode;
   /** A tab screen: the tab bar below already keeps clear of the bottom edge. */
   inTabs?: boolean;
+  hideAvatar?: boolean;
 }
 
-export function Screen({ title, back, close, headerRight, children, footer, inTabs }: ScreenProps) {
+export function Screen({ title, back, close, headerRight, children, footer, inTabs, hideAvatar }: ScreenProps) {
   return (
     <SafeAreaView style={styles.safe} edges={inTabs ? ['top'] : ['top', 'bottom']}>
-      <Header title={title} back={back} close={close} right={headerRight} />
+      <Header title={title} back={back} close={close} right={headerRight} hideAvatar={hideAvatar} />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
           {children}
@@ -52,13 +55,18 @@ export function Header({
   back,
   close,
   right,
+  hideAvatar,
 }: {
   title: string;
   back?: boolean;
   /** Shows ✗ instead of ←, for leaving a finished flow (screen 6). */
   close?: () => void;
   right?: ReactNode;
+  /** The You picture shows on every screen once logged in (Raj, 20 Nov 2026), except your own details. */
+  hideAvatar?: boolean;
 }) {
+  const { session } = useAuth();
+  const avatar = session && !hideAvatar ? <Avatar text="You" onPress={() => router.push('/profile')} /> : null;
   return (
     <View style={styles.header}>
       {back || close ? (
@@ -75,7 +83,12 @@ export function Header({
       <Text style={[back || close ? type.screenTitle : type.appTitle, styles.flex]} accessibilityRole="header" numberOfLines={1}>
         {title}
       </Text>
-      {right ? <View style={styles.headerRight}>{right}</View> : null}
+      {right || avatar ? (
+        <View style={[styles.headerRight, styles.headerRightRow]}>
+          {right}
+          {avatar}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -353,6 +366,7 @@ const styles = StyleSheet.create({
   },
   back: { width: layout.backWidth, minHeight: TOUCH, justifyContent: 'center' },
   arrow: { fontFamily: fonts.regular },
+  headerRightRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   headerRight: { marginLeft: space.md },
   body: { paddingHorizontal: layout.gutter, paddingTop: layout.top, paddingBottom: space.xl, flexGrow: 1 },
   footer: { paddingHorizontal: layout.gutter, paddingTop: space.lg, paddingBottom: layout.gutter, gap: space.lg },

@@ -1,10 +1,12 @@
 import { cleanName, normaliseIndianMobile } from '@kitty/core';
 import { router } from 'expo-router';
 import { useRef, useState } from 'react';
+import { Linking, StyleSheet, Text } from 'react-native';
 
 import { authErrorMessage, normaliseIdentifier, requestCode } from '@/lib/auth-flow';
 import { config } from '@/lib/config';
 import { Body, Button, ErrorText, Field, Screen, Small, TextLink, Title, type TextInputRef } from '@/ui/components';
+import { colors } from '@/ui/theme';
 
 /** Screen 19. With email login there's an extra email field until SMS is switched on. */
 export default function SignUp() {
@@ -46,7 +48,17 @@ export default function SignUp() {
       headerRight={<TextLink onPress={() => router.replace('/log-in')}>Log in</TextLink>}
       footer={
         <>
-          <Small>By continuing you agree to the terms and privacy policy.</Small>
+          <Small>
+            By continuing you agree to the{' '}
+            <Text style={styles.legalLink} onPress={() => Linking.openURL(`${config.memberPageUrl}/terms`)}>
+              terms
+            </Text>{' '}
+            and{' '}
+            <Text style={styles.legalLink} onPress={() => Linking.openURL(`${config.memberPageUrl}/privacy`)}>
+              privacy policy
+            </Text>
+            .
+          </Small>
           <ErrorText>{errors.form}</ErrorText>
           <Button onPress={submit} loading={sending}>
             Send code
@@ -105,3 +117,7 @@ export default function SignUp() {
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  legalLink: { textDecorationLine: 'underline', color: colors.ink },
+});

@@ -2,6 +2,20 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 20 Nov 2026: Help, account deletion, privacy policy and terms (step 10)
+
+Decided with Raj:
+
+- **The footer is Kitties, Activity and Help.** "You" moved to the picture at the top right, which now shows on every screen once logged in (not on your details screen itself).
+- **Help** explains how Kitty works in tap-to-open sections: getting started, starting a kitty, sharing and getting paid, the bill and settling up, goals and monthly parts, what your friends see, your account, and privacy and contact.
+- **Delete my account** is in Your details (App Store rule). It removes bill photos, then the account, which deletes the profile, every kitty with its people and payment records, notifications and phones. Shared links stop working.
+- **Privacy policy and terms** are at thekitty.app/privacy and /terms, linked from sign-up, Help and the home page. They name **Kitty Labs** and **hello@thekitty.app**. They were written to match what Kitty stores; have them reviewed before the public launch.
+- Functions needing more rights than the caller now live in the private schema, with thin public wrappers, so Supabase's security check has no warnings.
+
+**Not done yet**
+
+- hello@thekitty.app needs email forwarding set up on the domain.
+
 ## 20 Nov 2026: a person's breakdown for the organiser
 
 - **Tap anyone in a kitty's feed** to see their food and drink, their share and status, and how the share was worked out: veg, non-veg and alcohol with the dishes for a scanned bill, or the typed split. It's the same breakdown they see on their pay page, so the organiser can answer "why is mine ₹1,250?". Confirm or Nudge sits at the bottom. Someone paying for others shows a block for each person; someone paid for links to their payer. Not in the wires.
