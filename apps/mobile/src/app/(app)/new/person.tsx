@@ -1,5 +1,7 @@
 import { cleanName, formatIndianMobile, normaliseIndianMobile, type Diet } from '@kitty/core';
-import { Contact } from 'expo-contacts';
+// The legacy picker returns the picked person's details directly. The newer Contact.presentPicker
+// only returns an ID, and reading the numbers then needs full address book permission on iPhone.
+import { presentContactPickerAsync } from 'expo-contacts/legacy';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
@@ -30,17 +32,25 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
   const [diet, setDiet] = useState<Diet>(editing?.diet ?? 'veg');
   const [drinks, setDrinks] = useState(editing?.drinks ?? false);
   const [errors, setErrors] = useState<{ name?: string; mobile?: string }>({});
+  const [added, setAdded] = useState<string | null>(null);
   const isOrganiser = editing?.isOrganiser ?? false;
   const shownName = name.trim() || 'them';
 
   async function pickContact() {
     try {
-      const contact = await Contact.presentPicker();
+      const contact = await presentContactPickerAsync();
       if (!contact) return;
-      const [fullName, phones] = await Promise.all([contact.getFullName(), contact.getPhones()]);
+      const fullName = contact.name || [contact.firstName, contact.lastName].filter(Boolean).join(' ');
       if (fullName) setName(fullName);
-      const indian = phones.map((p) => normaliseIndianMobile(p.number ?? '')).find(Boolean);
+      // The main number first, then the first Indian mobile among the rest.
+      const phones = [...(contact.phoneNumbers ?? [])].sort((a, b) => Number(!!b.isPrimary) - Number(!!a.isPrimary));
+      const indian = phones.map((p) => normaliseIndianMobile(p.number ?? p.digits ?? '')).find(Boolean);
       setMobile(indian ? formatIndianMobile(indian).replace(/^\+91 /, '') : '');
+      setErrors(
+        !indian && phones.length > 0
+          ? { mobile: `${fullName ? `${fullName}’s` : 'Their'} number isn’t an Indian mobile. Type one, or leave it empty.` }
+          : {},
+      );
     } catch {
       notify('Couldn’t open contacts', 'Type their name instead.');
     }
@@ -62,6 +72,7 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
       router.setParams({ key: undefined });
     } else {
       k.addPerson(person);
+      setAdded(cleaned);
       setName('');
       setMobile('');
       setDiet('veg');
@@ -76,7 +87,16 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
   }
 
   return (
-    <Screen title={editing ? (isOrganiser ? 'You' : `Edit ${editing.name}`) : 'Add a person'} back>
+    <Screen
+      title={editing ? (isOrganiser ? 'You' : `Edit ${editing.name}`) : 'Add a person'}
+      back
+      footer={
+        // Raj, 20 Nov 2026: it wasn't clear you go back a screen when you've added everyone.
+        <Button variant="secondary" onPress={() => router.back()}>
+          {`Done, ${k.people.length} ${k.people.length === 1 ? 'person' : 'people'} in`}
+        </Button>
+      }
+    >
       {!editing && Platform.OS !== 'web' ? (
         <>
           <Button variant="secondary" onPress={pickContact}>
@@ -150,7 +170,10 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
       </View>
 
       <View style={styles.actions}>
-        <Button onPress={save}>{editing ? 'Save changes' : 'Add to kitty'}</Button>
+        {added && !editing ? <Text style={[type.note, styles.added]}>{added} added. Add someone else, or tap Done.</Text> : null}
+        <Button onPress={save}>
+          {editing ? 'Save changes' : 'Add to kitty'}
+        </Button>
         {editing ? (
           <Button variant="secondary" onPress={remove}>
             {isOrganiser ? 'I’m not paying into this one' : 'Remove from kitty'}
@@ -197,4 +220,5 @@ const styles = StyleSheet.create({
   list: { marginTop: 12 },
   empty: { paddingVertical: 12 },
   addBack: { marginTop: 8 },
+  added: { textAlign: 'center' },
 });

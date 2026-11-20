@@ -2,6 +2,11 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 20 Nov 2026: picking contacts and adding people
+
+- **Picking a contact fills in their mobile number.** The phone's main number is tried first, then the first Indian mobile among the rest. Kitty uses the contact picker that hands over just the picked person's details, so it still never needs access to the whole address book. Numbers with hidden formatting from phone contacts (direction marks, non-breaking spaces, 0091) are now read correctly. If none of their numbers is an Indian mobile, Kitty says so.
+- **Screen 3 has a "Done, 4 people in" button** fixed at the bottom, and says "Aisha added" after each person, since it wasn't clear you go back a screen when you've finished (Raj, 20 Nov 2026).
+
 ## 20 Nov 2026: editing a kitty, and how shares are explained
 
 **Decided with Raj**
