@@ -62,7 +62,11 @@ export default function NewGroup() {
   // Raj, 21 Nov 2026: Leave, and Delete for groups you made, live here rather than on the list.
   async function leave() {
     if (!original) return;
-    if (!(await ask(`Leave ${original.name}?`, 'It goes from your groups. Anyone else who has it keeps it.', 'Leave'))) return;
+    const message =
+      original.createdBy.id === profile?.id
+        ? `${original.name} goes from your Kitty only. Anyone you shared it with keeps it and can still use it. To remove it from everyone, delete it instead.`
+        : `${original.name} goes from your Kitty only. ${original.createdBy.name || 'Whoever made it'} and anyone else who has it keep it.`;
+    if (!(await ask(`Leave ${original.name}?`, message, 'Leave'))) return;
     const e = await leaveGroup(original.id);
     if (e) return setError(await explainFailure(e, 'leave the group'));
     router.back();
@@ -72,8 +76,8 @@ export default function NewGroup() {
     if (!original) return;
     if (
       !(await ask(
-        `Delete ${original.name}?`,
-        'It goes from your Kitty and from everyone you shared it with. Kitties you made with it stay as they are.',
+        `Delete ${original.name} for everyone?`,
+        `${original.name} goes from your Kitty and from the Kitty of anyone you shared it with. They can’t get it back. Kitties already made with it don’t change.`,
         'Delete',
       ))
     )
