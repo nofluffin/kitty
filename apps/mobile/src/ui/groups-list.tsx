@@ -80,28 +80,27 @@ export function GroupsList({ onUse }: { onUse?: (g: SavedGroup) => void }) {
               >
                 <Text style={[type.bodyInk, styles.starText]}>{g.favourite ? '★' : '☆'}</Text>
               </Pressable>
-              <View style={styles.flex}>
-                {/* Raj, 21 Nov 2026: tapping a group opens it to edit (or picks it, on a new kitty). */}
-                <Pressable
-                  onPress={() => (onUse ? onUse(g) : edit(g))}
-                  accessibilityRole="button"
-                  accessibilityLabel={onUse ? `Add ${g.name}` : `Open ${g.name}`}
-                >
-                  <Text style={type.bodyInk}>{g.name}</Text>
-                  <Text style={type.note}>
-                    {g.people.map((p) => (p.profileId === profile?.id ? 'You' : p.name)).join(', ')}
-                    {g.createdBy.id === profile?.id ? '' : `. From ${g.createdBy.name || 'a friend'}`}
-                  </Text>
-                </Pressable>
-                {/* Share and Edit in a row under the group; Leave and Delete are on the group's screen. */}
-                <View style={styles.actions}>
-                  <SmallButton compact onPress={() => share(g)}>
-                    Share
-                  </SmallButton>
-                  <SmallButton compact onPress={() => edit(g)}>
-                    Edit
-                  </SmallButton>
-                </View>
+              {/* Raj, 21 Nov 2026: tapping a group opens it to edit (or picks it, on a new kitty). */}
+              <Pressable
+                style={styles.flex}
+                onPress={() => (onUse ? onUse(g) : edit(g))}
+                accessibilityRole="button"
+                accessibilityLabel={onUse ? `Add ${g.name}` : `Open ${g.name}`}
+              >
+                <Text style={type.bodyInk}>{g.name}</Text>
+                <Text style={type.note}>
+                  {g.people.map((p) => (p.profileId === profile?.id ? 'You' : p.name)).join(', ')}
+                  {g.createdBy.id === profile?.id ? '' : `. From ${g.createdBy.name || 'a friend'}`}
+                </Text>
+              </Pressable>
+              {/* Share and Edit side by side on the right, centred on the group. Leave and Delete are on the group's screen. */}
+              <View style={styles.actions}>
+                <SmallButton compact onPress={() => share(g)}>
+                  Share
+                </SmallButton>
+                <SmallButton compact onPress={() => edit(g)}>
+                  Edit
+                </SmallButton>
               </View>
             </View>
           ))}
@@ -123,9 +122,9 @@ const styles = StyleSheet.create({
   intro: { marginBottom: 16 },
   section: { marginBottom: 24 },
   list: { marginTop: 10, borderTopWidth: layout.border, borderTopColor: colors.line },
-  row: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingVertical: 12, borderBottomWidth: layout.border, borderBottomColor: colors.line },
-  star: { width: 28, alignItems: 'center', paddingTop: 2 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12, borderBottomWidth: layout.border, borderBottomColor: colors.line },
+  star: { width: 28, alignItems: 'center' },
   starText: { fontSize: 22, lineHeight: 26 },
   flex: { flex: 1, gap: 2 },
-  actions: { flexDirection: 'row', gap: 8, marginTop: 10 },
+  actions: { flexDirection: 'row', gap: 6 },
 });

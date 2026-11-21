@@ -2,6 +2,11 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 21 Nov 2026: group buttons beside the name, clearer popups
+
+- **Share and Edit sit side by side on the right of each group**, centred on it (Raj).
+- **Leaving or deleting a group explains what happens first.** Leave: it goes from your Kitty only, and others keep it (for your own group, it also says to delete it to remove it from everyone). Delete: "Delete Cousins for everyone?", it goes from the Kitty of anyone you shared it with, they can't get it back, and kitties already made with it don't change.
+
 ## 21 Nov 2026: a screen for each group
 
 - **Tapping a group in the Groups tab opens it** to edit (Raj). On that screen you can rename it, add or remove people, **Leave this group**, or **Delete this group** (red, only for groups you made).
