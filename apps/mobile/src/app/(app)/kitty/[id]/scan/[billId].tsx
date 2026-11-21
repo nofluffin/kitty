@@ -12,7 +12,7 @@ import { supabase } from '@/lib/supabase';
 import { Body, Button, CenteredState, DashedButton, ErrorText, Field, InfoBox, Label, Note, Screen, SmallButton, TextLink, Title } from '@/ui/components';
 import { colors, layout, type } from '@/ui/theme';
 
-const CATEGORY_LABEL: Record<SplitCategory, string> = { veg: 'Veg', nonveg: 'Non-veg', alcohol: 'Alcohol' };
+const CATEGORY_LABEL: Record<SplitCategory, string> = { veg: 'Veg', nonveg: 'Non-Veg', alcohol: 'Alcohol' };
 const NEXT: Record<BillCategory, SplitCategory> = { veg: 'nonveg', nonveg: 'alcohol', alcohol: 'veg', unsure: 'veg' };
 
 type Step = 'sort' | 'check' | 'shares';
@@ -363,7 +363,7 @@ function SplitProblem({ kitty, bill, problem, reload }: { kitty: FeedKitty; bill
             style={styles.checkRow}
           >
             <Text style={[type.bodyInk, styles.flex]}>{m.isOrganiser ? 'You' : m.name}</Text>
-            <Text style={type.meta}>{on ? '☑' : '☐'} {alcohol ? 'Drinks' : 'Non-veg'}</Text>
+            <Text style={type.meta}>{on ? '☑' : '☐'} {alcohol ? 'Alcohol' : 'Non-Veg'}</Text>
           </Pressable>
         );
       })}

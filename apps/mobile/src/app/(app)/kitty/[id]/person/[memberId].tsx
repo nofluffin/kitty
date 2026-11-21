@@ -41,7 +41,7 @@ export default function Person() {
   return <PersonReady kitty={data.kitty} bill={data.bill} member={member} />;
 }
 
-const CATEGORY_NAME = { veg: 'Veg dishes', nonveg: 'Non-veg dishes', alcohol: 'Alcohol' } as const;
+const CATEGORY_NAME = { veg: 'Veg dishes', nonveg: 'Non-Veg dishes', alcohol: 'Alcohol' } as const;
 
 function PersonReady({ kitty, bill, member: m }: { kitty: FeedKitty; bill: ScannedBill | null; member: FeedMember }) {
   const payer = m.paidById ? kitty.members.find((x) => x.id === m.paidById) : null;
@@ -92,8 +92,8 @@ function PersonReady({ kitty, bill, member: m }: { kitty: FeedKitty; bill: Scann
       }
     >
       <View style={styles.tags}>
-        <Tag>{m.diet === 'veg' ? 'Veg' : 'Non-veg'}</Tag>
-        {m.drinks ? <Tag>Drinks</Tag> : <Tag>Doesn’t drink</Tag>}
+        <Tag>{m.diet === 'veg' ? 'Veg' : 'Non-Veg'}</Tag>
+        {m.drinks ? <Tag>Alcohol</Tag> : <Tag>No Alcohol</Tag>}
       </View>
 
       <View style={styles.card}>

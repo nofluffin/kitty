@@ -1,4 +1,4 @@
-import { cleanName, formatIndianMobile, normaliseIndianMobile, type Diet } from '@kitty/core';
+import { cleanName, type Diet, distinctNames, formatIndianMobile, normaliseIndianMobile } from '@kitty/core';
 // The legacy picker returns the picked person's details directly. The newer Contact.presentPicker
 // only returns an ID, and reading the numbers then needs full address book permission on iPhone.
 import { presentContactPickerAsync } from 'expo-contacts/legacy';
@@ -41,6 +41,8 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
   // Someone already paying for others can't be paid for (no chains), nor can the organiser.
   const paysForOthers = editing ? k.people.filter((p) => p.paidByKey === editing.key) : [];
   const payers = k.people.filter((p) => p.key !== editing?.key && !p.paidByKey);
+  // Names as shown, telling apart people who share one.
+  const labels = new Map(k.people.map((p, i) => [p.key, distinctNames(k.people)[i]!]));
   const canBePaidFor = !isOrganiser && paysForOthers.length === 0 && payers.length > 0;
   const nameOf = (key: string | null) => {
     const p = k.people.find((x) => x.key === key);
@@ -149,7 +151,7 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
                 </Chip>
                 {payers.map((p) => (
                   <Chip key={p.key} filled={paidByKey === p.key} onPress={() => setPaidByKey(p.key)}>
-                    {p.isOrganiser ? 'You' : p.name}
+                    {p.isOrganiser ? 'You' : (labels.get(p.key) ?? p.name)}
                   </Chip>
                 ))}
               </View>
@@ -190,7 +192,7 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
             label="Food"
             options={[
               { value: 'veg', label: 'Veg' },
-              { value: 'nonveg', label: 'Non-veg' },
+              { value: 'nonveg', label: 'Non-Veg' },
             ]}
             value={diet}
             onChange={setDiet}
@@ -203,8 +205,8 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
           <Segmented
             label="Alcohol"
             options={[
-              { value: 'yes', label: 'Drinks' },
-              { value: 'no', label: 'Doesn’t drink' },
+              { value: 'yes', label: 'Alcohol' },
+              { value: 'no', label: 'No Alcohol' },
             ]}
             value={drinks ? 'yes' : 'no'}
             onChange={(v) => setDrinks(v === 'yes')}
@@ -242,10 +244,10 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
           {k.people.length === 0 ? (
             <Text style={[type.note, styles.empty]}>Nobody yet.</Text>
           ) : (
-            k.people.map((p) => (
+            k.people.map((p, i) => (
               <Row
                 key={p.key}
-                left={p.isOrganiser ? 'You' : p.name}
+                left={p.isOrganiser ? 'You' : distinctNames(k.people)[i]!}
                 right={describePerson(p, nameOf(p.paidByKey))}
                 onPress={() => router.setParams({ key: p.key })}
               />

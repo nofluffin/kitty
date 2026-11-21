@@ -97,7 +97,6 @@ export type MemberView =
   | { kind: "cancelled"; title: string; organiserName: string }
   | { kind: "closed"; title: string; organiserName: string; closedAt: string | null };
 
-const firstName = (name: string) => name.trim().split(/\s+/)[0] || name;
 
 /** Everything the member page needs for one link (screens 14, 15, 16, 26, 27). */
 export async function loadMemberView(slug: string, claimToken: string | undefined): Promise<MemberView> {
@@ -116,7 +115,8 @@ export async function loadMemberView(slug: string, claimToken: string | undefine
   // A draft hasn't been shared yet, so its link shouldn't work. Don't reveal it exists.
   if (!k || k.status === "draft") return { kind: "not_found" };
 
-  const organiserName = firstName(k.organiser?.name ?? "") || "The organiser";
+  // Full names (Raj, 21 Nov 2026): two people can share a first name.
+  const organiserName = (k.organiser?.name ?? "").replace(/\s+/g, " ").trim() || "The organiser";
   if (k.status === "cancelled") return { kind: "cancelled", title: k.title, organiserName };
   if (k.status === "closed") return { kind: "closed", title: k.title, organiserName, closedAt: k.closed_at };
 
