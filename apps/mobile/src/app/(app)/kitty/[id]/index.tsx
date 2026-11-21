@@ -137,7 +137,7 @@ export default function Feed() {
                 </Note>
                 {/* Raj, 20 Nov 2026: once anyone has paid, scanning is greyed out. */}
                 <Button
-                  variant="secondary"
+                  variant={load.kitty.editable ? 'primary' : 'secondary'}
                   disabled={!load.kitty.editable}
                   onPress={() => router.push({ pathname: '/kitty/[id]/scan', params: { id, mode: 'settle' } })}
                 >
@@ -146,7 +146,7 @@ export default function Feed() {
               </>
             )}
             {/* Raj, 20 Nov 2026: file a kitty away from the list. Found again under Archived kitties on home. */}
-            <Button variant="secondary" onPress={() => toggleArchive(load.kitty)}>
+            <Button variant={load.kitty.archivedAt ? 'secondary' : 'danger'} onPress={() => toggleArchive(load.kitty)}>
               {load.kitty.archivedAt ? 'Unarchive' : 'Archive'}
             </Button>
           </View>

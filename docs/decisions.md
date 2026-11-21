@@ -2,6 +2,15 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 21 Nov 2026: drafts, Create kitty, and named colours
+
+Decided with Raj:
+
+- **"Create kitty" makes a kitty live straight away**, ready to share (it used to save a draft until the link was shared). Amounts stay editable until someone pays.
+- **Drafts now only come from scanning a bill first.** A draft's screen says "This kitty is a draft: it isn't live yet, so friends can't pay", with a green **Create kitty** button (then the share options appear) and "Not now, back to my kitties".
+- **Scan the bill is a green main button** on the kitty page (grey once someone pays). **Archive is red, #ED2939**, with white text; Unarchive stays outlined.
+- **The colours are listed in `docs/colours.md`**, and named in `theme.ts` (`action`, `selected`, `destructive`, `moment`) and `globals.css`.
+
 ## 21 Nov 2026: scan the bill from anywhere, until someone pays
 
 - **Scanning is offered wherever a kitty's amounts are set** (Raj): the new kitty screen, Shares (Adjust), Edit kitty and the share screen (drafts included), as well as the kitty page. It works until anyone pays. From Edit kitty, your edits are saved first, then the camera opens. The share screen says "Rescan the bill" once there's a checked bill.

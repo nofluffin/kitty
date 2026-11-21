@@ -146,13 +146,14 @@ export function TextLink({ children, onPress, disabled }: { children: ReactNode;
 interface ButtonProps {
   children: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary';
+  /** primary: green action. secondary: outlined. danger: red, for Archive and the like. */
+  variant?: 'primary' | 'secondary' | 'danger';
   disabled?: boolean;
   loading?: boolean;
 }
 
 export function Button({ children, onPress, variant = 'primary', disabled, loading }: ButtonProps) {
-  const primary = variant === 'primary';
+  const primary = variant === 'primary' || variant === 'danger';
   const inactive = disabled || loading;
   return (
     <Pressable
@@ -162,7 +163,7 @@ export function Button({ children, onPress, variant = 'primary', disabled, loadi
       accessibilityState={{ disabled: !!inactive, busy: !!loading }}
       style={({ pressed }) => [
         styles.button,
-        primary ? styles.buttonPrimary : styles.buttonSecondary,
+        variant === 'danger' ? styles.buttonDanger : primary ? styles.buttonPrimary : styles.buttonSecondary,
         inactive && styles.buttonDisabled,
         pressed && !inactive && styles.buttonPressed,
       ]}
@@ -392,6 +393,7 @@ const styles = StyleSheet.create({
   },
   buttonPrimary: { backgroundColor: colors.action, borderColor: colors.action },
   buttonSecondary: { backgroundColor: colors.surface, borderColor: colors.line },
+  buttonDanger: { backgroundColor: colors.destructive, borderColor: colors.destructive },
   buttonDisabled: { opacity: 0.4 },
   buttonPressed: { opacity: 0.8 },
   textOnDark: { color: colors.inkOnDark },
@@ -434,7 +436,7 @@ const styles = StyleSheet.create({
     borderColor: colors.line,
     borderRadius: layout.radius,
   },
-  badgeMoment: { backgroundColor: '#F38427', borderColor: '#F38427', borderRadius: 3 },
+  badgeMoment: { backgroundColor: colors.moment, borderColor: colors.moment, borderRadius: 3 },
   badgeMomentText: { color: colors.inkOnDark },
   avatar: {
     width: layout.avatar,
