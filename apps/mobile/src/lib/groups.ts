@@ -89,6 +89,12 @@ export async function leaveGroup(id: string) {
   return error;
 }
 
+/** Whoever made a group can delete it for everyone (Raj, 21 Nov 2026). */
+export async function deleteGroup(id: string) {
+  const { error } = await supabase.rpc('delete_group', { p_group: id });
+  return error;
+}
+
 /** From a "Share group" link. */
 export async function joinGroup(token: string): Promise<{ name: string } | Error> {
   const { data, error } = await supabase.rpc('join_group', { p_token: token });

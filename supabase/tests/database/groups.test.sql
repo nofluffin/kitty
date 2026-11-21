@@ -1,6 +1,6 @@
 -- Archiving and shared groups (20 Nov 2026). Run with: npm run db:test
 begin;
-select plan(15);
+select plan(19);
 
 insert into auth.users (id, email, raw_user_meta_data) values
   ('55555555-5555-4555-8555-555555555555', 'kabir@kitty.test', '{"name": "Kabir"}');
@@ -47,6 +47,22 @@ select throws_ok($$ update public.group_holders set profile_id = '11111111-1111-
 delete from public.group_holders where group_id = (select id from fam);
 reset role;
 select is((select count(*)::int from public.groups where id = (select id from fam)), 0, 'a group nobody holds is deleted');
+
+-- Deleting: only whoever made the group, and it goes for everyone.
+set local role authenticated;
+set local request.jwt.claims = '{"sub": "11111111-1111-4111-8111-111111111111", "role": "authenticated"}';
+create temp table office as
+select * from public.save_group('Office', '[{"name": "Rohan", "is_me": true}, {"name": "Kabir"}]');
+grant select on office to authenticated;
+set local request.jwt.claims = '{"sub": "55555555-5555-4555-8555-555555555555", "role": "authenticated"}';
+select public.join_group((select share_token from office));
+select throws_ok($$ select public.delete_group((select id from office)) $$, '42501',
+  'only the person who made a group can delete it', 'a friend can''t delete a group they were given');
+set local request.jwt.claims = '{"sub": "11111111-1111-4111-8111-111111111111", "role": "authenticated"}';
+select lives_ok($$ select public.delete_group((select id from office)) $$, 'whoever made it can delete it');
+reset role;
+select is((select count(*)::int from public.groups where id = (select id from office)), 0, 'the group is gone');
+select is((select count(*)::int from public.group_holders where group_id = (select id from office)), 0, 'from everyone''s Kitty');
 
 -- Archiving
 set local role authenticated;

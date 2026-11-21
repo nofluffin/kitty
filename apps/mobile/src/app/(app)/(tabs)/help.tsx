@@ -97,6 +97,7 @@ const SECTIONS: { title: string; icon: IconName; topics: Topic[] }[] = [
         a: [
           'Tap Share next to a group to send it on WhatsApp. When a friend who organises with Kitty opens the link, the group is added to their Kitty, with you in it, so you can take turns organising.',
           'Tap Leave to take a group out of your Kitty. Others who have it keep it. All your groups are in the Groups tab, next to Kitties.',
+          'Made the group yourself? Tap Delete to remove it for everyone, including anyone you shared it with. Kitties already made with it aren’t changed.',
         ],
       },
     ],
