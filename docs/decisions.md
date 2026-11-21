@@ -8,7 +8,7 @@ Choices made during the build that aren't in the spec, or that settle something 
 
 ## 21 Nov 2026: group name on the people screen
 
-- **Adding or editing people in a group shows the group's name at the top, and it can be changed there** (Raj). It's the same name as on the group screen, so a change in one shows in the other.
+- **Adding or editing people in a group shows the group's name at the top, read only** (Raj). It's changed on the group screen. (Briefly editable on 21 Nov; Raj then asked for it read only.)
 
 ## 21 Nov 2026: who pays waits for a name
 
