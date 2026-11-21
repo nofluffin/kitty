@@ -2,6 +2,10 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 21 Nov 2026: Save and scan on Edit kitty
+
+- **Edit kitty has a "Save and scan the bill" button above Save changes** (Raj), for moments. It saves your edits, then opens the camera. The dashed scan box is gone from Edit kitty; New kitty keeps it, worded "Have the bill? Scan it for exact shares" so it no longer gets cut off.
+
 ## 21 Nov 2026: coloured food and drink pills
 
 - **The food and drink pills are coloured** (Raj): Veg green `#52A447`, Non-Veg red `#ED2939`, both with white text; Alcohol black with white text; No Alcohol stone `#9F9484` with white text (Raj changed it from white the same day). Their text is a size smaller (11 pt) so they don't look tight. Same on the person screen in the app and on the member page, which now shows No Alcohol too.

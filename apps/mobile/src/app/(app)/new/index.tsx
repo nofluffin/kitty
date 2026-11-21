@@ -218,6 +218,12 @@ export default function NewKitty() {
           {k.editing?.status === 'shared' ? (
             <Small>Everyone’s link updates straight away. You can only edit until someone pays.</Small>
           ) : null}
+          {/* Raj, 21 Nov 2026: Edit kitty gets its own Scan the bill button, next to Save. */}
+          {k.editing && !goal ? (
+            <Button variant="secondary" onPress={scanFirst} loading={scanning}>
+              Save and scan the bill
+            </Button>
+          ) : null}
           <Button onPress={() => create()} loading={saving}>
             {k.editing ? 'Save changes' : 'Create kitty'}
           </Button>
@@ -288,11 +294,9 @@ export default function NewKitty() {
           ) : null}
           <ErrorText>{inParts ? planProblem : null}</ErrorText>
         </View>
-      ) : (
+      ) : k.editing ? null : (
         <View style={styles.scanGap}>
-          <DashedButton onPress={scanFirst}>
-            {scanning ? 'Saving the kitty…' : 'Have the bill already? Scan it for exact shares'}
-          </DashedButton>
+          <DashedButton onPress={scanFirst}>{scanning ? 'Saving the kitty…' : 'Have the bill? Scan it for exact shares'}</DashedButton>
         </View>
       )}
 
