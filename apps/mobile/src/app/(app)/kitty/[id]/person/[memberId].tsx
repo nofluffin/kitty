@@ -91,7 +91,7 @@ function PersonReady({ kitty, bill, member: m }: { kitty: FeedKitty; bill: Scann
       }
     >
       <View style={styles.tags}>
-        {/* Raj, 21 Nov 2026: Veg green, Non-Veg red, Alcohol black, No Alcohol white. */}
+        {/* Raj, 21 Nov 2026: Veg green, Non-Veg red, Alcohol black, No Alcohol stone. */}
         <Tag tone={m.diet === 'veg' ? 'veg' : 'nonVeg'}>{m.diet === 'veg' ? 'Veg' : 'Non-Veg'}</Tag>
         {m.drinks ? <Tag tone="alcohol">Alcohol</Tag> : <Tag tone="noAlcohol">No Alcohol</Tag>}
       </View>
@@ -190,7 +190,7 @@ const TAG_TONE = {
   veg: { backgroundColor: colors.veg, borderColor: colors.veg, color: colors.inkOnDark },
   nonVeg: { backgroundColor: colors.nonVeg, borderColor: colors.nonVeg, color: colors.inkOnDark },
   alcohol: { backgroundColor: colors.ink, borderColor: colors.ink, color: colors.inkOnDark },
-  noAlcohol: { backgroundColor: colors.surface, borderColor: colors.line, color: colors.ink },
+  noAlcohol: { backgroundColor: colors.selected, borderColor: colors.selected, color: colors.inkOnDark },
 } as const;
 
 function Tag({ children, tone }: { children: string; tone: keyof typeof TAG_TONE }) {
