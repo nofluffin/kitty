@@ -168,9 +168,11 @@ function KittyCard({ kitty, today }: { kitty: KittySummary; today: string }) {
     >
       <View style={styles.cardTop}>
         <Text style={[type.cardTitle, styles.cardTitle]}>{kitty.title}</Text>
-        <Badge tone={!isDraft && kitty.status !== 'settling' && kitty.kind === 'moment' ? 'moment' : undefined}>
-          {isDraft ? 'Draft' : kitty.status === 'settling' ? 'Settling' : kitty.kind}
-        </Badge>
+        <View style={styles.cardBadge}>
+          <Badge small tone={!isDraft && kitty.status !== 'settling' ? kitty.kind : undefined}>
+            {isDraft ? 'Draft' : kitty.status === 'settling' ? 'Settling' : kitty.kind}
+          </Badge>
+        </View>
       </View>
       <Text style={[type.metaMuted, styles.cardDate]}>
         {formatShortDate(kitty.dueDate)}, {timeToGo(today, kitty.dueDate)}
@@ -201,7 +203,9 @@ const styles = StyleSheet.create({
     borderColor: colors.line,
     padding: layout.cardPadding,
   },
-  cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 },
+  cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 },
+  // The tag sits nearer the card's top right corner (Raj, 21 Nov 2026).
+  cardBadge: { marginTop: -8, marginRight: -8 },
   cardTitle: { flex: 1 },
   cardDate: { marginTop: 12 },
   track: { height: 8, backgroundColor: colors.track, marginTop: 12 },
