@@ -4,7 +4,7 @@ Choices made during the build that aren't in the spec, or that settle something 
 
 ## 21 Nov 2026: coloured food and drink pills
 
-- **The food and drink pills are coloured** (Raj): Veg green `#52A447`, Non-Veg red `#ED2939`, both with white text; Alcohol black with white text; No Alcohol white with ink text and a grey border. Their text is a size smaller (11 pt) so they don't look tight. Same on the person screen in the app and on the member page, which now shows No Alcohol too.
+- **The food and drink pills are coloured** (Raj): Veg green `#52A447`, Non-Veg red `#ED2939`, both with white text; Alcohol black with white text; No Alcohol stone `#9F9484` with white text (Raj changed it from white the same day). Their text is a size smaller (11 pt) so they don't look tight. Same on the person screen in the app and on the member page, which now shows No Alcohol too.
 
 ## 21 Nov 2026: the Help tab is now Kitty
 

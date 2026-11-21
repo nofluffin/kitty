@@ -16,7 +16,7 @@ Change a colour in both places and here.
 | Veg green | `#52A447` | White | The Veg pill on a person's share (app and member page) |
 | Non-Veg red | `#ED2939` | White | The Non-Veg pill |
 | Alcohol black | Ink `#0A0A0A` | White | The Alcohol pill |
-| No Alcohol white | Surface `#FFFFFF`, line border | Ink | The No Alcohol pill |
+| No Alcohol stone | Stone `#9F9484` | White | The No Alcohol pill |
 
 ## Neutrals (from the wireframes)
 

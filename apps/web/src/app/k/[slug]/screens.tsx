@@ -45,17 +45,21 @@ function statusText(m: MemberRow, kitty: OpenKitty): string {
 }
 
 /** Food and drink as small tags next to a name, so the group sees why amounts differ. */
+// Raj, 21 Nov 2026: Veg green, Non-Veg red, Alcohol black, No Alcohol stone; text a size down.
+// Whole class names in a lookup, so Tailwind always finds them.
+const TAG = "inline-flex h-5 items-center rounded-[3px] border px-[7px] text-[11px] leading-[14px] text-white";
+const TAG_TONE = {
+  veg: "border-veg bg-veg",
+  nonveg: "border-nonveg bg-nonveg",
+  alcohol: "border-ink bg-ink",
+  noAlcohol: "border-selected bg-selected",
+} as const;
+
 function DietTags({ m }: { m: MemberRow }) {
-  // Raj, 21 Nov 2026: Veg green, Non-Veg red, Alcohol black, No Alcohol white; text a size down.
-  const tag = "inline-flex h-5 items-center rounded-[3px] border px-[7px] text-[11px] leading-[14px]";
   return (
     <span className="ml-2 inline-flex gap-1 align-middle">
-      <span className={`${tag} ${m.diet === "veg" ? "border-veg bg-veg text-white" : "border-nonveg bg-nonveg text-white"}`}>
-        {m.diet === "veg" ? "Veg" : "Non-Veg"}
-      </span>
-      <span className={`${tag} ${m.drinks ? "border-ink bg-ink text-white" : "border-line bg-surface text-ink"}`}>
-        {m.drinks ? "Alcohol" : "No Alcohol"}
-      </span>
+      <span className={`${TAG} ${m.diet === "veg" ? TAG_TONE.veg : TAG_TONE.nonveg}`}>{m.diet === "veg" ? "Veg" : "Non-Veg"}</span>
+      <span className={`${TAG} ${m.drinks ? TAG_TONE.alcohol : TAG_TONE.noAlcohol}`}>{m.drinks ? "Alcohol" : "No Alcohol"}</span>
     </span>
   );
 }
