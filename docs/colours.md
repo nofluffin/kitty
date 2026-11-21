@@ -13,6 +13,10 @@ Change a colour in both places and here.
 | Red | `#ED2939` | White, or as text | Destructive actions: the “Archive this kitty” link (red text) |
 | Moment orange | `#F38427` | White | The MOMENT tag on kitty cards (3px corners, small, near the top right corner) |
 | Goal blue | `#4682B4` | White | The GOAL tag on kitty cards (same shape as MOMENT) |
+| Veg green | `#52A447` | White | The Veg pill on a person's share (app and member page) |
+| Non-Veg red | `#ED2939` | White | The Non-Veg pill |
+| Alcohol black | Ink `#0A0A0A` | White | The Alcohol pill |
+| No Alcohol white | Surface `#FFFFFF`, line border | Ink | The No Alcohol pill |
 
 ## Neutrals (from the wireframes)
 

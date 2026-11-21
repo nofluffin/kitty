@@ -20,6 +20,8 @@
   --color-destructive: #ed2939;
   --color-moment: #f38427;
   --color-goal: #4682b4;
+  --color-veg: #52a447;
+  --color-nonveg: #ed2939;
 
   /* DM Sans stands in for Adrianna until it's licensed. */
   --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;

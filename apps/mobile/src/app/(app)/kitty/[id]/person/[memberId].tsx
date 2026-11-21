@@ -91,8 +91,9 @@ function PersonReady({ kitty, bill, member: m }: { kitty: FeedKitty; bill: Scann
       }
     >
       <View style={styles.tags}>
-        <Tag>{m.diet === 'veg' ? 'Veg' : 'Non-Veg'}</Tag>
-        {m.drinks ? <Tag>Alcohol</Tag> : <Tag>No Alcohol</Tag>}
+        {/* Raj, 21 Nov 2026: Veg green, Non-Veg red, Alcohol black, No Alcohol white. */}
+        <Tag tone={m.diet === 'veg' ? 'veg' : 'nonVeg'}>{m.diet === 'veg' ? 'Veg' : 'Non-Veg'}</Tag>
+        {m.drinks ? <Tag tone="alcohol">Alcohol</Tag> : <Tag tone="noAlcohol">No Alcohol</Tag>}
       </View>
 
       <View style={styles.card}>
@@ -185,10 +186,18 @@ function TypedRows({ kitty, x, share, settled }: { kitty: FeedKitty; x: FeedMemb
   );
 }
 
-function Tag({ children }: { children: string }) {
+const TAG_TONE = {
+  veg: { backgroundColor: colors.veg, borderColor: colors.veg, color: colors.inkOnDark },
+  nonVeg: { backgroundColor: colors.nonVeg, borderColor: colors.nonVeg, color: colors.inkOnDark },
+  alcohol: { backgroundColor: colors.ink, borderColor: colors.ink, color: colors.inkOnDark },
+  noAlcohol: { backgroundColor: colors.surface, borderColor: colors.line, color: colors.ink },
+} as const;
+
+function Tag({ children, tone }: { children: string; tone: keyof typeof TAG_TONE }) {
+  const { color, ...box } = TAG_TONE[tone];
   return (
-    <View style={styles.tag}>
-      <Text style={type.small}>{children}</Text>
+    <View style={[styles.tag, box]}>
+      <Text style={[styles.tagText, { color }]}>{children}</Text>
     </View>
   );
 }
@@ -196,7 +205,9 @@ function Tag({ children }: { children: string }) {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   tags: { flexDirection: 'row', gap: 6 },
-  tag: { borderWidth: layout.border, borderColor: colors.line, borderRadius: 3, paddingHorizontal: 6, height: 22, justifyContent: 'center' },
+  tag: { borderWidth: layout.border, borderRadius: 3, paddingHorizontal: 7, height: 22, justifyContent: 'center' },
+  // A size down from small text, so the pills don't look tight (Raj, 21 Nov 2026).
+  tagText: { ...type.small, fontSize: 11, lineHeight: 14 },
   card: { marginTop: 16, backgroundColor: colors.surface, borderWidth: layout.border, borderColor: colors.line, padding: layout.cardPadding, gap: 4 },
   amount: { ...type.title, fontSize: 32, lineHeight: 40 },
   section: { marginTop: 28 },

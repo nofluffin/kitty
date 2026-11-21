@@ -44,6 +44,9 @@ export const colors = {
   moment: '#F38427',
   /** The GOAL tag on kitty cards (Raj, 21 Nov 2026), with white text. */
   goal: '#4682B4',
+  /** Food and drink pills (Raj, 21 Nov 2026): Veg green and Non-Veg red, with white text. */
+  veg: '#52A447',
+  nonVeg: '#ED2939',
 } as const;
 
 export const layout = {
