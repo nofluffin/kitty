@@ -2,6 +2,10 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 21 Nov 2026: editing groups
+
+- **Each group has Share, Edit and Leave, stacked** (Raj). Edit opens the group in the New group screen with its name and people filled in. Saving makes a new group and drops your old copy, even if you renamed it, following the rule that any change makes a new group. Anyone you shared the old one with keeps theirs. No database change.
+
 ## 21 Nov 2026: kitty card tags
 
 - **MOMENT and GOAL tags are 20% smaller** and sit closer to the card's top right corner (Raj). **GOAL is blue, #4682B4**, with white text, like the orange MOMENT tag. DRAFT and SETTLING stay outlined.
