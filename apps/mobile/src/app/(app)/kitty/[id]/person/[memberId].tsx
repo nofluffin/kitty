@@ -1,4 +1,4 @@
-import { billSplit, describeWhen, formatRupees, formatShortDate, type CategorySummary } from '@kitty/core';
+import { billSplit, type CategorySummary, describeWhen, formatRupees, formatShortDate, youLabel } from '@kitty/core';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -57,7 +57,6 @@ function PersonReady({ kitty, bill, member: m }: { kitty: FeedKitty; bill: Scann
   const settled = kitty.status === 'settling' || kitty.status === 'closed';
   const shareOf = (x: FeedMember) => (settled && x.finalSharePaise !== null ? x.finalSharePaise : x.sharePaise);
   const total = group.reduce((sum, x) => sum + shareOf(x), 0);
-  const name = m.isOrganiser ? 'You' : m.name;
   const needsConfirm = !m.isOrganiser && !m.paidById && (m.state === 'waiting' || m.state === 'not_received');
   const canNudge = !m.isOrganiser && !m.paidById && m.state === 'unpaid' && kitty.status === 'shared';
 
@@ -77,7 +76,7 @@ function PersonReady({ kitty, bill, member: m }: { kitty: FeedKitty; bill: Scann
 
   return (
     <Screen
-      title={m.isOrganiser ? 'You' : m.name}
+      title={m.isOrganiser ? youLabel(m.name) : m.name}
       back
       footer={
         needsConfirm ? (
@@ -97,7 +96,7 @@ function PersonReady({ kitty, bill, member: m }: { kitty: FeedKitty; bill: Scann
       </View>
 
       <View style={styles.card}>
-        <Text style={type.note}>{group.length > 1 ? `${name === 'You' ? 'Your' : `${m.name}’s`} share, with ${group.slice(1).map((x) => x.name).join(', ')}` : `${name === 'You' ? 'Your' : 'Their'} share`}</Text>
+        <Text style={type.note}>{group.length > 1 ? `${m.isOrganiser ? 'Your' : `${m.name}’s`} share, with ${group.slice(1).map((x) => x.name).join(', ')}` : `${m.isOrganiser ? 'Your' : 'Their'} share`}</Text>
         <Text style={styles.amount}>{formatRupees(payer ? shareOf(m) : total)}</Text>
         <Text style={type.note}>{status}</Text>
         {m.parts?.next ? (

@@ -1,4 +1,4 @@
-import { distinctNames, formatRupees, formatShortDate, goalParts, isValidUpiId, localIsoDate, maxGoalParts, normaliseUpiId } from '@kitty/core';
+import { distinctNames, formatRupees, formatShortDate, goalParts, isValidUpiId, localIsoDate, maxGoalParts, normaliseUpiId, youLabel } from '@kitty/core';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -302,7 +302,7 @@ export default function NewKitty() {
               filled={p.isOrganiser}
               onPress={() => router.push({ pathname: '/new/person', params: { key: p.key } })}
             >
-              {p.isOrganiser ? 'You' : distinctNames(k.people)[i]}
+              {p.isOrganiser ? youLabel(p.name) : distinctNames(k.people)[i]}
             </Chip>
           ))}
         </View>

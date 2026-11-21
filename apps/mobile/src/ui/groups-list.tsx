@@ -1,4 +1,4 @@
-import { distinctNames } from '@kitty/core';
+import { distinctNames, youLabel } from '@kitty/core';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Linking, Platform, Pressable, Share, StyleSheet, Text, View } from 'react-native';
@@ -92,7 +92,7 @@ export function GroupsList({ onUse }: { onUse?: (g: SavedGroup) => void }) {
                 <Text style={type.note}>
                   {/* Raj, 21 Nov 2026: your name, with (You), rather than just You. */}
                   {distinctNames(g.people)
-                    .map((label, i) => (g.people[i]!.profileId === profile?.id ? `${profile?.name || g.people[i]!.name} (You)` : label))
+                    .map((label, i) => (g.people[i]!.profileId === profile?.id ? youLabel(profile?.name || g.people[i]!.name) : label))
                     .join(', ')}
                   {g.createdBy.id === profile?.id ? '' : `. From ${g.createdBy.name || 'a friend'}`}
                 </Text>

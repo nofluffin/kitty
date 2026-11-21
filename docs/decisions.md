@@ -2,6 +2,10 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 21 Nov 2026: your name, with (You), everywhere
+
+- **Wherever the app named the organiser just "You", it now says their name with (You)**: "Raj Rana (You)" (Raj). This covers the new kitty chips, Add a person (list and "Who pays for them"), the Shares screen, the kitty page rows, the person screen title, the share preview, the scan screens and groups. Sentences like "You cover their share" and "Your share" stay as they are, and so does the You picture in the corner when there's no photo.
+
 ## 21 Nov 2026: full names, Alcohol and Non-Veg
 
 - **People who share a name are kept apart** (Raj: there may be 2 or more people with the same name). Adding a group to a kitty matches people by mobile number, and only by name when one of them has no number, so two Biba Bajajs with different numbers both come in. Where names clash in a list, the last 4 digits of the number are shown: "Biba Bajaj (…4321)". On the member page, names show in full and numbers are never shown.

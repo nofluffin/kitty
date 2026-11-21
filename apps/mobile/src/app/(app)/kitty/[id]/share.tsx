@@ -1,4 +1,4 @@
-import { addMonths, combineByPayer, formatRupees, shareMessage, type KittyKind, type KittyStatus } from '@kitty/core';
+import { addMonths, combineByPayer, formatRupees, type KittyKind, type KittyStatus, shareMessage, youLabel } from '@kitty/core';
 import * as Clipboard from 'expo-clipboard';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
@@ -311,7 +311,7 @@ function ShareReady({ kitty, close }: { kitty: ShareKitty; close?: () => void })
               .filter((m) => !m.paidById)
               .map((m) => {
                 const paysFor = kitty.members.filter((x) => x.paidById === m.id).map((x) => x.name);
-                const who = m.isOrganiser ? 'You' : m.name;
+                const who = m.isOrganiser ? youLabel(m.name) : m.name;
                 return (
                   <Row key={m.id} left={paysFor.length > 0 ? `${who}, with ${paysFor.join(', ')}` : who} right={formatRupees(asked.get(m.id) ?? 0)} />
                 );

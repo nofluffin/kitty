@@ -64,3 +64,9 @@ export function distinctNames(people: { name: string; phone?: string | null }[])
     return (count.get(key(p.name)) ?? 0) > 1 && digits.length >= 4 ? `${p.name} (…${digits.slice(-4)})` : p.name;
   });
 }
+
+/** The organiser, shown by name with (You) after it (Raj, 21 Nov 2026): "Raj Rana (You)". */
+export function youLabel(name: string | null | undefined): string {
+  const clean = (name ?? '').replace(/\s+/g, ' ').trim();
+  return clean && clean.toLowerCase() !== 'you' ? `${clean} (You)` : 'You';
+}
