@@ -8,7 +8,7 @@ import { loadActivity, markActivityRead, type ActivityItem, type WaitingPayment 
 import { explainFailure } from '@/lib/errors';
 import { notificationsOn, pushSupported, registerForPush } from '@/lib/push';
 import { Button, CenteredState, Header, InfoBox, Label, SmallButton } from '@/ui/components';
-import { colors, layout, type } from '@/ui/theme';
+import { colors, layout, page, type } from '@/ui/theme';
 
 type Load = { state: 'loading' } | { state: 'error' } | { state: 'ready'; waiting: WaitingPayment[]; recent: ActivityItem[] };
 
@@ -151,7 +151,7 @@ function WaitingRow({ payment: p }: { payment: WaitingPayment }) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.page },
-  body: { padding: layout.gutter, paddingBottom: 32 },
+  body: { ...page.body, paddingBottom: 32 },
   flex: { flex: 1, gap: 2 },
   gapBottom: { marginBottom: 24 },
   infoAction: { marginTop: 12, alignItems: 'flex-start' },

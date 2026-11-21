@@ -103,3 +103,12 @@ export const type = {
 
 /** Minimum touch target. */
 export const TOUCH = 44;
+
+/**
+ * Every page starts and ends the same way (Raj, 21 Nov 2026): content begins 24 pt under the
+ * header, and the footer button sits 20 pt above the tab bar or the bottom edge.
+ */
+export const page = {
+  body: { paddingHorizontal: layout.gutter, paddingTop: layout.top, paddingBottom: space.xl, flexGrow: 1 },
+  footer: { paddingHorizontal: layout.gutter, paddingTop: space.lg, paddingBottom: layout.gutter, gap: space.lg },
+} as const;

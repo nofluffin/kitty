@@ -144,6 +144,7 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
       ) : (
         <>
           <Field
+            first={!inGroup && (!!editing || Platform.OS === 'web')}
             label="Name"
             value={name}
             onChangeText={setName}
