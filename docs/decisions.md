@@ -2,6 +2,10 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 21 Nov 2026: group wording on the people screen
+
+- **In a group, the people screen says "In this group" and "Remove from group"** (and "Leave me out of this group" on your own row), not kitty (Raj). Kitties keep their wording.
+
 ## 21 Nov 2026: group name on the people screen
 
 - **Adding or editing people in a group shows the group's name at the top, and it can be changed there** (Raj). It's the same name as on the group screen, so a change in one shows in the other.
