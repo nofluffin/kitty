@@ -2,6 +2,12 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 21 Nov 2026: quieter Archive, Scan on Shares
+
+- **Archive is a red text link, "Archive this kitty"**, above the scan note on the kitty page (Raj: the red button was too loud). Unarchive is a plain link in the same place.
+- **The Shares screen ends with a green "Scan the bill"** instead of Done (moments); the back arrow keeps the amounts. Goals keep Done.
+- The amount boxes on Shares are wider, so amounts like ₹1,405.66 aren't cut off.
+
 ## 21 Nov 2026: voice, in natural sentences, with numbers shown
 
 - **Speak naturally** (Raj): "Please add Biba Bajaj vegetarian drinks, alcohol. Add a Api Bajaj non-vegetarian doesn't drink alcohol, Gaurav Shrawat alcohol, veg etc" gives three people with their tags. The reader works word by word, so it copes without commas; words like please, add, a and etc are ignored.

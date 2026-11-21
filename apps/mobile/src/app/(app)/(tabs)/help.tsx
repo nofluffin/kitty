@@ -145,7 +145,7 @@ const SECTIONS: { title: string; icon: IconName; topics: Topic[] }[] = [
       {
         q: 'Archiving',
         a: [
-          'Tap Archive at the bottom of a kitty to take it off your list. Find it again under “Archived kitties” at the bottom of the Kitties tab, where you can open it or tap Unarchive.',
+          'Tap “Archive this kitty” near the bottom of a kitty to take it off your list. Find it again under “Archived kitties” at the bottom of the Kitties tab, where you can open it or tap Unarchive.',
           'Friends’ links keep working, and archived kitties stop sending reminders.',
         ],
       },

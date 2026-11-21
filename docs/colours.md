@@ -10,7 +10,7 @@ Change a colour in both places and here.
 | --- | --- | --- | --- |
 | Action green | `#52A447` | White | Main action buttons: Create kitty, Add to kitty, Scan the bill, Confirm, Save, I've paid |
 | Stone | `#9F9484` | Ink `#0A0A0A` | Selected options: Moment/Goal, Veg/Non-veg, Drinks, people chips, the chosen date, reminder switches |
-| Red | `#ED2939` | White | Destructive buttons: Archive |
+| Red | `#ED2939` | White, or as text | Destructive actions: the “Archive this kitty” link (red text) |
 | Moment orange | `#F38427` | White | The MOMENT tag on kitty cards (3px corners) |
 
 ## Neutrals (from the wireframes)
