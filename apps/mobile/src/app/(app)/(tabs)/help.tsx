@@ -106,7 +106,10 @@ const SECTIONS: { title: string; icon: IconName; topics: Topic[] }[] = [
     topics: [
       {
         q: 'Sharing the link',
-        a: ['Tap “Share on WhatsApp” and pick your group, or copy the link. Everyone gets the same link and picks their own name.'],
+        a: [
+          'Tap “Create kitty” and it’s live, ready to share. Tap “Share on WhatsApp” and pick your group, or copy the link. Everyone gets the same link and picks their own name.',
+          'A kitty marked Draft isn’t live yet (for example after scanning a bill first). Open it and tap “Create kitty” when the amounts look right.',
+        ],
       },
       {
         q: 'Confirming payments',

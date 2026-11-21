@@ -135,9 +135,17 @@ export default function NewKitty() {
       p_upi_id: upi,
       p_members: people,
     });
-    setSaving(false);
     if (error || !data) {
+      setSaving(false);
       setFormError(await explainFailure(error, 'create the kitty'));
+      return;
+    }
+    // Raj, 21 Nov 2026: "Create kitty" makes it live straight away (not a draft), ready to share.
+    // Amounts stay editable until someone pays.
+    const { error: shareError } = await supabase.rpc('share_kitty', { p_kitty_id: data.id });
+    setSaving(false);
+    if (shareError) {
+      setFormError(await explainFailure(shareError, 'create the kitty'));
       return;
     }
     refreshProfile(); // picks up the remembered UPI ID

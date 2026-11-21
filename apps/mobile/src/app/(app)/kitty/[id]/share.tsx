@@ -174,6 +174,16 @@ function ShareReady({ kitty, close }: { kitty: ShareKitty; close?: () => void })
     }
   }
 
+  async function create() {
+    setError(null);
+    setBusy('share');
+    try {
+      await lock();
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function copyLink() {
     setError(null);
     setBusy('copy');
@@ -195,6 +205,18 @@ function ShareReady({ kitty, close }: { kitty: ShareKitty; close?: () => void })
       close={close}
       hideAvatar
       footer={
+        status === 'draft' ? (
+          // Raj, 21 Nov 2026: a draft needs one clear step to go live.
+          <>
+            <ErrorText>{error}</ErrorText>
+            <Button onPress={create} loading={busy === 'share'}>
+              Create kitty
+            </Button>
+            <View style={styles.skip}>
+              <TextLink onPress={() => router.replace('/home')}>Not now, back to my kitties</TextLink>
+            </View>
+          </>
+        ) : (
         <>
           <ErrorText>{error}</ErrorText>
           <Button onPress={shareOnWhatsApp} loading={busy === 'share'}>
@@ -211,9 +233,20 @@ function ShareReady({ kitty, close }: { kitty: ShareKitty; close?: () => void })
             </TextLink>
           </View>
         </>
+        )
       }
     >
-      <Title>Your kitty is ready</Title>
+      {status === 'draft' ? (
+        <>
+          <Title>This kitty is a draft</Title>
+          <Body>
+            It isn’t live yet, so friends can’t pay. Check the amounts, edit it or scan the bill, then tap Create kitty to open it
+            and share the link.
+          </Body>
+        </>
+      ) : (
+        <Title>Your kitty is ready</Title>
+      )}
       <Body>
         {equal
           ? 'Send the link to the group. Each person picks their name and pays their share to you.'

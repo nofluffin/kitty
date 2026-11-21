@@ -38,6 +38,10 @@ export const colors = {
   action: '#52A447',
   /** Selected options: Veg/Non-veg, Moment/Goal, chips (Raj, 20 Nov 2026), with ink text. */
   selected: '#9F9484',
+  /** Destructive actions such as Archive (Raj, 21 Nov 2026), with white text. */
+  destructive: '#ED2939',
+  /** The MOMENT tag on kitty cards (Raj, 20 Nov 2026), with white text. */
+  moment: '#F38427',
 } as const;
 
 export const layout = {
