@@ -20,7 +20,9 @@ export default function NewGroup() {
   // version for you; anyone you shared the old one with keeps theirs.
   const { edit } = useLocalSearchParams<{ edit?: string }>();
   const [original, setOriginal] = useState<SavedGroup | null>(null);
-  const [name, setName] = useState('');
+  // The group's name lives in the draft, so the people screen can edit it too (Raj, 21 Nov 2026).
+  const name = k.title;
+  const setName = k.setTitle;
   useEffect(() => {
     if (!edit) return;
     let current = true;

@@ -119,6 +119,12 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
         )
       }
     >
+      {inGroup ? (
+        // Raj, 21 Nov 2026: the group's name can be changed while adding people too.
+        <View style={styles.groupName}>
+          <Field label="Group name" value={k.title} onChangeText={k.setTitle} placeholder="Family" autoCapitalize="sentences" maxLength={60} />
+        </View>
+      ) : null}
       {!editing && Platform.OS !== 'web' ? (
         <>
           <Button variant="secondary" onPress={pickContact}>
@@ -265,6 +271,7 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
 
 // Spacing measured from screen 3.
 const styles = StyleSheet.create({
+  groupName: { marginBottom: 16 },
   privacy: { marginTop: 16, alignItems: 'center' },
   group: { marginTop: 18 },
   control: { marginTop: 6 },
