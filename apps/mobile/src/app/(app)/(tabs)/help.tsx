@@ -300,11 +300,11 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   section: { marginBottom: 28 },
   sectionHead: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
-  // Raj, 21 Nov 2026: topics sit 10 pt in from their section heading.
-  list: { marginLeft: 10, borderTopWidth: layout.border, borderTopColor: colors.line },
+  list: { borderTopWidth: layout.border, borderTopColor: colors.line },
   topic: { borderBottomWidth: layout.border, borderBottomColor: colors.line },
-  question: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 50, paddingVertical: 12 },
-  answer: { paddingBottom: 14, gap: 10 },
+  // Raj, 21 Nov 2026: the topic text and + sit 10 pt in; the lines stay full width.
+  question: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 50, paddingVertical: 12, paddingHorizontal: 10 },
+  answer: { paddingBottom: 14, paddingHorizontal: 10, gap: 10 },
   contact: { marginBottom: 12, marginLeft: 10 },
   links: { gap: 12, alignItems: 'flex-start', marginLeft: 10 },
 });
