@@ -8,6 +8,7 @@ import { Platform, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider, useAuth } from '@/lib/auth';
+import { ToastProvider } from '@/lib/toast';
 import { colors } from '@/ui/theme';
 
 SplashScreen.preventAutoHideAsync();
@@ -52,7 +53,9 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <AuthProvider>
         <PhoneFrame>
-          <RootStack />
+          <ToastProvider>
+            <RootStack />
+          </ToastProvider>
         </PhoneFrame>
       </AuthProvider>
     </SafeAreaProvider>

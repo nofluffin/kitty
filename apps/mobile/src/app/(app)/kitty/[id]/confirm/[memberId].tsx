@@ -5,6 +5,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { explainFailure } from '@/lib/errors';
 import { confirmShare, loadFeed, markNotReceived, type FeedKitty, type FeedMember } from '@/lib/feed';
+import { useToast } from '@/lib/toast';
 import { Body, Button, CenteredState, ErrorText, Screen, Title } from '@/ui/components';
 import { colors, layout, type } from '@/ui/theme';
 
@@ -44,6 +45,7 @@ export default function ConfirmPayment() {
 
 function ConfirmReady({ kitty, member }: { kitty: FeedKitty; member: FeedMember }) {
   const [busy, setBusy] = useState<'yes' | 'no' | null>(null);
+  const toast = useToast();
   const [error, setError] = useState<string | null>(null);
   // Goals in parts: the part being confirmed, not the whole share.
   const next = member.parts?.next ?? null;
@@ -59,6 +61,7 @@ function ConfirmReady({ kitty, member }: { kitty: FeedKitty; member: FeedMember 
       setError(await explainFailure(e, arrived ? 'confirm the payment' : 'update the payment'));
       return;
     }
+    toast(arrived ? `${member.name} marked as paid` : `${member.name} will be asked to check`);
     router.back();
   }
 

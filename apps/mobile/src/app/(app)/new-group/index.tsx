@@ -9,6 +9,7 @@ import { describePerson, useDraftKitty } from '@/lib/draft-kitty';
 import { explainFailure } from '@/lib/errors';
 import { useAuth } from '@/lib/auth';
 import { deleteGroup, leaveGroup, loadGroups, saveGroup, type SavedGroup } from '@/lib/groups';
+import { useToast } from '@/lib/toast';
 import { Body, Button, DashedButton, ErrorText, Field, Label, Row, Screen } from '@/ui/components';
 import { colors, type } from '@/ui/theme';
 
@@ -16,6 +17,7 @@ import { colors, type } from '@/ui/theme';
 export default function NewGroup() {
   const k = useDraftKitty();
   const { profile } = useAuth();
+  const toast = useToast();
   // Edit (Raj, 21 Nov 2026): the group's name and people, filled in. Saving makes a new
   // version for you; anyone you shared the old one with keeps theirs.
   const { edit } = useLocalSearchParams<{ edit?: string }>();
@@ -59,6 +61,7 @@ export default function NewGroup() {
     if (!e && original) await leaveGroup(original.id); // a renamed group replaces the old one too
     setBusy(false);
     if (e) return setError(await explainFailure(e, 'save the group'));
+    toast(original ? `${name.trim()} saved` : `${name.trim()} added to your groups`);
     router.back();
   }
 
@@ -72,6 +75,7 @@ export default function NewGroup() {
     if (!(await ask(`Leave ${original.name}?`, message, 'Leave'))) return;
     const e = await leaveGroup(original.id);
     if (e) return setError(await explainFailure(e, 'leave the group'));
+    toast(`You left ${original.name}`);
     router.back();
   }
 
@@ -87,6 +91,7 @@ export default function NewGroup() {
       return;
     const e = await deleteGroup(original.id);
     if (e) return setError(await explainFailure(e, 'delete the group'));
+    toast(`${original.name} deleted for everyone`);
     router.back();
   }
 

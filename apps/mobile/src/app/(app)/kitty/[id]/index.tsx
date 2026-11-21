@@ -2,6 +2,7 @@ import { describeWhen, distinctNames, feedOrder, formatRupees, formatShortDate, 
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { explainFailure } from '@/lib/errors';
@@ -9,13 +10,16 @@ import { loadFeed, type FeedKitty, type FeedMember } from '@/lib/feed';
 import { registerForPush } from '@/lib/push';
 import { ask } from '@/lib/ask';
 import { setArchived } from '@/lib/kitties';
-import { Button, CenteredState, Header, Note, TextLink } from '@/ui/components';
+import { useToast } from '@/lib/toast';
+import { Button, CenteredState, Header, Note, Progress, TextLink } from '@/ui/components';
+import { riseIn, settle } from '@/ui/motion';
 import { colors, layout, page, type } from '@/ui/theme';
 
 type Load = { state: 'loading' } | { state: 'error' } | { state: 'ready'; kitty: FeedKitty };
 
 /** Screen 7: who has paid, with Confirm and Nudge. */
 export default function Feed() {
+  const toast = useToast();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [load, setLoad] = useState<Load>({ state: 'loading' });
   const [refreshing, setRefreshing] = useState(false);
@@ -52,6 +56,7 @@ export default function Feed() {
       await explainFailure(e, k.archivedAt ? 'unarchive the kitty' : 'archive the kitty');
       return;
     }
+    toast(k.archivedAt ? `${k.title} is back on your list` : `${k.title} archived`);
     if (k.archivedAt) await fetchFeed();
     else if (router.canGoBack()) router.back();
     else router.replace('/home');
@@ -107,7 +112,9 @@ export default function Feed() {
             <View style={styles.rows}>
               {/* People paid for by someone else show under their payer, not as rows of their own. */}
               {feedOrder(load.kitty.members.filter((m) => !m.paidById)).map((m) => (
-                <FeedRow key={m.id} kitty={load.kitty} member={m} />
+                <Animated.View key={m.id} entering={riseIn} layout={settle}>
+                  <FeedRow kitty={load.kitty} member={m} />
+                </Animated.View>
               ))}
             </View>
             {/* Raj, 21 Nov 2026: straight under the people, not in the footer. */}
@@ -173,9 +180,7 @@ function Summary({ kitty }: { kitty: FeedKitty }) {
         <Text style={styles.amount}>{formatRupees(collected)}</Text>
         <Text style={type.note}> of {formatRupees(kitty.totalPaise)}</Text>
       </Text>
-      <View style={styles.track}>
-        <View style={[styles.fill, { width: `${kitty.totalPaise ? Math.min(collected / kitty.totalPaise, 1) * 100 : 0}%` }]} />
-      </View>
+      <Progress value={kitty.totalPaise ? collected / kitty.totalPaise : 0} style={styles.track} />
       <View style={styles.summaryBottom}>
         <Text style={type.note}>
           {progress.paid} of {progress.total} paid
@@ -263,8 +268,7 @@ const styles = StyleSheet.create({
   summary: { backgroundColor: colors.surface, borderWidth: layout.border, borderColor: colors.line, padding: layout.cardPadding },
   amountLine: { lineHeight: 38 },
   amount: { ...type.title, fontSize: 32, lineHeight: 38 },
-  track: { height: 8, backgroundColor: colors.track, marginTop: 10 },
-  fill: { height: 8, backgroundColor: colors.ink },
+  track: { marginTop: 10 },
   summaryBottom: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 },
   rows: { marginTop: 20 },
   row: {

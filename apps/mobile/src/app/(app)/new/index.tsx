@@ -8,6 +8,7 @@ import { useDraftKitty, type GoalPlan, type Split } from '@/lib/draft-kitty';
 import { explainFailure } from '@/lib/errors';
 import { loadGroups, type SavedGroup } from '@/lib/groups';
 import { supabase } from '@/lib/supabase';
+import { useToast } from '@/lib/toast';
 import {
   Button,
   Chip,
@@ -31,6 +32,7 @@ const MAX_PARTS_OFFERED = 12;
 
 /** Screen 2 (moment) and screen 22 (goal). */
 export default function NewKitty() {
+  const toast = useToast();
   const { refreshProfile } = useAuth();
   const k = useDraftKitty();
   // Errors show after the first "Create kitty" tap, then update live as each field is fixed.
@@ -122,6 +124,7 @@ export default function NewKitty() {
         router.push({ pathname: '/kitty/[id]/scan', params: { id: k.editing.id, mode: k.editing.status === 'draft' ? 'draft' : 'settle' } });
         return;
       }
+      toast('Changes saved');
       // Back to where the edit started (the share screen or the feed), which reloads on focus.
       router.back();
       return;

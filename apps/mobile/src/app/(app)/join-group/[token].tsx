@@ -30,7 +30,7 @@ export default function JoinGroup() {
       ) : (
         <CenteredState
           title={`${result.name} is in your groups`}
-          body="When you start a kitty, tap it under “Add a saved group” to add everyone at once. You’ll find it in Your details too."
+          body="When you start a kitty, tap it under “Add a saved group” to add everyone at once. You’ll find it in the Groups tab too."
           action={<Button onPress={() => router.replace('/new')}>Start a kitty with it</Button>}
         />
       )}

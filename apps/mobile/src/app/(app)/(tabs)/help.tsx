@@ -1,10 +1,13 @@
 import Feather from '@expo/vector-icons/Feather';
 import { useState, type ComponentProps } from 'react';
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { config } from '@/lib/config';
 import { Header, TextLink } from '@/ui/components';
+import { fadeIn, settle } from '@/ui/motion';
+import { WhyKitty } from '@/ui/why-kitty';
 import { colors, layout, page, type } from '@/ui/theme';
 
 /** "Help and how to" (Raj, 20 Nov 2026; not in the wires): how Kitty works, in sections you tap to open. */
@@ -240,6 +243,14 @@ export default function Help() {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <Header title="Help" />
       <ScrollView contentContainerStyle={styles.body}>
+        {/* Raj, 21 Nov 2026: what Kitty is for, above the how-tos. */}
+        <View style={styles.section}>
+          <View style={styles.sectionHead}>
+            <Feather name="heart" size={16} color={colors.ink} />
+            <Text style={type.label}>Why Kitty</Text>
+          </View>
+          <WhyKitty boxed />
+        </View>
         {SECTIONS.map((section) => (
           <View key={section.title} style={styles.section}>
             <View style={styles.sectionHead}>
@@ -251,7 +262,7 @@ export default function Help() {
                 const key = `${section.title}:${t.q}`;
                 const isOpen = open === key;
                 return (
-                  <View key={key} style={styles.topic}>
+                  <Animated.View key={key} style={styles.topic} layout={settle}>
                     <Pressable
                       onPress={() => setOpen(isOpen ? null : key)}
                       accessibilityRole="button"
@@ -262,15 +273,15 @@ export default function Help() {
                       <Text style={type.bodyInk}>{isOpen ? '−' : '+'}</Text>
                     </Pressable>
                     {isOpen ? (
-                      <View style={styles.answer}>
+                      <Animated.View style={styles.answer} entering={fadeIn}>
                         {t.a.map((p) => (
                           <Text key={p} style={type.body}>
                             {p}
                           </Text>
                         ))}
-                      </View>
+                      </Animated.View>
                     ) : null}
-                  </View>
+                  </Animated.View>
                 );
               })}
             </View>

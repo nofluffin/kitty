@@ -6,11 +6,13 @@ import { StyleSheet, View } from 'react-native';
 import { describePerson, useDraftKitty } from '@/lib/draft-kitty';
 import { explainFailure } from '@/lib/errors';
 import { saveGroup } from '@/lib/groups';
+import { useToast } from '@/lib/toast';
 import { Body, Button, ErrorText, Field, Row, Screen } from '@/ui/components';
 
 /** Save the kitty's people as a group (Raj, 20 Nov 2026; not in the wires). */
 export default function SaveGroup() {
   const k = useDraftKitty();
+  const toast = useToast();
   const others = k.people.filter((p) => !p.isOrganiser);
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
@@ -29,6 +31,7 @@ export default function SaveGroup() {
       setError(await explainFailure(e, 'save the group'));
       return;
     }
+    toast(`Saved as ${name.trim()}`);
     router.back();
   }
 

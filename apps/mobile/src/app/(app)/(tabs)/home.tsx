@@ -2,11 +2,14 @@ import { formatRupees, formatShortDate, localIsoDate, timeToGo } from '@kitty/co
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { explainFailure } from '@/lib/errors';
 import { loadKittySummaries, type KittySummary } from '@/lib/kitties';
-import { Badge, TextLink, Body, Button, CenteredState, Header, Label, Title } from '@/ui/components';
+import { Badge, TextLink, Body, Button, CenteredState, Header, Label, Progress, Title } from '@/ui/components';
+import { riseIn, settle } from '@/ui/motion';
+import { WhyKitty } from '@/ui/why-kitty';
 import { colors, layout, page, type } from '@/ui/theme';
 
 type Load = { state: 'loading' } | { state: 'error' } | { state: 'ready'; kitties: KittySummary[] };
@@ -86,7 +89,9 @@ export default function Home() {
                   <Label>Collecting now</Label>
                   <View style={styles.list}>
                     {collecting.map((k) => (
-                      <KittyCard key={k.id} kitty={k} today={today} />
+                      <Animated.View key={k.id} entering={riseIn} layout={settle}>
+                        <KittyCard kitty={k} today={today} />
+                      </Animated.View>
                     ))}
                   </View>
                 </>
@@ -145,6 +150,13 @@ function EmptyHome() {
           </View>
         ))}
       </View>
+      {/* Raj, 21 Nov 2026: why it's worth it, before the first kitty. */}
+      <View style={styles.why}>
+        <Label>Why Kitty</Label>
+        <View style={styles.whyList}>
+          <WhyKitty />
+        </View>
+      </View>
     </View>
   );
 }
@@ -177,9 +189,7 @@ function KittyCard({ kitty, today }: { kitty: KittySummary; today: string }) {
       <Text style={[type.metaMuted, styles.cardDate]}>
         {formatShortDate(kitty.dueDate)}, {timeToGo(today, kitty.dueDate)}
       </Text>
-      <View style={styles.track}>
-        <View style={[styles.fill, { width: `${progress * 100}%` }]} />
-      </View>
+      <Progress value={progress} style={styles.track} />
       <View style={styles.cardBottom}>
         <Text style={type.meta}>
           {formatRupees(kitty.collectedPaise)} of {formatRupees(kitty.totalPaise)}
@@ -208,8 +218,9 @@ const styles = StyleSheet.create({
   cardBadge: { marginTop: -8, marginRight: -8 },
   cardTitle: { flex: 1 },
   cardDate: { marginTop: 12 },
-  track: { height: 8, backgroundColor: colors.track, marginTop: 12 },
-  fill: { height: 8, backgroundColor: colors.ink },
+  track: { marginTop: 12 },
+  why: { marginTop: 32 },
+  whyList: { marginTop: 14 },
   cardBottom: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 },
   doneSection: { marginTop: 26 },
   doneList: { marginTop: 16, borderTopWidth: layout.border, borderTopColor: colors.line },
