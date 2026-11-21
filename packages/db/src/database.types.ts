@@ -316,6 +316,9 @@ isOneToOne: false
         isOneToOne: true
         isSetofReturn: false
       } },
+"delete_group":
+{ Args: { "p_group": string }; Returns: undefined
+                           },
 "delete_my_account":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },

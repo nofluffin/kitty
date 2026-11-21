@@ -327,16 +327,16 @@ export function DashedButton({ children, onPress }: { children: string; onPress:
 }
 
 /** Small outlined button, 44 pt tall ("Adjust", "Edit message"). */
-export function SmallButton({ children, onPress, disabled }: { children: string; onPress: () => void; disabled?: boolean }) {
+export function SmallButton({ children, onPress, disabled, danger }: { children: string; onPress: () => void; disabled?: boolean; danger?: boolean }) {
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled}
       accessibilityRole="button"
       accessibilityState={{ disabled: !!disabled }}
-      style={({ pressed }) => [styles.smallButton, disabled && styles.buttonDisabled, pressed && styles.buttonPressed]}
+      style={({ pressed }) => [styles.smallButton, danger && styles.smallButtonDanger, disabled && styles.buttonDisabled, pressed && styles.buttonPressed]}
     >
-      <Text style={type.meta}>{children}</Text>
+      <Text style={[type.meta, danger && styles.smallButtonDangerText]}>{children}</Text>
     </Pressable>
   );
 }
@@ -488,6 +488,8 @@ const styles = StyleSheet.create({
     borderColor: colors.line,
     backgroundColor: colors.surface,
   },
+  smallButtonDanger: { borderColor: colors.destructive },
+  smallButtonDangerText: { color: colors.destructive },
   infoBox: { backgroundColor: colors.sunken, paddingHorizontal: 12, paddingVertical: 9 },
   row: {
     minHeight: 49,

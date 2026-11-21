@@ -6,7 +6,7 @@ import { ask } from '@/lib/ask';
 import { useAuth } from '@/lib/auth';
 import { config } from '@/lib/config';
 import { explainFailure } from '@/lib/errors';
-import { leaveGroup, loadGroups, setFavourite, type SavedGroup } from '@/lib/groups';
+import { deleteGroup, leaveGroup, loadGroups, setFavourite, type SavedGroup } from '@/lib/groups';
 
 import { CenteredState, SmallButton } from './components';
 import { colors, layout, type } from './theme';
@@ -15,7 +15,7 @@ const RECENT = 3;
 
 /**
  * The groups screen (Raj, 20 Nov 2026): favourites, recently used, then all groups,
- * each with a star, Share and Leave. With onUse, tapping a group picks it.
+ * each with a star, Share, Edit and Leave, and Delete for groups you made. With onUse, tapping a group picks it.
  */
 export function GroupsList({ onUse }: { onUse?: (g: SavedGroup) => void }) {
   const { profile } = useAuth();
@@ -64,6 +64,14 @@ export function GroupsList({ onUse }: { onUse?: (g: SavedGroup) => void }) {
     await load();
   }
 
+  async function remove(g: SavedGroup) {
+    if (!(await ask(`Delete ${g.name}?`, 'It goes from your Kitty and from everyone you shared it with. Kitties you made with it stay as they are.', 'Delete')))
+      return;
+    const e = await deleteGroup(g.id);
+    if (e) await explainFailure(e, 'delete the group');
+    await load();
+  }
+
   async function star(g: SavedGroup) {
     const e = await setFavourite(g.id, !g.favourite);
     if (e) await explainFailure(e, 'change the favourite');
@@ -103,6 +111,11 @@ export function GroupsList({ onUse }: { onUse?: (g: SavedGroup) => void }) {
                 <SmallButton onPress={() => share(g)}>Share</SmallButton>
                 <SmallButton onPress={() => router.push({ pathname: '/new-group', params: { edit: g.id } })}>Edit</SmallButton>
                 <SmallButton onPress={() => leave(g)}>Leave</SmallButton>
+                {g.createdBy.id === profile?.id ? (
+                  <SmallButton danger onPress={() => remove(g)}>
+                    Delete
+                  </SmallButton>
+                ) : null}
               </View>
             </View>
           ))}

@@ -2,6 +2,10 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 21 Nov 2026: deleting groups
+
+- **Whoever made a group can delete it** (Raj). It goes from everyone's Kitty, including people it was shared with. Kitties already made with it don't change, since they keep their own copy of the people. Delete is a red button under Leave, shown only on groups you made. Others can still only leave. New database function: delete_group.
+
 ## 21 Nov 2026: editing groups
 
 - **Each group has Share, Edit and Leave, stacked** (Raj). Edit opens the group in the New group screen with its name and people filled in. Saving makes a new group and drops your old copy, even if you renamed it, following the rule that any change makes a new group. Anyone you shared the old one with keeps theirs. No database change.
