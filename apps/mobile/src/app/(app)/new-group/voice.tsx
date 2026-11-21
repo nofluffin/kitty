@@ -3,11 +3,11 @@ import { formatIndianMobile, parseSpokenPeople, type Diet } from '@kitty/core';
 import { router } from 'expo-router';
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { useDraftKitty } from '@/lib/draft-kitty';
-import { findKnown, searchContacts, type ContactMatch, type KnownPerson } from '@/lib/voice-people';
-import { Body, Button, ErrorText, Label, Screen, Segmented, Small, TextLink } from '@/ui/components';
+import { contactsAccessLevel, findKnown, pickContact, searchContacts, type ContactMatch, type KnownPerson } from '@/lib/voice-people';
+import { Body, Button, ErrorText, Label, Screen, Segmented, Small, SmallButton, TextLink } from '@/ui/components';
 import { colors, layout, type } from '@/ui/theme';
 
 /**
@@ -24,9 +24,20 @@ interface Draft {
   /** Where the tags came from, when not said. */
   from?: string;
   known: KnownPerson[];
-  contacts: ContactMatch[];
+  contacts: (ContactMatch & { exact: boolean })[];
   /** The chosen contact: an index into contacts, or -1 for none. */
   contact: number;
+  /** Picked by hand with "Pick from contacts". Wins over the search. */
+  manual?: ContactMatch;
+}
+
+/** The name and number a card will add, and where the number came from (Raj, 21 Nov 2026). */
+function resolved(p: Draft): { name: string; phone: string | null; source: string | null } {
+  const contact = p.manual ?? (p.contact >= 0 ? p.contacts[p.contact] : null);
+  if (contact) return { name: contact.name || p.spokenName, phone: contact.phone, source: 'From your contacts' };
+  const known = p.known.length === 1 ? p.known[0]! : null;
+  if (known?.phone) return { name: p.spokenName, phone: known.phone, source: 'From your groups and kitties' };
+  return { name: p.spokenName, phone: null, source: null };
 }
 
 export default function AddByVoice() {
@@ -85,7 +96,8 @@ export default function AddByVoice() {
             from: only && (s.diet === undefined || s.drinks === undefined) ? 'From your groups and kitties' : undefined,
             known,
             contacts,
-            contact: contacts.length === 1 ? 0 : -1,
+            // One contact with the whole name (or the only match) is picked for you.
+            contact: contacts.filter((c) => c.exact).length === 1 ? contacts.findIndex((c) => c.exact) : contacts.length === 1 ? 0 : -1,
           };
         }),
       );
@@ -101,11 +113,10 @@ export default function AddByVoice() {
   function addAll() {
     if (!people) return;
     for (const p of people) {
-      const contact = p.contact >= 0 ? p.contacts[p.contact] : null;
-      const knownPhone = p.known.length === 1 ? p.known[0]!.phone : null;
+      const who = resolved(p);
       k.addPerson({
-        name: contact?.name ?? p.spokenName,
-        phone: contact?.phone ?? knownPhone,
+        name: who.name,
+        phone: who.phone,
         isOrganiser: false,
         diet: p.diet!,
         drinks: p.drinks!,
@@ -127,10 +138,15 @@ export default function AddByVoice() {
           </>
         }
       >
+        {contactsAccessLevel() === 'limited' ? (
+          <Small>Your iPhone lets Kitty see only some contacts, so some numbers may be missing. Allow full access in Settings, Kitty, Contacts, or tap Pick from contacts.</Small>
+        ) : contactsAccessLevel() === 'none' ? (
+          <Small>Kitty can’t search your contacts, so numbers aren’t filled in. Tap Pick from contacts on anyone, or allow it in Settings, Kitty, Contacts.</Small>
+        ) : null}
         {people.map((p) => (
           <View key={p.id} style={styles.card}>
             <View style={styles.cardTop}>
-              <Text style={[type.bodyBold, styles.flex]}>{p.contact >= 0 ? p.contacts[p.contact]!.name : p.spokenName}</Text>
+              <Text style={[type.bodyBold, styles.flex]}>{resolved(p).name}</Text>
               <TextLink onPress={() => setPeople((list) => list?.filter((x) => x.id !== p.id) ?? null)}>Remove</TextLink>
             </View>
             {p.from ? <Small>{p.from}</Small> : null}
@@ -148,7 +164,28 @@ export default function AddByVoice() {
               </View>
             ) : null}
 
-            {p.contacts.length > 1 ? (
+            <View style={styles.numberRow}>
+              <Text style={[type.note, styles.flex]}>
+                {(() => {
+                  const who = resolved(p);
+                  if (who.phone) return `${who.source}, ${formatIndianMobile(who.phone)}`;
+                  if (who.source) return `${who.source}, no mobile number saved`;
+                  return 'No number yet';
+                })()}
+              </Text>
+              {Platform.OS !== 'web' ? (
+                <SmallButton
+                  onPress={async () => {
+                    const picked = await pickContact().catch(() => null);
+                    if (picked) update(p.id, { manual: picked });
+                  }}
+                >
+                  Pick from contacts
+                </SmallButton>
+              ) : null}
+            </View>
+
+            {!p.manual && p.contacts.length > 1 ? (
               <View style={styles.block}>
                 <Label>{`Which ${p.spokenName} in your contacts?`}</Label>
                 {p.contacts.map((c, i) => (
@@ -161,8 +198,6 @@ export default function AddByVoice() {
                 ))}
                 <Option selected={p.contact === -1} label="None of these" onPress={() => update(p.id, { contact: -1 })} />
               </View>
-            ) : p.contacts.length === 1 ? (
-              <Small>{`From your contacts${p.contacts[0]!.phone ? `, ${formatIndianMobile(p.contacts[0]!.phone)}` : ''}`}</Small>
             ) : null}
 
             <View style={styles.block}>
@@ -206,7 +241,10 @@ export default function AddByVoice() {
         </>
       }
     >
-      <Body>Say each name, then their food and drink. For example: “Devika, veg, alcohol. Kabir, non-veg, no alcohol.”</Body>
+      <Body>
+        Say everyone in one go, with their food and drink. For example: “Add Biba Bajaj, vegetarian, drinks. Api Bajaj, non-veg, doesn’t
+        drink. Gaurav, veg, alcohol.”
+      </Body>
       <View style={styles.micWrap}>
         <Pressable
           onPress={listening ? stop : listen}
@@ -228,6 +266,9 @@ export default function AddByVoice() {
         style={[type.bodyInk, styles.heard]}
       />
       <Small>Names you say are looked up in your contacts on this phone, to find their numbers.</Small>
+      {contactsAccessLevel() === 'limited' ? (
+        <Small>Your iPhone lets Kitty see only some contacts. To find everyone, allow full access in Settings, Kitty, Contacts.</Small>
+      ) : null}
     </Screen>
   );
 }
@@ -267,6 +308,7 @@ const styles = StyleSheet.create({
   },
   card: { borderWidth: layout.border, borderColor: colors.line, backgroundColor: colors.surface, padding: layout.cardPadding, marginBottom: 14, gap: 6 },
   cardTop: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  numberRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   block: { marginTop: 8, gap: 6 },
   option: { borderWidth: layout.border, borderColor: colors.line, paddingHorizontal: 12, paddingVertical: 10, backgroundColor: colors.surface },
   optionOn: { backgroundColor: colors.selected, borderColor: colors.selected },

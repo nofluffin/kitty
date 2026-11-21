@@ -79,8 +79,8 @@ const SECTIONS: { title: string; icon: IconName; topics: Topic[] }[] = [
       {
         q: 'Adding people by voice',
         a: [
-          'In a new group, tap “Add people by voice” and the mic, then say each name with their food and drink: “Devika, veg, alcohol. Kabir, non-veg, no alcohol.” Tap again to stop.',
-          'Kitty fills in food and drink from what you said, or from your groups and past kitties. Anything missing, it asks. If more than one contact has that name, pick the right one.',
+          'In a new group, tap “Add people by voice” and the mic, then say everyone in one go: “Add Biba Bajaj, vegetarian, drinks. Api Bajaj, non-veg, doesn’t drink. Gaurav, veg, alcohol.” Tap again to stop.',
+          'Kitty fills in food and drink from what you said, or from your groups and past kitties. Anything missing, it asks. Each person shows their number and where it came from: your contacts, or your groups and kitties. If more than one contact has that name, pick the right one; if there’s no number, tap “Pick from contacts”.',
           'You can fix what Kitty heard, or type names, before adding them.',
         ],
       },

@@ -2,6 +2,11 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 21 Nov 2026: voice, in natural sentences, with numbers shown
+
+- **Speak naturally** (Raj): "Please add Biba Bajaj vegetarian drinks, alcohol. Add a Api Bajaj non-vegetarian doesn't drink alcohol, Gaurav Shrawat alcohol, veg etc" gives three people with their tags. The reader works word by word, so it copes without commas; words like please, add, a and etc are ignored.
+- **Every voice card shows the number it will add and where it came from**: "From your contacts, +91 …", "From your groups and kitties, +91 …", or "No number yet", with **Pick from contacts** to set it by hand. The contact search also finds "Biba B" for "Biba Bajaj", and explains when the iPhone gives Kitty only limited contacts access.
+
 ## 21 Nov 2026: drafts, Create kitty, and named colours
 
 Decided with Raj:

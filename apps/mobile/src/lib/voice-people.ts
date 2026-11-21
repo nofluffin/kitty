@@ -35,32 +35,53 @@ export async function findKnown(name: string): Promise<KnownPerson[]> {
   return [...seen.values()];
 }
 
-let contactsAllowed: boolean | null = null;
+let contactsAccess: 'all' | 'limited' | 'none' | null = null;
+
+/** Whether the phone gave Kitty all contacts, only some (iPhone "limited"), or none. */
+export function contactsAccessLevel() {
+  return contactsAccess;
+}
 
 /**
- * Contacts on this phone matching a spoken name (Raj, 20 Nov 2026). Asks for contacts
- * permission the first time. The search runs on the phone; only the people the
- * organiser adds are saved.
+ * Contacts on this phone matching a spoken name (Raj, 20–21 Nov 2026). Asks for contacts
+ * permission the first time. The search runs on the phone; only the people the organiser
+ * adds are saved. Contacts matching every spoken word come first ("Biba Bajaj"), then
+ * ones matching the first name ("Biba B").
  */
-export async function searchContacts(name: string): Promise<ContactMatch[]> {
+export async function searchContacts(name: string): Promise<(ContactMatch & { exact: boolean })[]> {
   if (Platform.OS === 'web') return [];
   const Contacts = await import('expo-contacts/legacy');
-  if (contactsAllowed === null) {
-    const { status } = await Contacts.requestPermissionsAsync();
-    contactsAllowed = status === 'granted';
+  if (contactsAccess === null) {
+    const permission = await Contacts.requestPermissionsAsync();
+    contactsAccess = permission.status !== 'granted' ? 'none' : permission.accessPrivileges === 'limited' ? 'limited' : 'all';
   }
-  if (!contactsAllowed) return [];
-  const first = name.split(/\s+/)[0] ?? name;
+  if (contactsAccess === 'none') return [];
+  const wanted = name.toLowerCase().split(/\s+/).filter(Boolean);
+  const first = wanted[0] ?? '';
   const { data } = await Contacts.getContactsAsync({ name: first, fields: [Contacts.Fields.PhoneNumbers, Contacts.Fields.Name] });
-  const wanted = name.toLowerCase().split(/\s+/);
   return data
-    .filter((c) => {
+    .map((c) => {
       const full = (c.name ?? '').toLowerCase();
-      return wanted.every((w) => full.includes(w));
+      const hits = wanted.filter((w) => full.includes(w)).length;
+      const phone =
+        (c.phoneNumbers ?? []).map((p) => normaliseIndianMobile(p.number ?? p.digits ?? '')).find((n): n is string => !!n) ?? null;
+      return { name: c.name ?? name, phone, hits, exact: hits === wanted.length };
     })
+    .filter((c) => c.hits > 0)
+    .sort((a, b) => b.hits - a.hits || Number(!!b.phone) - Number(!!a.phone))
     .slice(0, 8)
-    .map((c) => ({
-      name: c.name ?? name,
-      phone: (c.phoneNumbers ?? []).map((p) => normaliseIndianMobile(p.number ?? p.digits ?? '')).find((n): n is string => !!n) ?? null,
-    }));
+    .map(({ hits: _hits, ...c }) => c);
+}
+
+/** "Pick from contacts" on a voice card: the system picker, one person, no search permission needed. */
+export async function pickContact(): Promise<ContactMatch | null> {
+  if (Platform.OS === 'web') return null;
+  const { presentContactPickerAsync } = await import('expo-contacts/legacy');
+  const c = await presentContactPickerAsync();
+  if (!c) return null;
+  const phones = [...(c.phoneNumbers ?? [])].sort((a, b) => Number(!!b.isPrimary) - Number(!!a.isPrimary));
+  return {
+    name: c.name || [c.firstName, c.lastName].filter(Boolean).join(' '),
+    phone: phones.map((p) => normaliseIndianMobile(p.number ?? p.digits ?? '')).find((n): n is string => !!n) ?? null,
+  };
 }
