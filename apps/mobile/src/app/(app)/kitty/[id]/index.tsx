@@ -110,6 +110,14 @@ export default function Feed() {
                 <FeedRow key={m.id} kitty={load.kitty} member={m} />
               ))}
             </View>
+            {/* Raj, 21 Nov 2026: straight under the people, not in the footer. */}
+            {load.kitty.editable ? (
+              <View style={styles.editLink}>
+                <TextLink onPress={() => router.push({ pathname: '/new', params: { edit: id } })}>
+                  Nobody has paid yet. Edit the amounts or people
+                </TextLink>
+              </View>
+            ) : null}
           </ScrollView>
           <View style={styles.footer}>
             {/* Raj, 21 Nov 2026: Archive is a quiet red link at the top of the footer, not a button. */}
@@ -120,11 +128,6 @@ export default function Feed() {
                 </Text>
               </Pressable>
             </View>
-            {load.kitty.editable ? (
-              <TextLink onPress={() => router.push({ pathname: '/new', params: { edit: id } })}>
-                Nobody has paid yet. Edit the amounts or people
-              </TextLink>
-            ) : null}
             {load.kitty.status === 'settling' ? (
               <Button onPress={() => router.push({ pathname: '/kitty/[id]/settle', params: { id } })}>Open settle up</Button>
             ) : load.kitty.kind === 'goal' ? (
@@ -248,6 +251,7 @@ function FeedRow({ kitty, member: m }: { kitty: FeedKitty; member: FeedMember })
 
 // Measured from screen 7.
 const styles = StyleSheet.create({
+  editLink: { marginTop: 16, alignItems: 'flex-start' },
   archiveRow: { alignItems: 'flex-start' },
   archiveText: { color: colors.destructive },
   flex: { flex: 1 },

@@ -2,6 +2,10 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 21 Nov 2026: edit link under the people
+
+- **"Nobody has paid yet. Edit the amounts or people" sits straight under the list of people** on the kitty page, not in the footer (Raj).
+
 ## 21 Nov 2026: deleting groups
 
 - **Whoever made a group can delete it** (Raj). It goes from everyone's Kitty, including people it was shared with. Kitties already made with it don't change, since they keep their own copy of the people. Delete is a red button under Leave, shown only on groups you made. Others can still only leave. New database function: delete_group.
