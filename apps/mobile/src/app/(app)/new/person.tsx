@@ -30,6 +30,7 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
   // The same screen adds people to a new group (Groups tab).
   const inGroup = usePathname().startsWith('/new-group');
   const [name, setName] = useState(editing?.name ?? '');
+  const hasName = name.trim().length > 0;
   const [mobile, setMobile] = useState(editing?.phone ? formatIndianMobile(editing.phone).replace(/^\+91 /, '') : '');
   const [diet, setDiet] = useState<Diet>(editing?.diet ?? 'veg');
   const [drinks, setDrinks] = useState(editing?.drinks ?? false);
@@ -146,18 +147,21 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
             <View style={styles.group}>
               <Label>Who pays for them</Label>
               <View style={styles.chips}>
-                <Chip filled={paidByKey === null} onPress={() => setPaidByKey(null)}>
+                {/* Raj, 21 Nov 2026: greyed out until there's a name. */}
+                <Chip filled={paidByKey === null} disabled={!hasName} onPress={() => setPaidByKey(null)}>
                   Themselves
                 </Chip>
                 {payers.map((p) => (
-                  <Chip key={p.key} filled={paidByKey === p.key} onPress={() => setPaidByKey(p.key)}>
+                  <Chip key={p.key} filled={paidByKey === p.key} disabled={!hasName} onPress={() => setPaidByKey(p.key)}>
                     {p.isOrganiser ? youLabel(p.name) : (labels.get(p.key) ?? p.name)}
                   </Chip>
                 ))}
               </View>
               <View style={styles.hint}>
                 <Small>
-                  {paidByKey
+                  {!hasName
+                    ? 'Type their name first, then choose who pays for them.'
+                    : paidByKey
                     ? k.people.find((x) => x.key === paidByKey)?.isOrganiser
                       ? 'You cover their share along with your own.'
                       : `${nameOf(paidByKey)} is asked for their share along with their own.`
