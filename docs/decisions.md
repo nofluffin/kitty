@@ -2,6 +2,10 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 21 Nov 2026: your name in groups
+
+- **Groups show your name with (You)**, like "Raj (You), Amrita, Mithu", on the Groups list and the group's screen, instead of just "You" (Raj).
+
 ## 21 Nov 2026: group buttons beside the name, clearer popups
 
 - **Share and Edit sit side by side on the right of each group**, centred on it (Raj).

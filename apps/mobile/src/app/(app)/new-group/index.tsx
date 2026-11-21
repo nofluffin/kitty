@@ -124,7 +124,7 @@ export default function NewGroup() {
           {k.people.map((p) => (
             <Row
               key={p.key}
-              left={p.isOrganiser ? 'You' : p.name}
+              left={p.isOrganiser ? `${profile?.name || p.name || 'You'}${profile?.name || p.name ? ' (You)' : ''}` : p.name}
               right={describePerson(p, nameOf(p.paidByKey))}
               onPress={() => router.push({ pathname: '/new-group/person', params: { key: p.key } })}
             />
