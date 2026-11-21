@@ -8,6 +8,7 @@ import { config } from '@/lib/config';
 import { explainFailure } from '@/lib/errors';
 import { loadFeed, type FeedKitty, type FeedMember } from '@/lib/feed';
 import { closeKitty, confirmTopUp, markRefundSent } from '@/lib/settle';
+import { useToast } from '@/lib/toast';
 import { Button, CenteredState, ErrorText, Label, Note, Screen } from '@/ui/components';
 import { colors, layout, type } from '@/ui/theme';
 
@@ -49,6 +50,7 @@ const paidBefore = (m: FeedMember) =>
   m.paidPaise - (m.topUp?.status === 'confirmed' ? m.topUp.amountPaise : 0) + (m.refund?.status === 'confirmed' ? m.refund.amountPaise : 0);
 
 function SettleReady({ kitty, reload }: { kitty: FeedKitty; reload: () => Promise<void> }) {
+  const toast = useToast();
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const link = `${config.memberPageUrl}/k/${kitty.slug}`;
@@ -102,6 +104,7 @@ function SettleReady({ kitty, reload }: { kitty: FeedKitty; reload: () => Promis
       setError(await explainFailure(e, 'close the kitty'));
       return;
     }
+    toast(`${kitty.title} is settled`);
     router.replace('/home');
   }
 

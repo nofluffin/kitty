@@ -2,12 +2,14 @@ import { describeWhen, formatRupees } from '@kitty/core';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Linking, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { loadActivity, markActivityRead, type ActivityItem, type WaitingPayment } from '@/lib/activity';
 import { explainFailure } from '@/lib/errors';
 import { notificationsOn, pushSupported, registerForPush } from '@/lib/push';
 import { Button, CenteredState, Header, InfoBox, Label, SmallButton } from '@/ui/components';
+import { riseIn, settle } from '@/ui/motion';
 import { colors, layout, page, type } from '@/ui/theme';
 
 type Load = { state: 'loading' } | { state: 'error' } | { state: 'ready'; waiting: WaitingPayment[]; recent: ActivityItem[] };
@@ -86,7 +88,9 @@ export default function Activity() {
           ) : (
             <View style={styles.list}>
               {load.waiting.map((p) => (
-                <WaitingRow key={p.id} payment={p} />
+                <Animated.View key={p.id} entering={riseIn} layout={settle}>
+                  <WaitingRow payment={p} />
+                </Animated.View>
               ))}
             </View>
           )}
@@ -96,8 +100,8 @@ export default function Activity() {
               <Label>Recent</Label>
               <View style={styles.list}>
                 {load.recent.map((n) => (
+                  <Animated.View key={n.id} entering={riseIn} layout={settle}>
                   <Pressable
-                    key={n.id}
                     disabled={!n.url}
                     onPress={() => n.url && router.push(n.url as never)}
                     accessibilityRole={n.url ? 'button' : 'text'}
@@ -109,6 +113,7 @@ export default function Activity() {
                       <Text style={type.small}>{describeWhen(new Date(n.createdAt))}</Text>
                     </View>
                   </Pressable>
+                  </Animated.View>
                 ))}
               </View>
             </View>

@@ -2,6 +2,14 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 21 Nov 2026: Why Kitty, confirmation messages and motion
+
+- **Why Kitty** (Raj): five short points on what Kitty saves you from (only you need the app, money comes straight to you, fair splits, no chasing, set up once). It sits at the top of Help, and under the steps on an empty Kitties tab. It only claims what the app does.
+- **A short message after an action**, just under the header for about 2.6 seconds, so it never covers a footer button or the tab bar: group added, saved, left or deleted; saved as a group; kitty archived or back on your list; changes saved; someone marked as paid or asked to check; kitty settled. Screen readers announce it.
+- **Motion, following Raj's motion rules** (src/ui/motion.ts): opening eases in at 220 ms, closing eases out faster at 170 ms; only opacity and transform move; nothing bounces. Cards and rows rise 4 pt as they arrive; Help answers fade in and the topics below ease into place; progress bars fill from the left; buttons fade slightly while held; messages drop in and leave the way they came. Reduce Motion on the phone skips all of it.
+- **On the web, entering and exiting animations are off**: Reanimated 4.7 left those elements hidden in the browser. Progress bars and button fades still animate there.
+- The shared-group page now says the group is in the Groups tab (it said Your details).
+
 ## 21 Nov 2026: every page starts and ends in the same place
 
 - **Content starts 24 pt under the header and the footer button sits 20 pt above the tab bar or the bottom edge, on every page** (Raj: Start a kitty sat higher than New group, and Collecting now sat lower than Recent). The spacing lives in one place, `page` in theme.ts, used by the Screen component, the four tabs and the kitty page.

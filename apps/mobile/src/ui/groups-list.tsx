@@ -2,6 +2,7 @@ import { distinctNames, youLabel } from '@kitty/core';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Linking, Platform, Pressable, Share, StyleSheet, Text, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 
 import { useAuth } from '@/lib/auth';
 import { config } from '@/lib/config';
@@ -9,6 +10,7 @@ import { explainFailure } from '@/lib/errors';
 import { loadGroups, setFavourite, type SavedGroup } from '@/lib/groups';
 
 import { CenteredState, SmallButton } from './components';
+import { riseIn, settle } from './motion';
 import { colors, layout, type } from './theme';
 
 const RECENT = 3;
@@ -71,7 +73,7 @@ export function GroupsList({ onUse }: { onUse?: (g: SavedGroup) => void }) {
         <Text style={type.label}>{title}</Text>
         <View style={styles.list}>
           {list.map((g) => (
-            <View key={g.id} style={styles.row}>
+            <Animated.View key={g.id} style={styles.row} entering={riseIn} layout={settle}>
               <Pressable
                 onPress={() => star(g)}
                 accessibilityRole="button"
@@ -106,7 +108,7 @@ export function GroupsList({ onUse }: { onUse?: (g: SavedGroup) => void }) {
                   Edit
                 </SmallButton>
               </View>
-            </View>
+            </Animated.View>
           ))}
         </View>
       </View>

@@ -11,14 +11,40 @@ import {
   Text,
   TextInput,
   View,
+  type StyleProp,
   type TextInputProps,
+  type ViewStyle,
 } from 'react-native';
+import { useEffect } from 'react';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAuth } from '@/lib/auth';
 import { avatarUrl } from '@/lib/avatar';
 
+import { dur, ease, usePressFade } from './motion';
 import { colors, fonts, layout, page, space, TOUCH, type } from './theme';
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+const DISABLED_OPACITY = 0.4;
+
+/**
+ * Collected so far, as a bar. The fill grows from the left with the opening ease (Raj, 21 Nov
+ * 2026), as a scale, so nothing around it moves.
+ */
+export function Progress({ value, style }: { value: number; style?: StyleProp<ViewStyle> }) {
+  const target = Math.max(0, Math.min(value, 1));
+  const scale = useSharedValue(0);
+  useEffect(() => {
+    scale.set(withTiming(target, { duration: dur.open * 2, easing: ease.open }));
+  }, [target, scale]);
+  const fill = useAnimatedStyle(() => ({ transform: [{ scaleX: scale.get() }] }));
+  return (
+    <View style={[styles.track, style]}>
+      <Animated.View style={[styles.fill, fill]} />
+    </View>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Screen: 56 pt header, 20 pt gutters, footer pinned 20 pt above the bottom.
@@ -155,25 +181,23 @@ interface ButtonProps {
 export function Button({ children, onPress, variant = 'primary', disabled, loading }: ButtonProps) {
   const primary = variant === 'primary' || variant === 'danger';
   const inactive = disabled || loading;
+  const fade = usePressFade(inactive ? DISABLED_OPACITY : 1);
   return (
-    <Pressable
+    <AnimatedPressable
       onPress={onPress}
+      onPressIn={fade.onPressIn}
+      onPressOut={fade.onPressOut}
       disabled={inactive}
       accessibilityRole="button"
       accessibilityState={{ disabled: !!inactive, busy: !!loading }}
-      style={({ pressed }) => [
-        styles.button,
-        variant === 'danger' ? styles.buttonDanger : primary ? styles.buttonPrimary : styles.buttonSecondary,
-        inactive && styles.buttonDisabled,
-        pressed && !inactive && styles.buttonPressed,
-      ]}
+      style={[styles.button, variant === 'danger' ? styles.buttonDanger : primary ? styles.buttonPrimary : styles.buttonSecondary, fade.style]}
     >
       {loading ? (
         <ActivityIndicator color={primary ? colors.inkOnDark : colors.ink} />
       ) : (
         <Text style={primary ? [type.button, styles.textOnDark] : [type.buttonSecondary, styles.textInk]}>{children}</Text>
       )}
-    </Pressable>
+    </AnimatedPressable>
   );
 }
 
@@ -322,10 +346,11 @@ export function Chip({ children, filled, onPress, disabled }: { children: string
 
 /** Dashed full-width button, 46 pt tall ("Add or edit people"). */
 export function DashedButton({ children, onPress }: { children: string; onPress: () => void }) {
+  const fade = usePressFade();
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" style={({ pressed }) => [styles.dashedButton, pressed && styles.buttonPressed]}>
+    <AnimatedPressable onPress={onPress} onPressIn={fade.onPressIn} onPressOut={fade.onPressOut} accessibilityRole="button" style={[styles.dashedButton, fade.style]}>
       <Text style={[type.meta, styles.centerText]}>{children}</Text>
-    </Pressable>
+    </AnimatedPressable>
   );
 }
 
@@ -344,16 +369,19 @@ export function SmallButton({
   /** Smaller, for stacks like Share, Edit, Leave on Groups (Raj, 21 Nov 2026). */
   compact?: boolean;
 }) {
+  const fade = usePressFade(disabled ? DISABLED_OPACITY : 1);
   return (
-    <Pressable
+    <AnimatedPressable
       onPress={onPress}
       disabled={disabled}
       accessibilityRole="button"
       accessibilityState={{ disabled: !!disabled }}
-      style={({ pressed }) => [styles.smallButton, compact && styles.smallButtonCompact, danger && styles.smallButtonDanger, disabled && styles.buttonDisabled, pressed && styles.buttonPressed]}
+      onPressIn={fade.onPressIn}
+      onPressOut={fade.onPressOut}
+      style={[styles.smallButton, compact && styles.smallButtonCompact, danger && styles.smallButtonDanger, fade.style]}
     >
       <Text style={[type.meta, danger && styles.smallButtonDangerText]}>{children}</Text>
-    </Pressable>
+    </AnimatedPressable>
   );
 }
 
@@ -411,7 +439,9 @@ const styles = StyleSheet.create({
   buttonPrimary: { backgroundColor: colors.action, borderColor: colors.action },
   buttonSecondary: { backgroundColor: colors.surface, borderColor: colors.line },
   buttonDanger: { backgroundColor: colors.destructive, borderColor: colors.destructive },
-  buttonDisabled: { opacity: 0.4 },
+  buttonDisabled: { opacity: DISABLED_OPACITY },
+  track: { height: 8, backgroundColor: colors.track, overflow: 'hidden' },
+  fill: { height: 8, width: '100%', backgroundColor: colors.ink, transformOrigin: 'left' },
   buttonPressed: { opacity: 0.8 },
   textOnDark: { color: colors.inkOnDark },
   textInk: { color: colors.ink },
