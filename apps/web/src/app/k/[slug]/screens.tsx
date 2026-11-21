@@ -49,8 +49,9 @@ function DietTags({ m }: { m: MemberRow }) {
   const tag = "inline-flex h-5 items-center rounded-[3px] border border-line px-1.5 text-xs leading-4 text-text";
   return (
     <span className="ml-2 inline-flex gap-1 align-middle">
-      <span className={tag}>{m.diet === "veg" ? "Veg" : "Non-veg"}</span>
-      {m.drinks ? <span className={tag}>Drinks</span> : null}
+      {/* Raj, 21 Nov 2026: Non-Veg in title case; Alcohol or No Alcohol. */}
+      <span className={tag}>{m.diet === "veg" ? "Veg" : "Non-Veg"}</span>
+      <span className={tag}>{m.drinks ? "Alcohol" : "No Alcohol"}</span>
     </span>
   );
 }
@@ -492,7 +493,7 @@ export function NotReceived({ kitty, me, refInvalid }: { kitty: OpenKitty; me: M
 // Screens 17 and 18: after the final bill
 // ---------------------------------------------------------------------------
 
-const CATEGORY_NAME = { veg: "Veg dishes", nonveg: "Non-veg dishes", alcohol: "Alcohol" } as const;
+const CATEGORY_NAME = { veg: "Veg dishes", nonveg: "Non-Veg dishes", alcohol: "Alcohol" } as const;
 
 interface BreakdownRow {
   label: string;
@@ -667,7 +668,7 @@ function Breakdown({ kitty, me }: { kitty: OpenKitty; me: MemberRow }) {
  */
 export function ScannedBill({ kitty, photos }: { kitty: OpenKitty; photos: string[] }) {
   const bill = kitty.bill!;
-  const tag = { veg: "Veg", nonveg: "Non-veg", alcohol: "Alcohol", unsure: "Unsure" } as const;
+  const tag = { veg: "Veg", nonveg: "Non-Veg", alcohol: "Alcohol", unsure: "Unsure" } as const;
   return (
     <Page header={<Header title={kitty.title} left={<Link href={`/k/${kitty.slug}`} aria-label="Back" className="-ml-1 flex h-11 w-9 items-center text-xl text-ink">←</Link>} />}>
       <Title>The receipt</Title>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cleanName, formatIndianMobile, initials, isValidEmail, normaliseEmail, normaliseIndianMobile } from '../src';
+import { cleanName, distinctNames, formatIndianMobile, initials, isValidEmail, normaliseEmail, normaliseIndianMobile } from '../src';
 
 describe('normaliseIndianMobile', () => {
   it('accepts the ways people type a mobile number', () => {
@@ -54,5 +54,21 @@ describe('initials', () => {
     expect(initials('zoya')).toBe('Z');
     expect(initials('Anna Maria Lopez')).toBe('AL');
     expect(initials('')).toBe('');
+  });
+});
+
+describe('distinctNames', () => {
+  it('adds the last four digits only where names clash', () => {
+    expect(
+      distinctNames([
+        { name: 'Biba Bajaj', phone: '+919811114321' },
+        { name: 'biba  bajaj', phone: '+919822229876' },
+        { name: 'Gaurav', phone: '+919800000001' },
+        { name: 'Kabir' },
+      ]),
+    ).toEqual(['Biba Bajaj (…4321)', 'biba  bajaj (…9876)', 'Gaurav', 'Kabir']);
+  });
+  it('leaves a clashing name without a number as it is', () => {
+    expect(distinctNames([{ name: 'Api' }, { name: 'Api', phone: '+919811110000' }])).toEqual(['Api', 'Api (…0000)']);
   });
 });

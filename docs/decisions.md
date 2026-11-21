@@ -2,6 +2,12 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 21 Nov 2026: full names, Alcohol and Non-Veg
+
+- **People who share a name are kept apart** (Raj: there may be 2 or more people with the same name). Adding a group to a kitty matches people by mobile number, and only by name when one of them has no number, so two Biba Bajajs with different numbers both come in. Where names clash in a list, the last 4 digits of the number are shown: "Biba Bajaj (…4321)". On the member page, names show in full and numbers are never shown.
+- **The member page uses the organiser's full name**, not just their first name.
+- **Food and drink labels are "Veg" or "Non-Veg", and "Alcohol" or "No Alcohol"**, everywhere: the person screen, group and kitty lists, voice cards, the scan screen and the member page tags. Speaking still understands "drinks" and "doesn't drink".
+
 ## 21 Nov 2026: your name in groups
 
 - **Groups show your name with (You)**, like "Raj (You), Amrita, Mithu", on the Groups list and the group's screen, instead of just "You" (Raj).

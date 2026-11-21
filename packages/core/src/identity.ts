@@ -49,3 +49,18 @@ export function initials(name: string): string {
   const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? '') : '';
   return (first + last).toUpperCase();
 }
+
+/**
+ * Names to show for a list of people, telling apart anyone who shares a name (Raj, 21 Nov 2026):
+ * "Biba Bajaj (…4321)" and "Biba Bajaj (…9876)". People with a unique name, or no number, show
+ * their name as it is.
+ */
+export function distinctNames(people: { name: string; phone?: string | null }[]): string[] {
+  const key = (name: string) => name.replace(/\s+/g, ' ').trim().toLowerCase();
+  const count = new Map<string, number>();
+  for (const p of people) count.set(key(p.name), (count.get(key(p.name)) ?? 0) + 1);
+  return people.map((p) => {
+    const digits = p.phone?.replace(/\D/g, '') ?? '';
+    return (count.get(key(p.name)) ?? 0) > 1 && digits.length >= 4 ? `${p.name} (…${digits.slice(-4)})` : p.name;
+  });
+}

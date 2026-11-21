@@ -1,3 +1,4 @@
+import { distinctNames } from '@kitty/core';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -121,10 +122,10 @@ export default function NewGroup() {
       <View style={styles.section}>
         <Label>Who is in</Label>
         <View style={styles.list}>
-          {k.people.map((p) => (
+          {k.people.map((p, i) => (
             <Row
               key={p.key}
-              left={p.isOrganiser ? `${profile?.name || p.name || 'You'}${profile?.name || p.name ? ' (You)' : ''}` : p.name}
+              left={p.isOrganiser ? `${profile?.name || p.name || 'You'}${profile?.name || p.name ? ' (You)' : ''}` : distinctNames(k.people)[i]!}
               right={describePerson(p, nameOf(p.paidByKey))}
               onPress={() => router.push({ pathname: '/new-group/person', params: { key: p.key } })}
             />

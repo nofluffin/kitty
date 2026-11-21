@@ -1,8 +1,9 @@
+import { distinctNames } from '@kitty/core';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { useDraftKitty } from '@/lib/draft-kitty';
+import { describePerson, useDraftKitty } from '@/lib/draft-kitty';
 import { explainFailure } from '@/lib/errors';
 import { saveGroup } from '@/lib/groups';
 import { Body, Button, ErrorText, Field, Row, Screen } from '@/ui/components';
@@ -48,8 +49,8 @@ export default function SaveGroup() {
       <Field label="Group name" value={name} onChangeText={setName} placeholder="Office lunch" autoCapitalize="sentences" maxLength={60} />
       <Body>If you already have a group with this name, it’s swapped for this one. Anyone you shared the old one with keeps it.</Body>
       <View style={styles.list}>
-        {others.map((p) => (
-          <Row key={p.key} left={p.name} right={`${p.diet === 'veg' ? 'Veg' : 'Non-veg'}, ${p.drinks ? 'drinks' : "doesn't drink"}`} />
+        {others.map((p, i) => (
+          <Row key={p.key} left={distinctNames(others)[i]!} right={describePerson(p)} />
         ))}
       </View>
     </Screen>

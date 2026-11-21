@@ -157,7 +157,7 @@ export default function AddByVoice() {
                 {p.known.map((kp, i) => (
                   <Option
                     key={i}
-                    label={`${kp.name}, ${kp.diet === 'veg' ? 'veg' : 'non-veg'}, ${kp.drinks ? 'drinks' : 'doesn’t drink'}`}
+                    label={`${kp.name}, ${kp.diet === 'veg' ? 'Veg' : 'Non-Veg'}, ${kp.drinks ? 'Alcohol' : 'No Alcohol'}`}
                     onPress={() => update(p.id, { diet: kp.diet, drinks: kp.drinks, from: 'From your groups and kitties' })}
                   />
                 ))}
@@ -205,7 +205,7 @@ export default function AddByVoice() {
                 label="Food"
                 options={[
                   { value: 'veg', label: 'Veg' },
-                  { value: 'nonveg', label: 'Non-veg' },
+                  { value: 'nonveg', label: 'Non-Veg' },
                 ]}
                 value={p.diet ?? ('' as Diet)}
                 onChange={(v) => update(p.id, { diet: v })}
@@ -215,8 +215,8 @@ export default function AddByVoice() {
               <Segmented
                 label="Alcohol"
                 options={[
-                  { value: 'yes', label: 'Drinks' },
-                  { value: 'no', label: 'Doesn’t drink' },
+                  { value: 'yes', label: 'Alcohol' },
+                  { value: 'no', label: 'No Alcohol' },
                 ]}
                 value={p.drinks === undefined ? '' : p.drinks ? 'yes' : 'no'}
                 onChange={(v) => update(p.id, { drinks: v === 'yes' })}

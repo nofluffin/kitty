@@ -99,7 +99,7 @@ interface DraftKitty {
   setUpiId: (u: string) => void;
   people: DraftPerson[];
   addPerson: (p: DraftPersonInput) => void;
-  /** Adds a saved group's people, skipping names already in the kitty. Returns how many were added. */
+  /** Adds a saved group's people, skipping anyone already in the kitty. Returns how many were added. */
   addGroup: (people: GroupPersonInput[]) => number;
   updatePerson: (key: string, p: DraftPersonInput) => void;
   removePerson: (key: string) => void;
@@ -114,7 +114,8 @@ let nextKey = 1;
 const newKey = () => `p${nextKey++}`;
 
 export function describePerson(p: Pick<DraftPerson, 'diet' | 'drinks'>, paidByName?: string | null): string {
-  const food = `${p.diet === 'veg' ? 'Veg' : 'Non-veg'}, ${p.drinks ? 'drinks' : "doesn't drink"}`;
+  // Raj, 21 Nov 2026: Non-Veg in title case; Alcohol or No Alcohol, not drinks.
+  const food = `${p.diet === 'veg' ? 'Veg' : 'Non-Veg'}, ${p.drinks ? 'Alcohol' : 'No Alcohol'}`;
   return paidByName ? `${food}, ${paidByName} pays` : food;
 }
 
@@ -159,16 +160,20 @@ export function DraftKittyProvider({
   }, []);
   const addGroup = useCallback(
     (group: GroupPersonInput[]) => {
-      const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
-      // Everyone in the group gets a key (an existing person's if the name is already in), so
+      // The same person: the same mobile number, or the same name when one of them has no number.
+      // Two people with the same name and different numbers are different people (Raj, 21 Nov 2026).
+      const samePerson = (p: { name: string; phone: string | null }, g: { name: string; phone: string | null }) => {
+        if (p.phone && g.phone) return p.phone === g.phone;
+        return p.name.replace(/\s+/g, ' ').trim().toLowerCase() === g.name.replace(/\s+/g, ' ').trim().toLowerCase();
+      };
+      // Everyone in the group gets a key (an existing person's if they're already in), so
       // "who pays for whom" can point at the right person.
       const organiserKey = people.find((p) => p.isOrganiser)?.key;
-      const keys = group.map((g) =>
-        g.isMe ? (organiserKey ?? newKey()) : (people.find((p) => !p.isOrganiser && sameName(p.name, g.name))?.key ?? newKey()),
-      );
+      const already = (g: GroupPersonInput) => people.find((p) => !p.isOrganiser && samePerson(p, g));
+      const keys = group.map((g) => (g.isMe ? (organiserKey ?? newKey()) : (already(g)?.key ?? newKey())));
       const fresh = group
         .map((g, i) => ({ g, key: keys[i]! }))
-        .filter(({ g }) => !g.isMe && !people.some((p) => !p.isOrganiser && sameName(p.name, g.name)))
+        .filter(({ g }) => !g.isMe && !already(g))
         .map(({ g, key }) => ({
           key,
           name: g.name,
