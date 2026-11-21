@@ -4,7 +4,7 @@ Choices made during the build that aren't in the spec, or that settle something 
 
 ## 21 Nov 2026: Help topics indented
 
-- **In Help, the topics under each section heading are indented by 10 pt** (Raj), dividing lines included. The Privacy and contact text and links line up with them.
+- **In Help, the topic text and the + sit 10 pt in from each side** (Raj); the dividing lines stay full width. Answers are indented to match, and so are the Privacy and contact text and links.
 
 ## 21 Nov 2026: group wording on the people screen
 
