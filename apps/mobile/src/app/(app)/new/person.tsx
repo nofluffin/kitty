@@ -120,9 +120,12 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
       }
     >
       {inGroup ? (
-        // Raj, 21 Nov 2026: the group's name can be changed while adding people too.
+        // Raj, 21 Nov 2026: the group's name shows here, read only. It's changed on the group screen.
         <View style={styles.groupName}>
-          <Field label="Group name" value={k.title} onChangeText={k.setTitle} placeholder="Family" autoCapitalize="sentences" maxLength={60} />
+          <Label>Group name</Label>
+          <Text style={[type.bodyInk, styles.groupNameText]} accessibilityLabel={`Group name, ${k.title.trim() || 'not named yet'}`}>
+            {k.title.trim() || 'Not named yet'}
+          </Text>
         </View>
       ) : null}
       {!editing && Platform.OS !== 'web' ? (
@@ -272,7 +275,8 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
 
 // Spacing measured from screen 3.
 const styles = StyleSheet.create({
-  groupName: { marginBottom: 16 },
+  groupName: { marginBottom: 20 },
+  groupNameText: { marginTop: 6 },
   privacy: { marginTop: 16, alignItems: 'center' },
   group: { marginTop: 18 },
   control: { marginTop: 6 },
