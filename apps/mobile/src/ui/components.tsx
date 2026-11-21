@@ -327,14 +327,27 @@ export function DashedButton({ children, onPress }: { children: string; onPress:
 }
 
 /** Small outlined button, 44 pt tall ("Adjust", "Edit message"). */
-export function SmallButton({ children, onPress, disabled, danger }: { children: string; onPress: () => void; disabled?: boolean; danger?: boolean }) {
+export function SmallButton({
+  children,
+  onPress,
+  disabled,
+  danger,
+  compact,
+}: {
+  children: string;
+  onPress: () => void;
+  disabled?: boolean;
+  danger?: boolean;
+  /** Smaller, for stacks like Share, Edit, Leave on Groups (Raj, 21 Nov 2026). */
+  compact?: boolean;
+}) {
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled}
       accessibilityRole="button"
       accessibilityState={{ disabled: !!disabled }}
-      style={({ pressed }) => [styles.smallButton, danger && styles.smallButtonDanger, disabled && styles.buttonDisabled, pressed && styles.buttonPressed]}
+      style={({ pressed }) => [styles.smallButton, compact && styles.smallButtonCompact, danger && styles.smallButtonDanger, disabled && styles.buttonDisabled, pressed && styles.buttonPressed]}
     >
       <Text style={[type.meta, danger && styles.smallButtonDangerText]}>{children}</Text>
     </Pressable>
@@ -483,11 +496,13 @@ const styles = StyleSheet.create({
   smallButton: {
     height: 44,
     justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: 15,
     borderWidth: layout.border,
     borderColor: colors.line,
     backgroundColor: colors.surface,
   },
+  smallButtonCompact: { height: 32, paddingHorizontal: 8 },
   smallButtonDanger: { borderColor: colors.destructive },
   smallButtonDangerText: { color: colors.destructive },
   infoBox: { backgroundColor: colors.sunken, paddingHorizontal: 12, paddingVertical: 9 },

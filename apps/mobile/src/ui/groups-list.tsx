@@ -108,11 +108,11 @@ export function GroupsList({ onUse }: { onUse?: (g: SavedGroup) => void }) {
                 </Text>
               </Pressable>
               <View style={styles.actions}>
-                <SmallButton onPress={() => share(g)}>Share</SmallButton>
-                <SmallButton onPress={() => router.push({ pathname: '/new-group', params: { edit: g.id } })}>Edit</SmallButton>
-                <SmallButton onPress={() => leave(g)}>Leave</SmallButton>
+                <SmallButton compact onPress={() => share(g)}>Share</SmallButton>
+                <SmallButton compact onPress={() => router.push({ pathname: '/new-group', params: { edit: g.id } })}>Edit</SmallButton>
+                <SmallButton compact onPress={() => leave(g)}>Leave</SmallButton>
                 {g.createdBy.id === profile?.id ? (
-                  <SmallButton danger onPress={() => remove(g)}>
+                  <SmallButton compact danger onPress={() => remove(g)}>
                     Delete
                   </SmallButton>
                 ) : null}
@@ -142,5 +142,5 @@ const styles = StyleSheet.create({
   starText: { fontSize: 22, lineHeight: 26 },
   flex: { flex: 1, gap: 2 },
   // Stacked: Share, Edit, Leave (Raj, 21 Nov 2026).
-  actions: { gap: 6, alignItems: 'stretch', width: 84 },
+  actions: { gap: 5, alignItems: 'stretch', width: 68 },
 });
