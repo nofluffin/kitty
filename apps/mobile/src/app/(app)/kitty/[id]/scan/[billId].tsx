@@ -1,4 +1,4 @@
-import { billSplit, formatRupees, parseRupees, type BillCategory, type BillSplit, type SplitCategory } from '@kitty/core';
+import { type BillCategory, billSplit, type BillSplit, formatRupees, parseRupees, type SplitCategory, youLabel } from '@kitty/core';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -362,7 +362,7 @@ function SplitProblem({ kitty, bill, problem, reload }: { kitty: FeedKitty; bill
             accessibilityState={{ checked: on }}
             style={styles.checkRow}
           >
-            <Text style={[type.bodyInk, styles.flex]}>{m.isOrganiser ? 'You' : m.name}</Text>
+            <Text style={[type.bodyInk, styles.flex]}>{m.isOrganiser ? youLabel(m.name) : m.name}</Text>
             <Text style={type.meta}>{on ? '☑' : '☐'} {alcohol ? 'Alcohol' : 'Non-Veg'}</Text>
           </Pressable>
         );
@@ -438,7 +438,7 @@ function ScannedShares({ bill, kitty, setStep }: StepProps) {
           .map((m) => (
             <View key={m.id} style={styles.lineRow}>
               <View style={styles.flex}>
-                <Text style={type.bodyInk}>{m.isOrganiser ? 'You' : m.name}</Text>
+                <Text style={type.bodyInk}>{m.isOrganiser ? youLabel(m.name) : m.name}</Text>
                 <Text style={type.note}>{describePerson(m)}</Text>
               </View>
               <View style={styles.amountBox}>

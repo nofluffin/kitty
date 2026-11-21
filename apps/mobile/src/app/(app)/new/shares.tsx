@@ -1,4 +1,4 @@
-import { formatRupees, parseRupees, type Paise } from '@kitty/core';
+import { formatRupees, type Paise, parseRupees, youLabel } from '@kitty/core';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
@@ -128,7 +128,7 @@ function ShareRow({
   return (
     <View style={styles.row}>
       <View style={styles.flex}>
-        <Text style={type.bodyInk}>{person.isOrganiser ? 'You' : person.name}</Text>
+        <Text style={type.bodyInk}>{person.isOrganiser ? youLabel(person.name) : person.name}</Text>
         <Text style={type.note}>{describePerson(person)}</Text>
       </View>
       <TextInput

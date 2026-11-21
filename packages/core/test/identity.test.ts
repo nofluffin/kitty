@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cleanName, distinctNames, formatIndianMobile, initials, isValidEmail, normaliseEmail, normaliseIndianMobile } from '../src';
+import { cleanName, distinctNames, youLabel, formatIndianMobile, initials, isValidEmail, normaliseEmail, normaliseIndianMobile } from '../src';
 
 describe('normaliseIndianMobile', () => {
   it('accepts the ways people type a mobile number', () => {
@@ -70,5 +70,16 @@ describe('distinctNames', () => {
   });
   it('leaves a clashing name without a number as it is', () => {
     expect(distinctNames([{ name: 'Api' }, { name: 'Api', phone: '+919811110000' }])).toEqual(['Api', 'Api (…0000)']);
+  });
+});
+
+describe('youLabel', () => {
+  it('shows the name with (You)', () => {
+    expect(youLabel(' Raj  Rana ')).toBe('Raj Rana (You)');
+  });
+  it('falls back to You', () => {
+    expect(youLabel('')).toBe('You');
+    expect(youLabel(null)).toBe('You');
+    expect(youLabel('You')).toBe('You');
   });
 });

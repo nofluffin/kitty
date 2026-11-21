@@ -1,4 +1,4 @@
-import { describeWhen, distinctNames, feedOrder, formatRupees, formatShortDate, localIsoDate, payProgress, timeToGo } from '@kitty/core';
+import { describeWhen, distinctNames, feedOrder, formatRupees, formatShortDate, localIsoDate, payProgress, timeToGo, youLabel } from '@kitty/core';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -193,7 +193,7 @@ function FeedRow({ kitty, member: m }: { kitty: FeedKitty; member: FeedMember })
   const paysFor = m.paysFor.length > 0 ? `Pays for ${m.paysFor.join(', ')} too` : null;
   // Two people with the same name show the last 4 digits of their numbers (Raj, 21 Nov 2026).
   const label = distinctNames(kitty.members)[kitty.members.findIndex((x) => x.id === m.id)] ?? m.name;
-  const name = m.isOrganiser ? 'You' : label;
+  const name = m.isOrganiser ? youLabel(m.name) : label;
   // Goals in parts: talk about the part that's due, not the whole share.
   const next = m.parts?.next ?? null;
   const partLabel = next && m.parts ? `part ${next.partNumber} of ${m.parts.total}, ${formatRupees(next.amountPaise)}` : null;
@@ -204,7 +204,7 @@ function FeedRow({ kitty, member: m }: { kitty: FeedKitty; member: FeedMember })
   if (m.isOrganiser || m.state === 'paid') {
     return (
       <View style={styles.row}>
-        <Pressable onPress={openPerson} accessibilityRole="button" accessibilityLabel={`See ${name === 'You' ? 'your share' : m.name}`} style={styles.flex}>
+        <Pressable onPress={openPerson} accessibilityRole="button" accessibilityLabel={`See ${m.isOrganiser ? 'your share' : m.name}`} style={styles.flex}>
           <Text style={type.bodyInk}>{name}</Text>
           {paysFor ? <Text style={type.note}>{paysFor}</Text> : null}
         </Pressable>

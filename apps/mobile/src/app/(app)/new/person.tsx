@@ -1,4 +1,4 @@
-import { cleanName, type Diet, distinctNames, formatIndianMobile, normaliseIndianMobile } from '@kitty/core';
+import { cleanName, type Diet, distinctNames, formatIndianMobile, normaliseIndianMobile, youLabel } from '@kitty/core';
 // The legacy picker returns the picked person's details directly. The newer Contact.presentPicker
 // only returns an ID, and reading the numbers then needs full address book permission on iPhone.
 import { presentContactPickerAsync } from 'expo-contacts/legacy';
@@ -46,7 +46,7 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
   const canBePaidFor = !isOrganiser && paysForOthers.length === 0 && payers.length > 0;
   const nameOf = (key: string | null) => {
     const p = k.people.find((x) => x.key === key);
-    return p ? (p.isOrganiser ? 'You' : p.name) : null;
+    return p ? (p.isOrganiser ? youLabel(p.name) : p.name) : null;
   };
   const shownName = name.trim() || 'them';
 
@@ -104,7 +104,7 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
 
   return (
     <Screen
-      title={editing ? (isOrganiser ? 'You' : `Edit ${editing.name}`) : 'Add a person'}
+      title={editing ? (isOrganiser ? youLabel(editing.name) : `Edit ${editing.name}`) : 'Add a person'}
       back
       footer={
         // Raj, 20 Nov 2026: one pinned button. "Add to kitty" while someone is being filled in,
@@ -151,14 +151,14 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
                 </Chip>
                 {payers.map((p) => (
                   <Chip key={p.key} filled={paidByKey === p.key} onPress={() => setPaidByKey(p.key)}>
-                    {p.isOrganiser ? 'You' : (labels.get(p.key) ?? p.name)}
+                    {p.isOrganiser ? youLabel(p.name) : (labels.get(p.key) ?? p.name)}
                   </Chip>
                 ))}
               </View>
               <View style={styles.hint}>
                 <Small>
                   {paidByKey
-                    ? nameOf(paidByKey) === 'You'
+                    ? k.people.find((x) => x.key === paidByKey)?.isOrganiser
                       ? 'You cover their share along with your own.'
                       : `${nameOf(paidByKey)} is asked for their share along with their own.`
                     : 'For a child, or anyone whose share someone else covers.'}
@@ -247,7 +247,7 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
             k.people.map((p, i) => (
               <Row
                 key={p.key}
-                left={p.isOrganiser ? 'You' : distinctNames(k.people)[i]!}
+                left={p.isOrganiser ? youLabel(p.name) : distinctNames(k.people)[i]!}
                 right={describePerson(p, nameOf(p.paidByKey))}
                 onPress={() => router.setParams({ key: p.key })}
               />
