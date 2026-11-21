@@ -2,6 +2,10 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 21 Nov 2026: Help topics indented
+
+- **In Help, the topics under each section heading are indented by 10 pt** (Raj), dividing lines included. The Privacy and contact text and links line up with them.
+
 ## 21 Nov 2026: group wording on the people screen
 
 - **In a group, the people screen says "In this group" and "Remove from group"** (and "Leave me out of this group" on your own row), not kitty (Raj). Kitties keep their wording.
