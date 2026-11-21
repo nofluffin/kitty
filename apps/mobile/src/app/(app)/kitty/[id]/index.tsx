@@ -112,6 +112,14 @@ export default function Feed() {
             </View>
           </ScrollView>
           <View style={styles.footer}>
+            {/* Raj, 21 Nov 2026: Archive is a quiet red link at the top of the footer, not a button. */}
+            <View style={styles.archiveRow}>
+              <Pressable onPress={() => toggleArchive(load.kitty)} accessibilityRole="button" hitSlop={8}>
+                <Text style={[type.link, load.kitty.archivedAt ? null : styles.archiveText]}>
+                  {load.kitty.archivedAt ? 'Unarchive' : 'Archive this kitty'}
+                </Text>
+              </Pressable>
+            </View>
             {load.kitty.editable ? (
               <TextLink onPress={() => router.push({ pathname: '/new', params: { edit: id } })}>
                 Nobody has paid yet. Edit the amounts or people
@@ -145,10 +153,7 @@ export default function Feed() {
                 </Button>
               </>
             )}
-            {/* Raj, 20 Nov 2026: file a kitty away from the list. Found again under Archived kitties on home. */}
-            <Button variant={load.kitty.archivedAt ? 'secondary' : 'danger'} onPress={() => toggleArchive(load.kitty)}>
-              {load.kitty.archivedAt ? 'Unarchive' : 'Archive'}
-            </Button>
+
           </View>
         </>
       )}
@@ -243,6 +248,8 @@ function FeedRow({ kitty, member: m }: { kitty: FeedKitty; member: FeedMember })
 
 // Measured from screen 7.
 const styles = StyleSheet.create({
+  archiveRow: { alignItems: 'flex-start' },
+  archiveText: { color: colors.destructive },
   flex: { flex: 1 },
   safe: { flex: 1, backgroundColor: colors.page },
   body: { paddingHorizontal: layout.gutter, paddingTop: 16, paddingBottom: 24 },
