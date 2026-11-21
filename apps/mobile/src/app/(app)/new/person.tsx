@@ -234,13 +234,14 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
         {added && !editing ? <Text style={[type.note, styles.added]}>{added} added. Add someone else, or tap Done.</Text> : null}
         {editing ? (
           <Button variant="secondary" onPress={remove}>
-            {isOrganiser ? 'I’m not paying into this one' : 'Remove from kitty'}
+            {isOrganiser ? (inGroup ? 'Leave me out of this group' : 'I’m not paying into this one') : inGroup ? 'Remove from group' : 'Remove from kitty'}
           </Button>
         ) : null}
       </View>
 
       <View style={styles.listGap}>
-        <Label>In this kitty</Label>
+        {/* Raj, 21 Nov 2026: group screens talk about the group. */}
+        <Label>{inGroup ? 'In this group' : 'In this kitty'}</Label>
         {!k.people.some((p) => p.isOrganiser) ? (
           <View style={styles.addBack}>
             <TextLink
