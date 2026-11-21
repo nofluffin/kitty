@@ -42,6 +42,8 @@ export const colors = {
   destructive: '#ED2939',
   /** The MOMENT tag on kitty cards (Raj, 20 Nov 2026), with white text. */
   moment: '#F38427',
+  /** The GOAL tag on kitty cards (Raj, 21 Nov 2026), with white text. */
+  goal: '#4682B4',
 } as const;
 
 export const layout = {

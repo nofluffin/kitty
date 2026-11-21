@@ -2,6 +2,10 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 21 Nov 2026: kitty card tags
+
+- **MOMENT and GOAL tags are 20% smaller** and sit closer to the card's top right corner (Raj). **GOAL is blue, #4682B4**, with white text, like the orange MOMENT tag. DRAFT and SETTLING stay outlined.
+
 ## 21 Nov 2026: quieter Archive, Scan on Shares
 
 - **Archive is a red text link, "Archive this kitty"**, above the scan note on the kitty page (Raj: the red button was too loud). Unarchive is a plain link in the same place.

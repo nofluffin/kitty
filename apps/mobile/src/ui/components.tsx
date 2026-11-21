@@ -231,11 +231,11 @@ export function Card({ children }: { children: ReactNode }) {
   return <View style={styles.card}>{children}</View>;
 }
 
-/** Tag, e.g. "MOMENT" or "GOAL". Moments are orange (Raj, 20 Nov 2026); the rest outlined. */
-export function Badge({ children, tone }: { children: string; tone?: 'moment' }) {
+/** Tag, e.g. "MOMENT" or "GOAL". Moments orange, goals blue (Raj); the rest outlined. */
+export function Badge({ children, tone, small }: { children: string; tone?: 'moment' | 'goal'; small?: boolean }) {
   return (
-    <View style={[styles.badge, tone === 'moment' && styles.badgeMoment]}>
-      <Text style={[type.badge, tone === 'moment' && styles.badgeMomentText]}>{children}</Text>
+    <View style={[styles.badge, small && styles.badgeSmall, tone === 'moment' && styles.badgeMoment, tone === 'goal' && styles.badgeGoal]}>
+      <Text style={[type.badge, small && styles.badgeSmallText, tone && styles.badgeMomentText]}>{children}</Text>
     </View>
   );
 }
@@ -437,6 +437,10 @@ const styles = StyleSheet.create({
     borderRadius: layout.radius,
   },
   badgeMoment: { backgroundColor: colors.moment, borderColor: colors.moment, borderRadius: 3 },
+  badgeGoal: { backgroundColor: colors.goal, borderColor: colors.goal, borderRadius: 3 },
+  // Kitty card tags, 20% smaller (Raj, 21 Nov 2026).
+  badgeSmall: { height: 18, paddingHorizontal: 5 },
+  badgeSmallText: { fontSize: 9.6, lineHeight: 13, letterSpacing: 0.9 },
   badgeMomentText: { color: colors.inkOnDark },
   avatar: {
     width: layout.avatar,
