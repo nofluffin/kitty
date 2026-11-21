@@ -2,6 +2,11 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 21 Nov 2026: every page starts and ends in the same place
+
+- **Content starts 24 pt under the header and the footer button sits 20 pt above the tab bar or the bottom edge, on every page** (Raj: Start a kitty sat higher than New group, and Collecting now sat lower than Recent). The spacing lives in one place, `page` in theme.ts, used by the Screen component, the four tabs and the kitty page.
+- Titles now carry their 6 pt gap below them instead of above, so a page that opens with a title or paragraph starts at the same height as the rest. A page that opens with a field (editing a person) does the same.
+
 ## 21 Nov 2026: Help topics indented
 
 - **In Help, the topic text and the + sit 10 pt in from each side** (Raj); the dividing lines stay full width. Answers are indented to match, and so are the Privacy and contact text and links.

@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { explainFailure } from '@/lib/errors';
 import { loadKittySummaries, type KittySummary } from '@/lib/kitties';
 import { Badge, TextLink, Body, Button, CenteredState, Header, Label, Title } from '@/ui/components';
-import { colors, layout, type } from '@/ui/theme';
+import { colors, layout, page, type } from '@/ui/theme';
 
 type Load = { state: 'loading' } | { state: 'error' } | { state: 'ready'; kitties: KittySummary[] };
 
@@ -193,8 +193,8 @@ function KittyCard({ kitty, today }: { kitty: KittySummary; today: string }) {
 const styles = StyleSheet.create({
   archivedLink: { marginTop: 28, alignItems: 'flex-start' },
   safe: { flex: 1, backgroundColor: colors.page },
-  body: { paddingHorizontal: layout.gutter, paddingTop: layout.top, paddingBottom: 24, flexGrow: 1 },
-  footer: { paddingHorizontal: layout.gutter, paddingTop: 16, paddingBottom: layout.gutter },
+  body: page.body,
+  footer: page.footer,
   // Cards start 16 pt under the section label and sit 16 pt apart.
   list: { marginTop: 16, gap: 16 },
   card: {

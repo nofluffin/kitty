@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { config } from '@/lib/config';
 import { Header, TextLink } from '@/ui/components';
-import { colors, layout, type } from '@/ui/theme';
+import { colors, layout, page, type } from '@/ui/theme';
 
 /** "Help and how to" (Raj, 20 Nov 2026; not in the wires): how Kitty works, in sections you tap to open. */
 
@@ -296,7 +296,7 @@ export default function Help() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.page },
-  body: { padding: layout.gutter, paddingBottom: 40 },
+  body: { ...page.body, paddingBottom: 40 },
   flex: { flex: 1 },
   section: { marginBottom: 28 },
   sectionHead: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },

@@ -18,7 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/lib/auth';
 import { avatarUrl } from '@/lib/avatar';
 
-import { colors, fonts, layout, space, TOUCH, type } from './theme';
+import { colors, fonts, layout, page, space, TOUCH, type } from './theme';
 
 // ---------------------------------------------------------------------------
 // Screen: 56 pt header, 20 pt gutters, footer pinned 20 pt above the bottom.
@@ -190,11 +190,13 @@ interface FieldProps extends TextInputProps {
   error?: string | null;
   /** Fixed text before the input, e.g. "+91". */
   prefix?: string;
+  /** The first thing on the page: no space above, so it starts where other pages do. */
+  first?: boolean;
 }
 
-export function Field({ ref, label, hint, error, prefix, style, ...input }: FieldProps) {
+export function Field({ ref, label, hint, error, prefix, style, first, ...input }: FieldProps) {
   return (
-    <View style={styles.field}>
+    <View style={first ? null : styles.field}>
       <Label>{label}</Label>
       <View style={[styles.inputBox, error ? styles.inputBoxError : null]}>
         {/* A single symbol (₹) sits tight to the number; "+91" keeps a space after it. */}
@@ -392,11 +394,12 @@ const styles = StyleSheet.create({
   arrow: { fontFamily: fonts.regular },
   headerRightRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   headerRight: { marginLeft: space.md },
-  body: { paddingHorizontal: layout.gutter, paddingTop: layout.top, paddingBottom: space.xl, flexGrow: 1 },
-  footer: { paddingHorizontal: layout.gutter, paddingTop: space.lg, paddingBottom: layout.gutter, gap: space.lg },
-  // Measured against screens 19 to 21: titles sit 5 pt lower, paragraphs 6 pt under them.
-  titleGap: { marginTop: 5 },
-  bodyGap: { marginTop: 6 },
+  body: page.body,
+  footer: page.footer,
+  // Paragraphs sit 6 pt under a title (screens 19 to 21). The gap hangs below the title, so a
+  // page that opens with a title or paragraph starts where every other page does (Raj, 21 Nov 2026).
+  titleGap: { marginBottom: 6 },
+  bodyGap: {},
   error: { fontFamily: type.small.fontFamily, color: colors.danger, fontSize: 14, lineHeight: 20, marginTop: 6 },
   button: {
     height: layout.buttonHeight,

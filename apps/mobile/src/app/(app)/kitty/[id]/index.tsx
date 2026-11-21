@@ -10,7 +10,7 @@ import { registerForPush } from '@/lib/push';
 import { ask } from '@/lib/ask';
 import { setArchived } from '@/lib/kitties';
 import { Button, CenteredState, Header, Note, TextLink } from '@/ui/components';
-import { colors, layout, type } from '@/ui/theme';
+import { colors, layout, page, type } from '@/ui/theme';
 
 type Load = { state: 'loading' } | { state: 'error' } | { state: 'ready'; kitty: FeedKitty };
 
@@ -258,8 +258,8 @@ const styles = StyleSheet.create({
   archiveText: { color: colors.destructive },
   flex: { flex: 1 },
   safe: { flex: 1, backgroundColor: colors.page },
-  body: { paddingHorizontal: layout.gutter, paddingTop: 16, paddingBottom: 24 },
-  footer: { paddingHorizontal: layout.gutter, paddingTop: 16, paddingBottom: layout.gutter, gap: 16 },
+  body: { ...page.body, flexGrow: undefined },
+  footer: page.footer,
   summary: { backgroundColor: colors.surface, borderWidth: layout.border, borderColor: colors.line, padding: layout.cardPadding },
   amountLine: { lineHeight: 38 },
   amount: { ...type.title, fontSize: 32, lineHeight: 38 },
