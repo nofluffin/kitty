@@ -18,13 +18,14 @@ export default function TabsLayout() {
       <Tabs.Screen name="home" options={{ title: 'Kitties' }} />
       <Tabs.Screen name="groups" options={{ title: 'Groups' }} />
       <Tabs.Screen name="activity" options={{ title: 'Activity' }} />
-      <Tabs.Screen name="help" options={{ title: 'Help' }} />
+      {/* Raj, 21 Nov 2026: "Help" is now "Kitty": what Kitty is for, then how it works. */}
+      <Tabs.Screen name="help" options={{ title: 'Kitty' }} />
     </Tabs>
   );
 }
 
 /** Line icons for each tab (Raj, 20 Nov 2026). */
-const ICONS: Record<string, ComponentProps<typeof Feather>['name']> = { home: 'layers', groups: 'users', activity: 'bell', help: 'help-circle' };
+const ICONS: Record<string, ComponentProps<typeof Feather>['name']> = { home: 'layers', groups: 'users', activity: 'bell', help: 'info' };
 
 function TabBar({ state, descriptors, emitter, navigateToTab, insets }: BottomTabBarProps) {
   const waiting = useWaitingCount(state.index);

@@ -241,7 +241,7 @@ export default function Help() {
   const [open, setOpen] = useState<string | null>(null);
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <Header title="Help" />
+      <Header title="Kitty" />
       <ScrollView contentContainerStyle={styles.body}>
         {/* Raj, 21 Nov 2026: what Kitty is for, above the how-tos. */}
         <View style={styles.section}>

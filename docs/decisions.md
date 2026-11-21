@@ -2,6 +2,11 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 21 Nov 2026: the Help tab is now Kitty
+
+- **The Help tab is called "Kitty", with an info icon** (Raj). Its header says Kitty too. It opens with Why Kitty, then the how-to topics.
+- Phone login is on hold (Raj, 21 Nov): WhatsApp codes cost roughly ₹0.55 to ₹0.60 each with Twilio; revisit later.
+
 ## 21 Nov 2026: Why Kitty, confirmation messages and motion
 
 - **Why Kitty** (Raj): five short points on what Kitty saves you from (only you need the app, money comes straight to you, fair splits, no chasing, set up once). It sits at the top of Help, and under the steps on an empty Kitties tab. It only claims what the app does.
