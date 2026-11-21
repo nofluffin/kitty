@@ -46,12 +46,16 @@ function statusText(m: MemberRow, kitty: OpenKitty): string {
 
 /** Food and drink as small tags next to a name, so the group sees why amounts differ. */
 function DietTags({ m }: { m: MemberRow }) {
-  const tag = "inline-flex h-5 items-center rounded-[3px] border border-line px-1.5 text-xs leading-4 text-text";
+  // Raj, 21 Nov 2026: Veg green, Non-Veg red, Alcohol black, No Alcohol white; text a size down.
+  const tag = "inline-flex h-5 items-center rounded-[3px] border px-[7px] text-[11px] leading-[14px]";
   return (
     <span className="ml-2 inline-flex gap-1 align-middle">
-      {/* Raj, 21 Nov 2026: Non-Veg in title case; Alcohol or No Alcohol. */}
-      <span className={tag}>{m.diet === "veg" ? "Veg" : "Non-Veg"}</span>
-      <span className={tag}>{m.drinks ? "Alcohol" : "No Alcohol"}</span>
+      <span className={`${tag} ${m.diet === "veg" ? "border-veg bg-veg text-white" : "border-nonveg bg-nonveg text-white"}`}>
+        {m.diet === "veg" ? "Veg" : "Non-Veg"}
+      </span>
+      <span className={`${tag} ${m.drinks ? "border-ink bg-ink text-white" : "border-line bg-surface text-ink"}`}>
+        {m.drinks ? "Alcohol" : "No Alcohol"}
+      </span>
     </span>
   );
 }
