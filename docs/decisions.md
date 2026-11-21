@@ -2,6 +2,10 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 21 Nov 2026: who pays waits for a name
+
+- **The "Who pays for them" pills are greyed out until the name is filled in** (Raj), with the note "Type their name first, then choose who pays for them."
+
 ## 21 Nov 2026: your name, with (You), everywhere
 
 - **Wherever the app named the organiser just "You", it now says their name with (You)**: "Raj Rana (You)" (Raj). This covers the new kitty chips, Add a person (list and "Who pays for them"), the Shares screen, the kitty page rows, the person screen title, the share preview, the scan screens and groups. Sentences like "You cover their share" and "Your share" stay as they are, and so does the You picture in the corner when there's no photo.

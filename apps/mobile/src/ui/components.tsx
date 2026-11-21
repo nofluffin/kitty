@@ -304,13 +304,14 @@ export function Segmented<T extends string>({
 }
 
 /** Name pill, 35 pt tall. The organiser's own chip is filled. */
-export function Chip({ children, filled, onPress }: { children: string; filled?: boolean; onPress?: () => void }) {
+export function Chip({ children, filled, onPress, disabled }: { children: string; filled?: boolean; onPress?: () => void; disabled?: boolean }) {
   return (
     <Pressable
       onPress={onPress}
-      disabled={!onPress}
+      disabled={!onPress || disabled}
       accessibilityRole={onPress ? 'button' : 'text'}
-      style={[styles.chip, filled && styles.chipFilled]}
+      accessibilityState={{ disabled: !!disabled, selected: !!filled }}
+      style={[styles.chip, filled && styles.chipFilled, disabled && styles.buttonDisabled]}
     >
       <Text style={type.meta}>{children}</Text>
     </Pressable>
