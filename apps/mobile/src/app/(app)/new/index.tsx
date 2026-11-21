@@ -77,7 +77,7 @@ export default function NewKitty() {
   };
   const errors: Errors = tried ? { ...problems, ...(formError ? { form: formError } : {}) } : {};
 
-  async function create() {
+  async function create(options: { thenScan?: boolean } = {}) {
     setTried(true);
     setFormError(null);
     if (Object.keys(problems).length > 0 || k.split.state !== 'ok' || !k.dueDate || !k.totalPaise) return;
@@ -117,6 +117,11 @@ export default function NewKitty() {
         return;
       }
       refreshProfile();
+      if (options.thenScan) {
+        // Scan from Edit kitty (Raj, 21 Nov 2026): edits saved first, then the camera.
+        router.push({ pathname: '/kitty/[id]/scan', params: { id: k.editing.id, mode: k.editing.status === 'draft' ? 'draft' : 'settle' } });
+        return;
+      }
       // Back to where the edit started (the share screen or the feed), which reloads on focus.
       router.back();
       return;
@@ -151,6 +156,10 @@ export default function NewKitty() {
   );
 
   async function scanFirst() {
+    if (k.editing) {
+      await create({ thenScan: true });
+      return;
+    }
     setTried(true);
     setFormError(null);
     const needed: (keyof Errors)[] = ['title', 'date', 'people', 'upi'];
@@ -198,7 +207,7 @@ export default function NewKitty() {
           {k.editing?.status === 'shared' ? (
             <Small>Everyone’s link updates straight away. You can only edit until someone pays.</Small>
           ) : null}
-          <Button onPress={create} loading={saving}>
+          <Button onPress={() => create()} loading={saving}>
             {k.editing ? 'Save changes' : 'Create kitty'}
           </Button>
         </>
@@ -268,7 +277,7 @@ export default function NewKitty() {
           ) : null}
           <ErrorText>{inParts ? planProblem : null}</ErrorText>
         </View>
-      ) : k.editing ? null : (
+      ) : (
         <View style={styles.scanGap}>
           <DashedButton onPress={scanFirst}>
             {scanning ? 'Saving the kitty…' : 'Have the bill already? Scan it for exact shares'}

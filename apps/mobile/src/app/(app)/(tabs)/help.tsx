@@ -60,7 +60,7 @@ const SECTIONS: { title: string; icon: IconName; topics: Topic[] }[] = [
         q: 'Changing amounts',
         a: [
           'Kitty splits the total equally. Tap “Adjust” to set someone’s amount by hand; the rest is split among everyone else.',
-          'Have the bill already? Tap “Have the bill already? Scan it for exact shares”, on the new kitty screen or under Adjust. Veg eaters don’t pay for non-veg dishes, and only drinkers pay for alcohol.',
+          'Have the bill? Scan it any time before someone pays: on the new kitty screen, under Adjust, while editing a kitty, or on its share screen. Veg eaters don’t pay for non-veg dishes, and only drinkers pay for alcohol.',
         ],
       },
     ],

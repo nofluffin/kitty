@@ -12,6 +12,7 @@ import {
   Body,
   Button,
   CenteredState,
+  DashedButton,
   ErrorText,
   Label,
   Row,
@@ -34,6 +35,8 @@ interface ShareKitty {
   partsCount: number | null;
   /** Editable until someone pays (decided 20 Nov 2026). */
   editable: boolean;
+  /** A checked bill exists, so the button says Rescan. */
+  hasBill: boolean;
   /** Per person; paidBy names whoever pays their share, if someone else does. */
   members: { name: string; sharePaise: number; isOrganiser: boolean; id: string; paidById: string | null }[];
 }
@@ -41,7 +44,7 @@ interface ShareKitty {
 async function loadKitty(id: string): Promise<ShareKitty> {
   const { data, error } = await supabase
     .from('kitties')
-    .select('id, title, kind, status, due_date, total_paise, share_slug, parts_count, members(id, name, share_paise, is_organiser, sort_order, paid_by_member_id, payments(status))')
+    .select('id, title, kind, status, due_date, total_paise, share_slug, parts_count, bills(status), members(id, name, share_paise, is_organiser, sort_order, paid_by_member_id, payments(status))')
     .eq('id', id)
     .single();
   if (error) throw error;
@@ -54,6 +57,7 @@ async function loadKitty(id: string): Promise<ShareKitty> {
     totalPaise: data.total_paise,
     slug: data.share_slug,
     partsCount: data.parts_count,
+    hasBill: data.bills.some((b) => b.status === 'confirmed'),
     editable: isEditable(
       data.status,
       data.members.flatMap((m) => m.payments.map((p) => ({ isOrganiser: m.is_organiser, status: p.status }))),
@@ -221,6 +225,16 @@ function ShareReady({ kitty, close }: { kitty: ShareKitty; close?: () => void })
           <TextLink onPress={() => router.push({ pathname: '/new', params: { edit: kitty.id } })}>Edit the kitty</TextLink>
         </View>
       ) : null}
+      {kitty.editable && kitty.kind === 'moment' ? (
+        // Raj, 21 Nov 2026: scan any time before someone pays, drafts included.
+        <View style={styles.scanGap}>
+          <DashedButton
+            onPress={() => router.push({ pathname: '/kitty/[id]/scan', params: { id: kitty.id, mode: status === 'draft' ? 'draft' : 'settle' } })}
+          >
+            {kitty.hasBill ? 'Rescan the bill' : 'Have the bill? Scan it for exact shares'}
+          </DashedButton>
+        </View>
+      ) : null}
 
       <View style={styles.section}>
         <Label>Message preview</Label>
@@ -301,4 +315,5 @@ const styles = StyleSheet.create({
   list: { marginTop: 12 },
   skip: { alignItems: 'center' },
   editLink: { marginTop: 12, alignItems: 'flex-start' },
+  scanGap: { marginTop: 14 },
 });
