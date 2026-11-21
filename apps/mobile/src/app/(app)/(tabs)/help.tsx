@@ -74,7 +74,7 @@ const SECTIONS: { title: string; icon: IconName; topics: Topic[] }[] = [
         a: [
           'In the Groups tab, tap “New group”, give it a name like Family or Office lunch, and add people. Or, after adding people to a kitty, tap “Save these people as a group”. Numbers, food and drink, and who pays for whom are kept, and you’re in it too.',
           'Saving again with the same name makes a new group and swaps your old one for it. Anyone you shared the old one with keeps theirs.',
-          'To change a group, tap Edit next to it in the Groups tab. Rename it, add or remove people, or change their food and drink, then tap “Save group”. You get the new version; anyone you shared the old one with keeps theirs.',
+          'To change a group, tap it, or tap Edit under it, in the Groups tab. Rename it, add or remove people, or change their food and drink, then tap “Save group”. You get the new version; anyone you shared the old one with keeps theirs.',
         ],
       },
       {
@@ -95,9 +95,9 @@ const SECTIONS: { title: string; icon: IconName; topics: Topic[] }[] = [
       {
         q: 'Sharing and leaving',
         a: [
-          'Tap Share next to a group to send it on WhatsApp. When a friend who organises with Kitty opens the link, the group is added to their Kitty, with you in it, so you can take turns organising.',
-          'Tap Leave to take a group out of your Kitty. Others who have it keep it. All your groups are in the Groups tab, next to Kitties.',
-          'Made the group yourself? Tap Delete to remove it for everyone, including anyone you shared it with. Kitties already made with it aren’t changed.',
+          'Tap Share under a group to send it on WhatsApp. When a friend who organises with Kitty opens the link, the group is added to their Kitty, with you in it, so you can take turns organising.',
+          'To take a group out of your Kitty, open it and tap “Leave this group”. Others who have it keep it. All your groups are in the Groups tab, next to Kitties.',
+          'Made the group yourself? Open it and tap “Delete this group” to remove it for everyone, including anyone you shared it with. Kitties already made with it aren’t changed.',
         ],
       },
     ],

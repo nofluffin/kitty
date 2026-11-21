@@ -2,11 +2,10 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Linking, Platform, Pressable, Share, StyleSheet, Text, View } from 'react-native';
 
-import { ask } from '@/lib/ask';
 import { useAuth } from '@/lib/auth';
 import { config } from '@/lib/config';
 import { explainFailure } from '@/lib/errors';
-import { deleteGroup, leaveGroup, loadGroups, setFavourite, type SavedGroup } from '@/lib/groups';
+import { loadGroups, setFavourite, type SavedGroup } from '@/lib/groups';
 
 import { CenteredState, SmallButton } from './components';
 import { colors, layout, type } from './theme';
@@ -15,7 +14,7 @@ const RECENT = 3;
 
 /**
  * The groups screen (Raj, 20 Nov 2026): favourites, recently used, then all groups,
- * each with a star, Share, Edit and Leave, and Delete for groups you made. With onUse, tapping a group picks it.
+ * each with a star, Share and Edit. Leave and Delete are on the group's own screen. With onUse, tapping a group picks it.
  */
 export function GroupsList({ onUse }: { onUse?: (g: SavedGroup) => void }) {
   const { profile } = useAuth();
@@ -57,20 +56,7 @@ export function GroupsList({ onUse }: { onUse?: (g: SavedGroup) => void }) {
     }
   }
 
-  async function leave(g: SavedGroup) {
-    if (!(await ask(`Leave ${g.name}?`, 'It goes from your groups. Anyone else who has it keeps it.', 'Leave'))) return;
-    const e = await leaveGroup(g.id);
-    if (e) await explainFailure(e, 'leave the group');
-    await load();
-  }
-
-  async function remove(g: SavedGroup) {
-    if (!(await ask(`Delete ${g.name}?`, 'It goes from your Kitty and from everyone you shared it with. Kitties you made with it stay as they are.', 'Delete')))
-      return;
-    const e = await deleteGroup(g.id);
-    if (e) await explainFailure(e, 'delete the group');
-    await load();
-  }
+  const edit = (g: SavedGroup) => router.push({ pathname: '/new-group', params: { edit: g.id } });
 
   async function star(g: SavedGroup) {
     const e = await setFavourite(g.id, !g.favourite);
@@ -94,28 +80,28 @@ export function GroupsList({ onUse }: { onUse?: (g: SavedGroup) => void }) {
               >
                 <Text style={[type.bodyInk, styles.starText]}>{g.favourite ? '★' : '☆'}</Text>
               </Pressable>
-              <Pressable
-                style={styles.flex}
-                disabled={!onUse}
-                onPress={() => onUse?.(g)}
-                accessibilityRole={onUse ? 'button' : 'text'}
-                accessibilityLabel={onUse ? `Add ${g.name}` : g.name}
-              >
-                <Text style={type.bodyInk}>{g.name}</Text>
-                <Text style={type.note}>
-                  {g.people.map((p) => (p.profileId === profile?.id ? 'You' : p.name)).join(', ')}
-                  {g.createdBy.id === profile?.id ? '' : `. From ${g.createdBy.name || 'a friend'}`}
-                </Text>
-              </Pressable>
-              <View style={styles.actions}>
-                <SmallButton compact onPress={() => share(g)}>Share</SmallButton>
-                <SmallButton compact onPress={() => router.push({ pathname: '/new-group', params: { edit: g.id } })}>Edit</SmallButton>
-                <SmallButton compact onPress={() => leave(g)}>Leave</SmallButton>
-                {g.createdBy.id === profile?.id ? (
-                  <SmallButton compact danger onPress={() => remove(g)}>
-                    Delete
+              <View style={styles.flex}>
+                {/* Raj, 21 Nov 2026: tapping a group opens it to edit (or picks it, on a new kitty). */}
+                <Pressable
+                  onPress={() => (onUse ? onUse(g) : edit(g))}
+                  accessibilityRole="button"
+                  accessibilityLabel={onUse ? `Add ${g.name}` : `Open ${g.name}`}
+                >
+                  <Text style={type.bodyInk}>{g.name}</Text>
+                  <Text style={type.note}>
+                    {g.people.map((p) => (p.profileId === profile?.id ? 'You' : p.name)).join(', ')}
+                    {g.createdBy.id === profile?.id ? '' : `. From ${g.createdBy.name || 'a friend'}`}
+                  </Text>
+                </Pressable>
+                {/* Share and Edit in a row under the group; Leave and Delete are on the group's screen. */}
+                <View style={styles.actions}>
+                  <SmallButton compact onPress={() => share(g)}>
+                    Share
                   </SmallButton>
-                ) : null}
+                  <SmallButton compact onPress={() => edit(g)}>
+                    Edit
+                  </SmallButton>
+                </View>
               </View>
             </View>
           ))}
@@ -137,10 +123,9 @@ const styles = StyleSheet.create({
   intro: { marginBottom: 16 },
   section: { marginBottom: 24 },
   list: { marginTop: 10, borderTopWidth: layout.border, borderTopColor: colors.line },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12, borderBottomWidth: layout.border, borderBottomColor: colors.line },
-  star: { width: 28, alignItems: 'center' },
+  row: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingVertical: 12, borderBottomWidth: layout.border, borderBottomColor: colors.line },
+  star: { width: 28, alignItems: 'center', paddingTop: 2 },
   starText: { fontSize: 22, lineHeight: 26 },
   flex: { flex: 1, gap: 2 },
-  // Stacked: Share, Edit, Leave (Raj, 21 Nov 2026).
-  actions: { gap: 5, alignItems: 'stretch', width: 68 },
+  actions: { flexDirection: 'row', gap: 8, marginTop: 10 },
 });
