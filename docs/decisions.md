@@ -2,6 +2,10 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 21 Nov 2026: scan the bill from anywhere, until someone pays
+
+- **Scanning is offered wherever a kitty's amounts are set** (Raj): the new kitty screen, Shares (Adjust), Edit kitty and the share screen (drafts included), as well as the kitty page. It works until anyone pays. From Edit kitty, your edits are saved first, then the camera opens. The share screen says "Rescan the bill" once there's a checked bill.
+
 ## 20 Nov 2026: adding people by voice
 
 Decided with Raj:

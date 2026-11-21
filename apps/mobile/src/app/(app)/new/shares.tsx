@@ -49,7 +49,7 @@ export default function AdjustShares() {
             You can change amounts until someone pays. Scan the bill and Kitty works out each person’s exact share from what they
             had, replacing these amounts.
           </Note>
-          {k.kind === 'moment' && !k.editing ? (
+          {k.kind === 'moment' ? (
             <DashedButton
               onPress={() => {
                 // Screen 2 saves the kitty and opens the camera: it has the name, date and UPI ID.
