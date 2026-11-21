@@ -2,6 +2,11 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 21 Nov 2026: a screen for each group
+
+- **Tapping a group in the Groups tab opens it** to edit (Raj). On that screen you can rename it, add or remove people, **Leave this group**, or **Delete this group** (red, only for groups you made).
+- **The list shows just Share and Edit, in a row under each group**, left aligned. Leave and Delete moved to the group's screen. When picking a group for a new kitty, tapping it still adds everyone.
+
 ## 21 Nov 2026: edit link under the people
 
 - **"Nobody has paid yet. Edit the amounts or people" sits straight under the list of people** on the kitty page, not in the footer (Raj).

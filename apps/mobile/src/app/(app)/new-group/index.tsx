@@ -1,12 +1,15 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+
+import { ask } from '@/lib/ask';
 
 import { describePerson, useDraftKitty } from '@/lib/draft-kitty';
 import { explainFailure } from '@/lib/errors';
 import { useAuth } from '@/lib/auth';
-import { leaveGroup, loadGroups, saveGroup, type SavedGroup } from '@/lib/groups';
+import { deleteGroup, leaveGroup, loadGroups, saveGroup, type SavedGroup } from '@/lib/groups';
 import { Body, Button, DashedButton, ErrorText, Field, Label, Row, Screen } from '@/ui/components';
+import { colors, type } from '@/ui/theme';
 
 /** New group (Raj, 20 Nov 2026): a name and people, saved without starting a kitty. */
 export default function NewGroup() {
@@ -56,12 +59,48 @@ export default function NewGroup() {
     router.back();
   }
 
+  // Raj, 21 Nov 2026: Leave, and Delete for groups you made, live here rather than on the list.
+  async function leave() {
+    if (!original) return;
+    if (!(await ask(`Leave ${original.name}?`, 'It goes from your groups. Anyone else who has it keeps it.', 'Leave'))) return;
+    const e = await leaveGroup(original.id);
+    if (e) return setError(await explainFailure(e, 'leave the group'));
+    router.back();
+  }
+
+  async function remove() {
+    if (!original) return;
+    if (
+      !(await ask(
+        `Delete ${original.name}?`,
+        'It goes from your Kitty and from everyone you shared it with. Kitties you made with it stay as they are.',
+        'Delete',
+      ))
+    )
+      return;
+    const e = await deleteGroup(original.id);
+    if (e) return setError(await explainFailure(e, 'delete the group'));
+    router.back();
+  }
+
   return (
     <Screen
       title={original ? 'Edit group' : 'New group'}
       back
       footer={
         <>
+          {original ? (
+            <View style={styles.links}>
+              <Pressable onPress={leave} accessibilityRole="button" hitSlop={8}>
+                <Text style={type.link}>Leave this group</Text>
+              </Pressable>
+              {original.createdBy.id === profile?.id ? (
+                <Pressable onPress={remove} accessibilityRole="button" hitSlop={8}>
+                  <Text style={[type.link, styles.danger]}>Delete this group</Text>
+                </Pressable>
+              ) : null}
+            </View>
+          ) : null}
           <ErrorText>{error}</ErrorText>
           <Button onPress={save} loading={busy}>
             Save group
@@ -103,4 +142,6 @@ const styles = StyleSheet.create({
   section: { marginTop: 20 },
   list: { marginTop: 10 },
   add: { marginTop: 12 },
+  links: { flexDirection: 'row', gap: 24 },
+  danger: { color: colors.destructive },
 });
