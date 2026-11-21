@@ -1,16 +1,41 @@
-import { router } from 'expo-router';
-import { useState } from 'react';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { describePerson, useDraftKitty } from '@/lib/draft-kitty';
 import { explainFailure } from '@/lib/errors';
-import { saveGroup } from '@/lib/groups';
+import { useAuth } from '@/lib/auth';
+import { leaveGroup, loadGroups, saveGroup, type SavedGroup } from '@/lib/groups';
 import { Body, Button, DashedButton, ErrorText, Field, Label, Row, Screen } from '@/ui/components';
 
 /** New group (Raj, 20 Nov 2026): a name and people, saved without starting a kitty. */
 export default function NewGroup() {
   const k = useDraftKitty();
+  const { profile } = useAuth();
+  // Edit (Raj, 21 Nov 2026): the group's name and people, filled in. Saving makes a new
+  // version for you; anyone you shared the old one with keeps theirs.
+  const { edit } = useLocalSearchParams<{ edit?: string }>();
+  const [original, setOriginal] = useState<SavedGroup | null>(null);
   const [name, setName] = useState('');
+  useEffect(() => {
+    if (!edit) return;
+    let current = true;
+    loadGroups().then((groups) => {
+      const g = groups.find((x) => x.id === edit);
+      if (!current || !g) return;
+      setOriginal(g);
+      setName(g.name);
+      const me = g.people.find((p) => p.profileId === profile?.id);
+      const organiser = k.people.find((p) => p.isOrganiser);
+      if (me && organiser) k.updatePerson(organiser.key, { ...organiser, diet: me.diet, drinks: me.drinks });
+      k.addGroup(g.people.map(({ profileId, ...p }) => ({ ...p, isMe: profileId === profile?.id })));
+    });
+    return () => {
+      current = false;
+    };
+    // Load once for this edit.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [edit]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const others = k.people.filter((p) => !p.isOrganiser);
@@ -25,6 +50,7 @@ export default function NewGroup() {
     setError(null);
     setBusy(true);
     const e = await saveGroup(name.trim(), k.people);
+    if (!e && original) await leaveGroup(original.id); // a renamed group replaces the old one too
     setBusy(false);
     if (e) return setError(await explainFailure(e, 'save the group'));
     router.back();
@@ -32,7 +58,7 @@ export default function NewGroup() {
 
   return (
     <Screen
-      title="New group"
+      title={original ? 'Edit group' : 'New group'}
       back
       footer={
         <>
@@ -43,7 +69,11 @@ export default function NewGroup() {
         </>
       }
     >
-      <Body>People you often split with. Start a kitty with them in one tap. You’re in the group too.</Body>
+      <Body>
+        {original
+          ? 'Change the name or people. Saving makes a new version for you; anyone you shared it with keeps the old one.'
+          : 'People you often split with. Start a kitty with them in one tap. You’re in the group too.'}
+      </Body>
       <Field label="Group name" value={name} onChangeText={setName} placeholder="Family" autoCapitalize="sentences" maxLength={60} />
       <View style={styles.section}>
         <Label>Who is in</Label>

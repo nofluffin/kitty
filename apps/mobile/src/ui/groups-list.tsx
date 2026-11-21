@@ -1,4 +1,4 @@
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Linking, Platform, Pressable, Share, StyleSheet, Text, View } from 'react-native';
 
@@ -101,6 +101,7 @@ export function GroupsList({ onUse }: { onUse?: (g: SavedGroup) => void }) {
               </Pressable>
               <View style={styles.actions}>
                 <SmallButton onPress={() => share(g)}>Share</SmallButton>
+                <SmallButton onPress={() => router.push({ pathname: '/new-group', params: { edit: g.id } })}>Edit</SmallButton>
                 <SmallButton onPress={() => leave(g)}>Leave</SmallButton>
               </View>
             </View>
@@ -127,5 +128,6 @@ const styles = StyleSheet.create({
   star: { width: 28, alignItems: 'center' },
   starText: { fontSize: 22, lineHeight: 26 },
   flex: { flex: 1, gap: 2 },
-  actions: { flexDirection: 'row', gap: 6 },
+  // Stacked: Share, Edit, Leave (Raj, 21 Nov 2026).
+  actions: { gap: 6, alignItems: 'stretch', width: 84 },
 });
