@@ -1,5 +1,7 @@
 import type { Diet } from '@kitty/core';
+import { Linking, Platform, Share } from 'react-native';
 
+import { config } from './config';
 import type { DraftPerson } from './draft-kitty';
 import { supabase } from './supabase';
 
@@ -110,6 +112,16 @@ export function findSameGroup(
 ): SavedGroup | null {
   const want = people.filter((p) => !p.isOrganiser).map(personId).sort().join('|');
   return groups.find((g) => g.people.filter((p) => p.profileId !== myId).map(personId).sort().join('|') === want) ?? null;
+}
+
+/** Sends a group's share link on WhatsApp, so a friend can add it to their Kitty. */
+export async function shareGroup(g: Pick<SavedGroup, 'name' | 'shareToken'>, myName: string | undefined) {
+  const text = `${myName || 'I'} shared the group ${g.name} on Kitty. Open this to add it to your Kitty: ${config.memberPageUrl}/g/${g.shareToken}`;
+  try {
+    await Linking.openURL(`https://wa.me/?text=${encodeURIComponent(text)}`);
+  } catch {
+    if (Platform.OS !== 'web') await Share.share({ message: text });
+  }
 }
 
 /** Takes the group out of your login only. Others keep it. */

@@ -8,7 +8,7 @@ import { ask } from '@/lib/ask';
 import { useDraftKitty } from '@/lib/draft-kitty';
 import { explainFailure } from '@/lib/errors';
 import { useAuth } from '@/lib/auth';
-import { deleteGroup, leaveGroup, loadGroups, renamePeople, saveGroup, type SavedGroup } from '@/lib/groups';
+import { deleteGroup, leaveGroup, loadGroups, renamePeople, saveGroup, shareGroup, type SavedGroup } from '@/lib/groups';
 import { useToast } from '@/lib/toast';
 import { Body, Button, DashedButton, ErrorText, Field, Label, Screen } from '@/ui/components';
 import { PersonRow } from '@/ui/diet-tags';
@@ -135,6 +135,12 @@ export default function NewGroup() {
             </View>
           ) : null}
           <ErrorText>{error}</ErrorText>
+          {/* Raj, 22 Nov 2026: Share lives here now, not on the groups list. */}
+          {original ? (
+            <Button variant="secondary" onPress={() => shareGroup(original, profile?.name)}>
+              Share on WhatsApp
+            </Button>
+          ) : null}
           <Button onPress={save} loading={busy}>
             Save group
           </Button>
