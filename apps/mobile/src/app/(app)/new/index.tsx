@@ -31,6 +31,9 @@ type Errors = Partial<Record<'title' | 'total' | 'date' | 'plan' | 'people' | 'u
 const MAX_PARTS_OFFERED = 12;
 
 /** Screen 2 (moment) and screen 22 (goal). */
+/** A draft with no pay by date yet: the database takes null, though the generated type says string. */
+const NO_DATE = null as unknown as string;
+
 export default function NewKitty() {
   const toast = useToast();
   const { refreshProfile } = useAuth();
@@ -68,11 +71,15 @@ export default function NewKitty() {
         : k.split.state === 'ok' && k.split.shares.some((x) => x.sharePaise > 0 && x.sharePaise < parts!)
           ? 'A share is too small to split into parts.'
           : null;
+  // Raj, 22 Nov 2026: the amount and date can wait. Without them the kitty is saved (shares ₹0)
+  // and shared once both are in. A kitty that's already shared keeps both.
+  const incomplete = !k.totalPaise || !k.dueDate;
+  const sharedEdit = k.editing?.status === 'shared';
   const problems: Errors = {
     ...(k.title.trim() ? {} : { title: goal ? 'Say what you’re saving for.' : 'Give it a name your friends will recognise.' }),
-    ...(k.totalPaise ? {} : { total: goal ? 'Enter the target, like 50,000.' : 'Enter the total, like 6,000.' }),
+    ...(k.totalPaise || !sharedEdit ? {} : { total: goal ? 'Enter the target, like 50,000.' : 'Enter the total, like 6,000.' }),
     ...(planProblem ? { plan: planProblem } : {}),
-    ...(k.dueDate ? {} : { date: 'Pick the day everyone should pay by.' }),
+    ...(k.dueDate || !sharedEdit ? {} : { date: 'Pick the day everyone should pay by.' }),
     ...(others > 0 ? {} : { people: 'Add at least one other person.' }),
     ...(isValidUpiId(upi) ? {} : { upi: 'Enter your UPI ID, like name@okicici.' }),
     ...(k.split.state === 'error' ? { people: 'The amounts you set add up to more than the total. Adjust them.' } : {}),
@@ -82,9 +89,11 @@ export default function NewKitty() {
   async function create(options: { thenScan?: boolean } = {}) {
     setTried(true);
     setFormError(null);
-    if (Object.keys(problems).length > 0 || k.split.state !== 'ok' || !k.dueDate || !k.totalPaise) return;
+    if (Object.keys(problems).length > 0) return;
+    if (k.split.state !== 'ok' && !(k.split.state === 'no-total' && !k.totalPaise)) return;
 
-    const shares = new Map(k.split.shares.map((s) => [s.memberId, s]));
+    // No total yet: everyone's share is ₹0 until there is one.
+    const shares = new Map(k.split.state === 'ok' ? k.split.shares.map((s) => [s.memberId, s]) : k.people.map((p) => [p.key, { memberId: p.key, sharePaise: 0, fixed: false }]));
     setSaving(true);
     if (scanDraft.current) {
       await supabase.from('kitties').delete().eq('id', scanDraft.current);
@@ -108,8 +117,8 @@ export default function NewKitty() {
         p_kind: k.kind,
         ...(goal ? { p_goal_plan: k.goalPlan, ...(parts ? { p_parts_count: parts } : {}) } : {}),
         p_title: k.title.trim(),
-        p_due_date: k.dueDate,
-        p_total_paise: k.totalPaise,
+        p_due_date: k.dueDate ?? NO_DATE,
+        p_total_paise: k.totalPaise ?? 0,
         p_upi_id: upi,
         p_members: people,
       });
@@ -133,14 +142,22 @@ export default function NewKitty() {
       p_kind: k.kind,
       ...(goal ? { p_goal_plan: k.goalPlan, ...(parts ? { p_parts_count: parts } : {}) } : {}),
       p_title: k.title.trim(),
-      p_due_date: k.dueDate,
-      p_total_paise: k.totalPaise,
+      p_due_date: k.dueDate ?? NO_DATE,
+      p_total_paise: k.totalPaise ?? 0,
       p_upi_id: upi,
       p_members: people,
     });
     if (error || !data) {
       setSaving(false);
       setFormError(await explainFailure(error, 'create the kitty'));
+      return;
+    }
+    if (incomplete) {
+      // Saved without an amount or date: it waits as a draft until both are in.
+      setSaving(false);
+      refreshProfile();
+      toast(`${k.title.trim()} saved. Add ${!k.totalPaise && !k.dueDate ? 'the amount and date' : !k.totalPaise ? 'the amount' : 'the date'} to share it.`);
+      router.replace({ pathname: '/kitty/[id]/share', params: { id: data.id, fresh: '1' } });
       return;
     }
     // Raj, 21 Nov 2026: "Create kitty" makes it live straight away (not a draft), ready to share.
@@ -173,14 +190,14 @@ export default function NewKitty() {
     }
     setTried(true);
     setFormError(null);
-    const needed: (keyof Errors)[] = ['title', 'date', 'people', 'upi'];
-    if (needed.some((key) => problems[key]) || !k.dueDate) return;
+    const needed: (keyof Errors)[] = ['title', 'people', 'upi'];
+    if (needed.some((key) => problems[key])) return;
     setScanning(true);
     if (scanDraft.current) await supabase.from('kitties').delete().eq('id', scanDraft.current);
     const { data, error } = await supabase.rpc('create_kitty', {
       p_kind: 'moment',
       p_title: k.title.trim(),
-      p_due_date: k.dueDate,
+      p_due_date: k.dueDate ?? NO_DATE,
       p_total_paise: 0,
       p_upi_id: upi,
       p_members: k.people.map((p) => ({
@@ -224,8 +241,9 @@ export default function NewKitty() {
               Save and scan the bill
             </Button>
           ) : null}
+          {!k.editing && incomplete ? <Small>No amount or date yet? Save it now. You can share it once both are in.</Small> : null}
           <Button onPress={() => create()} loading={saving}>
-            {k.editing ? 'Save changes' : 'Create kitty'}
+            {k.editing ? 'Save changes' : incomplete ? 'Save kitty' : 'Create kitty'}
           </Button>
         </>
       }

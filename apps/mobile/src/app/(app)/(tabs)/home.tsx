@@ -187,12 +187,13 @@ function KittyCard({ kitty, today }: { kitty: KittySummary; today: string }) {
         </View>
       </View>
       <Text style={[type.metaMuted, styles.cardDate]}>
-        {formatShortDate(kitty.dueDate)}, {timeToGo(today, kitty.dueDate)}
+        {kitty.dueDate ? `${formatShortDate(kitty.dueDate)}, ${timeToGo(today, kitty.dueDate)}` : 'No pay by date yet'}
       </Text>
       <Progress value={progress} style={styles.track} />
       <View style={styles.cardBottom}>
         <Text style={type.meta}>
-          {formatRupees(kitty.collectedPaise)} of {formatRupees(kitty.totalPaise)}
+          {/* Raj, 22 Nov 2026: a kitty can be saved before the amount is known. */}
+          {kitty.totalPaise > 0 ? `${formatRupees(kitty.collectedPaise)} of ${formatRupees(kitty.totalPaise)}` : 'No amount yet'}
         </Text>
         <Text style={type.meta}>{isDraft ? 'Not shared yet' : `${kitty.paidCount} of ${kitty.memberCount} paid`}</Text>
       </View>

@@ -18,7 +18,8 @@ export interface FeedKitty {
   title: string;
   kind: KittyKind;
   status: KittyStatus;
-  dueDate: string;
+  /** Shared kitties always have one; a draft may not yet (Raj, 22 Nov 2026). */
+  dueDate: string | null;
   totalPaise: number;
   upiId: string;
   slug: string;

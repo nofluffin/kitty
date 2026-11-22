@@ -28,7 +28,8 @@ interface ShareKitty {
   title: string;
   kind: KittyKind;
   status: KittyStatus;
-  dueDate: string;
+  /** Empty until picked; needed before sharing (Raj, 22 Nov 2026). */
+  dueDate: string | null;
   totalPaise: number;
   slug: string;
   /** Goals paid in parts. */
@@ -109,23 +110,45 @@ export default function ShareScreen() {
       </Screen>
     );
   }
-  // A draft saved for "Scan it" whose scan hasn't finished: there's nothing to share yet.
-  if (kitty.status === 'draft' && kitty.totalPaise === 0) {
+  // A draft saved without an amount or a date (Raj, 22 Nov 2026), or one whose scan hasn't
+  // finished: shares stay at ₹0 and it can't be shared until both are in.
+  if (kitty.status === 'draft' && (kitty.totalPaise === 0 || !kitty.dueDate)) {
+    const noAmount = kitty.totalPaise === 0;
+    const what = noAmount && !kitty.dueDate ? 'the amount and a pay by date' : noAmount ? 'the amount' : 'a pay by date';
     return (
       <Screen title={kitty.title} back={!close} close={close} hideAvatar>
         <CenteredState
-          title="No total yet"
-          body="Scan the bill to work out everyone’s exact share."
-          action={<Button onPress={() => router.push({ pathname: '/kitty/[id]/scan', params: { id: kitty.id, mode: 'draft' } })}>Scan the bill</Button>}
+          title={`Add ${what} to share it`}
+          body={`${kitty.title} is saved, with everyone in it. Shares are ₹0 until there's an amount. ${noAmount ? 'Type the total, or scan the bill for exact shares.' : 'Pick the day everyone should pay by.'}`}
+          action={
+            <View style={styles.incomplete}>
+              {noAmount && kitty.kind === 'moment' ? (
+                <Button onPress={() => router.push({ pathname: '/kitty/[id]/scan', params: { id: kitty.id, mode: 'draft' } })}>Scan the bill</Button>
+              ) : null}
+              <Button
+                variant={noAmount && kitty.kind === 'moment' ? 'secondary' : 'primary'}
+                onPress={() => router.push({ pathname: '/new', params: { edit: kitty.id } })}
+              >
+                Edit kitty
+              </Button>
+            </View>
+          }
         />
       </Screen>
     );
   }
   // A new key after an edit, so the message is rebuilt from the new amounts.
-  return <ShareReady key={`${kitty.title}|${kitty.totalPaise}|${kitty.members.map((m) => m.sharePaise).join(',')}`} kitty={kitty} close={close} />;
+  return (
+    <ShareReady
+      key={`${kitty.title}|${kitty.totalPaise}|${kitty.members.map((m) => m.sharePaise).join(',')}`}
+      // A shared kitty always has a date (the database insists), and drafts without one stop above.
+      kitty={{ ...kitty, dueDate: kitty.dueDate! }}
+      close={close}
+    />
+  );
 }
 
-function ShareReady({ kitty, close }: { kitty: ShareKitty; close?: () => void }) {
+function ShareReady({ kitty, close }: { kitty: ShareKitty & { dueDate: string }; close?: () => void }) {
   const link = `${config.memberPageUrl}/k/${kitty.slug}`;
   // What each payer is asked for: their own share plus anyone they pay for.
   const asked = combineByPayer(kitty.members, (m) => m.sharePaise);
@@ -325,6 +348,7 @@ function ShareReady({ kitty, close }: { kitty: ShareKitty; close?: () => void })
 
 // Spacing measured from screens 6 and 24.
 const styles = StyleSheet.create({
+  incomplete: { gap: 12, alignSelf: 'stretch' },
   section: { marginTop: 32 },
   preview: {
     marginTop: 12,

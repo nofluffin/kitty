@@ -7,7 +7,8 @@ export interface KittySummary {
   title: string;
   kind: KittyKind;
   status: KittyStatus;
-  dueDate: string;
+  /** Empty for a draft saved without a date (Raj, 22 Nov 2026). */
+  dueDate: string | null;
   totalPaise: Paise;
   collectedPaise: Paise;
   paidCount: number;
