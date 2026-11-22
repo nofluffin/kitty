@@ -2,6 +2,11 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 22 Nov 2026: people lists with pills
+
+- **Lists of people (a kitty's People screen and a group) show each person's food and drink as pills under their name**, with an arrow at the end of the row to show it opens them (Raj). The pills are shared with the person page (apps/mobile/src/ui/diet-tags.tsx).
+- **On the add-a-person form, the mobile number comes straight after the name**, before "Who pays for them".
+
 ## 22 Nov 2026: editing a kitty in three parts
 
 - **Edit kitty is split into Details, People and Amounts** (Raj: the one screen did too much for newcomers). The kitty page and share screen show three rows under "Nobody has paid yet, so you can still edit". Details (the old screen, opened with ?edit=) holds the name, total, pay by date, UPI ID and a goal's plan; People is the add-a-person screen; Amounts is the Adjust shares screen. Each has its own Save changes, which saves the whole kitty through `useSaveEdit` (apps/mobile/src/lib/save-edit.ts) and goes back.

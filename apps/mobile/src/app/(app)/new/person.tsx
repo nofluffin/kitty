@@ -7,11 +7,12 @@ import { useCallback, useState } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 
 import { useAuth } from '@/lib/auth';
-import { describePerson, useDraftKitty, type DraftPerson } from '@/lib/draft-kitty';
+import { useDraftKitty, type DraftPerson } from '@/lib/draft-kitty';
 import { loadGroups } from '@/lib/groups';
 import { notify } from '@/lib/notify';
 import { useSaveEdit } from '@/lib/save-edit';
-import { Button, Chip, DashedButton, ErrorText, Field, Label, Row, Screen, Segmented, Small, TextLink } from '@/ui/components';
+import { Button, Chip, DashedButton, ErrorText, Field, Label, Screen, Segmented, Small, TextLink } from '@/ui/components';
+import { PersonRow } from '@/ui/diet-tags';
 import { type } from '@/ui/theme';
 
 /**
@@ -185,6 +186,19 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
             maxLength={80}
             error={errors.name ?? null}
           />
+          {/* Raj, 22 Nov 2026: the mobile number straight after the name. */}
+          {paidByKey && canBePaidFor ? null : (
+          <Field
+            label="Mobile number"
+            prefix="+91"
+            value={mobile}
+            onChangeText={setMobile}
+            placeholder="Optional"
+            keyboardType="phone-pad"
+            hint={`Used to open a WhatsApp chat with ${shownName} when you share or nudge. Optional.`}
+            error={errors.mobile ?? null}
+          />
+          )}
           {canBePaidFor ? (
             <View style={styles.group}>
               <Label>Who pays for them</Label>
@@ -216,18 +230,6 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
               <Small>{`Pays for ${paysForOthers.map((p) => p.name).join(', ')} too.`}</Small>
             </View>
           ) : null}
-          {paidByKey && canBePaidFor ? null : (
-          <Field
-            label="Mobile number"
-            prefix="+91"
-            value={mobile}
-            onChangeText={setMobile}
-            placeholder="Optional"
-            keyboardType="phone-pad"
-            hint={`Used to open a WhatsApp chat with ${shownName} when you share or nudge. Optional.`}
-            error={errors.mobile ?? null}
-          />
-          )}
         </>
       )}
 
@@ -292,10 +294,12 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
             <Text style={[type.note, styles.empty]}>Nobody yet.</Text>
           ) : (
             k.people.map((p, i) => (
-              <Row
+              <PersonRow
                 key={p.key}
-                left={p.isOrganiser ? youLabel(p.name) : distinctNames(k.people)[i]!}
-                right={describePerson(p, nameOf(p.paidByKey))}
+                name={p.isOrganiser ? youLabel(p.name) : distinctNames(k.people)[i]!}
+                diet={p.diet}
+                drinks={p.drinks}
+                note={p.paidByKey ? `${nameOf(p.paidByKey)} pays for them` : null}
                 onPress={() => router.setParams({ key: p.key })}
               />
             ))

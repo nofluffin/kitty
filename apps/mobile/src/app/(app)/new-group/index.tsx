@@ -5,12 +5,13 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ask } from '@/lib/ask';
 
-import { describePerson, useDraftKitty } from '@/lib/draft-kitty';
+import { useDraftKitty } from '@/lib/draft-kitty';
 import { explainFailure } from '@/lib/errors';
 import { useAuth } from '@/lib/auth';
 import { deleteGroup, leaveGroup, loadGroups, saveGroup, type SavedGroup } from '@/lib/groups';
 import { useToast } from '@/lib/toast';
-import { Body, Button, DashedButton, ErrorText, Field, Label, Row, Screen } from '@/ui/components';
+import { Body, Button, DashedButton, ErrorText, Field, Label, Screen } from '@/ui/components';
+import { PersonRow } from '@/ui/diet-tags';
 import { colors, type } from '@/ui/theme';
 
 /** New group (Raj, 20 Nov 2026): a name and people, saved without starting a kitty. */
@@ -130,10 +131,12 @@ export default function NewGroup() {
         <Label>Who is in</Label>
         <View style={styles.list}>
           {k.people.map((p, i) => (
-            <Row
+            <PersonRow
               key={p.key}
-              left={p.isOrganiser ? youLabel(profile?.name || p.name) : distinctNames(k.people)[i]!}
-              right={describePerson(p, nameOf(p.paidByKey))}
+              name={p.isOrganiser ? youLabel(profile?.name || p.name) : distinctNames(k.people)[i]!}
+              diet={p.diet}
+              drinks={p.drinks}
+              note={p.paidByKey ? `${nameOf(p.paidByKey)} pays for them` : null}
               onPress={() => router.push({ pathname: '/new-group/person', params: { key: p.key } })}
             />
           ))}
