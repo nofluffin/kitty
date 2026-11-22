@@ -300,6 +300,7 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
                 diet={p.diet}
                 drinks={p.drinks}
                 note={p.paidByKey ? `${nameOf(p.paidByKey)} pays` : null}
+                current={p.key === editing?.key}
                 onPress={() => router.setParams({ key: p.key })}
               />
             ))
