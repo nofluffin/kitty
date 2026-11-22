@@ -95,7 +95,8 @@ export default function ScanBill() {
           <ErrorText>{error}</ErrorText>
           {photos.length > 0 ? (
             <Button onPress={scan} loading={busy}>
-              {busy ? 'Reading the bill…' : `Scan ${photos.length === 1 ? 'this photo' : `these ${photos.length} photos`}`}
+              {/* Raj, 22 Nov 2026: "Upload bill" once the photo is taken; "Scan" read like taking another. */}
+              {busy ? 'Reading the bill…' : photos.length === 1 ? 'Upload bill' : `Upload bill (${photos.length} photos)`}
             </Button>
           ) : null}
           {room > 0 && !busy ? (

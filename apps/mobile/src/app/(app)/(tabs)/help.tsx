@@ -165,7 +165,7 @@ const SECTIONS: { title: string; icon: IconName; topics: Topic[] }[] = [
       {
         q: 'Scanning the bill',
         a: [
-          'Tap “Scan the bill” and photograph it, up to three photos for a long one. Kitty reads each line and sorts it into veg, non-veg or alcohol.',
+          'Tap “Scan the bill” and photograph it, up to three photos for a long one, then tap “Upload bill”. Kitty reads each line and sorts it into veg, non-veg or alcohol.',
           'Check the lines and tap a tag if Kitty got one wrong. Lines Kitty isn’t sure about are asked first. Kitty then works out everyone’s exact share.',
         ],
       },
@@ -173,7 +173,7 @@ const SECTIONS: { title: string; icon: IconName; topics: Topic[] }[] = [
         q: 'Scan before anyone pays',
         a: [
           'Scanning replaces everyone’s share, so it only works until someone pays. After that the button is greyed out and amounts stay as they are.',
-          'Already scanned and something changed? Tap “Upload bill” and scan the new one, again before anyone pays.',
+          'Already scanned and something changed? Tap “Rescan the bill”, again before anyone pays.',
         ],
       },
       {

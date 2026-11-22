@@ -2,9 +2,9 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
-## 22 Nov 2026: Upload bill
+## 22 Nov 2026: Upload bill after taking the photo
 
-- **Once a bill is scanned, the button says "Upload bill" instead of "Rescan the bill"** (Raj: rescan was confusing), on the kitty page and the share screen. Help updated.
+- **Once a photo of the bill is taken, the main button says "Upload bill"** (Raj), or "Upload bill (2 photos)" for more than one. It said "Scan this photo", which read like taking another picture. "Rescan the bill" on the kitty page and share screen stays as it was (the earlier change to "Upload bill" there was reverted).
 
 ## 22 Nov 2026: Vercel builds main only
 
