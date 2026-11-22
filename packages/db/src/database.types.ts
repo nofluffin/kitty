@@ -344,6 +344,9 @@ isOneToOne: false
 "register_device_token":
 { Args: { "p_platform": string,"p_token": string }; Returns: undefined
                            },
+"rename_people":
+{ Args: { "p_renames": Json }; Returns: Json
+                           },
 "save_group":
 { Args: { "p_name": string,"p_people": Json }; Returns: {
               "created_at": string,

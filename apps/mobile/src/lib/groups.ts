@@ -83,6 +83,19 @@ export async function saveGroup(name: string, people: DraftPerson[]) {
   return error;
 }
 
+/**
+ * Someone renamed in a group (Raj, 22 Nov 2026): the new name also goes to your other groups
+ * (ones only you hold) and your kitties where nobody has paid yet. Matched by mobile number,
+ * or by the old name when there's no number.
+ */
+export async function renamePeople(renames: { oldName: string; phone: string | null; newName: string }[]) {
+  if (renames.length === 0) return null;
+  const { error } = await supabase.rpc('rename_people', {
+    p_renames: renames.map((r) => ({ old_name: r.oldName, phone: r.phone, new_name: r.newName })),
+  });
+  return error;
+}
+
 /** Takes the group out of your login only. Others keep it. */
 export async function leaveGroup(id: string) {
   const { error } = await supabase.from('group_holders').delete().eq('group_id', id);

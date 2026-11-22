@@ -2,6 +2,13 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 22 Nov 2026: renaming someone in a group
+
+- **Renaming someone in a group also renames them in your other groups and in your kitties where nobody has paid yet** (Raj chose this over groups only, or everywhere). Kitties someone has paid into keep the old name as a record.
+- **People are copies, so the same person is matched by mobile number**, or by their old name (ignoring case) when neither copy has a number. Your own row is never renamed.
+- **Groups someone else also holds aren't changed**, keeping the rule that a group never changes for anyone else.
+- `public.rename_people` (migration 20261122124052) does it; the app calls it after Save group with everyone whose name changed.
+
 ## 22 Nov 2026: people lists with pills
 
 - **Lists of people (a kitty's People screen and a group) show each person's food and drink as pills under their name**, with an arrow at the end of the row to show it opens them (Raj). The pills are shared with the person page (apps/mobile/src/ui/diet-tags.tsx).

@@ -1,6 +1,6 @@
 import { distinctNames, youLabel } from '@kitty/core';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ask } from '@/lib/ask';
@@ -8,7 +8,7 @@ import { ask } from '@/lib/ask';
 import { useDraftKitty } from '@/lib/draft-kitty';
 import { explainFailure } from '@/lib/errors';
 import { useAuth } from '@/lib/auth';
-import { deleteGroup, leaveGroup, loadGroups, saveGroup, type SavedGroup } from '@/lib/groups';
+import { deleteGroup, leaveGroup, loadGroups, renamePeople, saveGroup, type SavedGroup } from '@/lib/groups';
 import { useToast } from '@/lib/toast';
 import { Body, Button, DashedButton, ErrorText, Field, Label, Screen } from '@/ui/components';
 import { PersonRow } from '@/ui/diet-tags';
@@ -45,6 +45,12 @@ export default function NewGroup() {
     // Load once for this edit.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [edit]);
+  // Everyone as the group had them, to spot who was renamed when it's saved (Raj, 22 Nov 2026).
+  const before = useRef<Map<string, { name: string; phone: string | null }> | null>(null);
+  useEffect(() => {
+    if (!original || before.current || k.people.length < 2) return;
+    before.current = new Map(k.people.filter((p) => !p.isOrganiser).map((p) => [p.key, { name: p.name, phone: p.phone }]));
+  }, [original, k.people]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const others = k.people.filter((p) => !p.isOrganiser);
@@ -60,9 +66,23 @@ export default function NewGroup() {
     setBusy(true);
     const e = await saveGroup(name.trim(), k.people);
     if (!e && original) await leaveGroup(original.id); // a renamed group replaces the old one too
+    // Renamed people get their new name in your other groups and unpaid kitties too.
+    const renames = k.people.flatMap((p) => {
+      const was = before.current?.get(p.key);
+      return was && was.name.trim() !== p.name.trim() ? [{ oldName: was.name, phone: was.phone, newName: p.name.trim() }] : [];
+    });
+    const renameError = e ? null : await renamePeople(renames);
     setBusy(false);
     if (e) return setError(await explainFailure(e, 'save the group'));
-    toast(original ? `${name.trim()} saved` : `${name.trim()} added to your groups`);
+    toast(
+      renameError
+        ? `${name.trim()} saved. The new names couldn’t reach your kitties this time.`
+        : renames.length > 0
+          ? `${name.trim()} saved. New names are in your other groups and unpaid kitties too.`
+          : original
+            ? `${name.trim()} saved`
+            : `${name.trim()} added to your groups`,
+    );
     router.back();
   }
 
