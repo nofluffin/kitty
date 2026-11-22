@@ -36,7 +36,7 @@ interface ShareKitty {
   partsCount: number | null;
   /** Editable until someone pays (decided 20 Nov 2026). */
   editable: boolean;
-  /** A checked bill exists, so the button says Upload bill. */
+  /** A checked bill exists, so the button says Rescan. */
   hasBill: boolean;
   /** Per person; paidBy names whoever pays their share, if someone else does. */
   members: { name: string; sharePaise: number; isOrganiser: boolean; id: string; paidById: string | null }[];
@@ -287,7 +287,7 @@ function ShareReady({ kitty, close }: { kitty: ShareKitty & { dueDate: string };
           <DashedButton
             onPress={() => router.push({ pathname: '/kitty/[id]/scan', params: { id: kitty.id, mode: status === 'draft' ? 'draft' : 'settle' } })}
           >
-            {kitty.hasBill ? 'Upload bill' : 'Have the bill? Scan it for exact shares'}
+            {kitty.hasBill ? 'Rescan the bill' : 'Have the bill? Scan it for exact shares'}
           </DashedButton>
         </View>
       ) : null}

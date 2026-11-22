@@ -173,7 +173,7 @@ const SECTIONS: { title: string; icon: IconName; topics: Topic[] }[] = [
         q: 'Scan before anyone pays',
         a: [
           'Scanning replaces everyone’s share, so it only works until someone pays. After that the button is greyed out and amounts stay as they are.',
-          'Already scanned and something changed? Tap “Upload bill” and scan the new one, again before anyone pays.',
+          'Already scanned and something changed? Tap “Rescan the bill”, again before anyone pays.',
         ],
       },
       {

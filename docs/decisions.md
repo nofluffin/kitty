@@ -2,10 +2,6 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
-## 22 Nov 2026: Upload bill
-
-- **Once a bill is scanned, the button says "Upload bill" instead of "Rescan the bill"** (Raj: rescan was confusing), on the kitty page and the share screen. Help updated.
-
 ## 22 Nov 2026: Vercel builds main only
 
 - **Both Vercel projects deploy only from main** (Raj): `git.deploymentEnabled` in apps/web/vercel.json and apps/mobile/vercel.json, so pull request branches no longer make preview builds. On 21 Nov the Hobby plan's daily deployment limit was hit (each PR made previews of both sites plus the live builds), which held thekitty.app and app.thekitty.app back for about a day. Check changes locally or in the browser tests before merging instead.
