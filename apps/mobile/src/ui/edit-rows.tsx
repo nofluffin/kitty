@@ -37,7 +37,9 @@ export function EditRows({
             accessibilityState={{ disabled: !!r.off }}
             style={({ pressed }) => [styles.row, pressed && styles.pressed, r.off && styles.off]}
           >
-            <Text style={[type.bodyInk, styles.label]}>{r.label}</Text>
+            <Text style={[type.bodyInk, styles.label]} numberOfLines={1}>
+              {r.label}
+            </Text>
             <Text style={[type.note, styles.note]} numberOfLines={1}>
               {r.note}
             </Text>
@@ -59,7 +61,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: layout.border,
     borderBottomColor: colors.line,
   },
-  label: { width: 80 },
+  label: { flexShrink: 0 },
   note: { flex: 1, textAlign: 'right' },
   pressed: { opacity: 0.6 },
   off: { opacity: 0.4 },
