@@ -21,6 +21,7 @@ import {
   TextLink,
   Title,
 } from '@/ui/components';
+import { EditRows } from '@/ui/edit-rows';
 import { colors, layout, type } from '@/ui/theme';
 
 interface ShareKitty {
@@ -129,7 +130,7 @@ export default function ShareScreen() {
                 variant={noAmount && kitty.kind === 'moment' ? 'secondary' : 'primary'}
                 onPress={() => router.push({ pathname: '/new', params: { edit: kitty.id } })}
               >
-                Edit kitty
+                {`Add ${noAmount && !kitty.dueDate ? 'the amount and date' : noAmount ? 'the amount' : 'the date'}`}
               </Button>
             </View>
           }
@@ -274,11 +275,11 @@ function ShareReady({ kitty, close }: { kitty: ShareKitty & { dueDate: string };
         {equal
           ? 'Send the link to the group. Each person picks their name and pays their share to you.'
           : 'Amounts differ per person, so the message does not name one. Each person sees their own share on the link.'}{' '}
-        {kitty.editable ? 'You can edit amounts and people until someone pays.' : 'Someone has paid, so amounts are locked.'}
+        {kitty.editable ? '' : 'Someone has paid, so amounts are locked.'}
       </Body>
       {kitty.editable ? (
         <View style={styles.editLink}>
-          <TextLink onPress={() => router.push({ pathname: '/new', params: { edit: kitty.id } })}>Edit the kitty</TextLink>
+          <EditRows kitty={kitty} />
         </View>
       ) : null}
       {kitty.editable && kitty.kind === 'moment' ? (
@@ -371,6 +372,6 @@ const styles = StyleSheet.create({
   editButton: { marginTop: 20, alignSelf: 'flex-start' },
   list: { marginTop: 12 },
   skip: { alignItems: 'center' },
-  editLink: { marginTop: 12, alignItems: 'flex-start' },
+  editLink: { marginTop: 20 },
   scanGap: { marginTop: 14 },
 });

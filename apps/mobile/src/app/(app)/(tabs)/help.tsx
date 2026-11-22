@@ -64,7 +64,7 @@ const SECTIONS: { title: string; icon: IconName; topics: Topic[] }[] = [
         a: [
           'Don’t know the amount or date yet? Leave them empty and tap “Save kitty”. Everyone’s share is ₹0 until you add the total or scan the bill, and you can share it once both the amount and the pay by date are in.',
           'Kitty splits the total equally. Tap “Adjust” to set someone’s amount by hand; the rest is split among everyone else.',
-          'Have the bill? Scan it any time before someone pays: on the new kitty screen, under Adjust, while editing a kitty (“Save and scan the bill” saves your changes first), or on its share screen. Veg eaters don’t pay for non-veg dishes, and only drinkers pay for alcohol.',
+          'Have the bill? Scan it any time before someone pays: on the new kitty screen, under Adjust, on the kitty itself, or on its share screen. Veg eaters don’t pay for non-veg dishes, and only drinkers pay for alcohol.',
         ],
       },
     ],
@@ -145,8 +145,9 @@ const SECTIONS: { title: string; icon: IconName; topics: Topic[] }[] = [
       {
         q: 'Changing a kitty after sharing',
         a: [
-          'Until anyone pays, tap “Edit the amounts or people” in the kitty. The link stays the same and everyone sees the new amounts.',
+          'Until anyone pays, open the kitty and tap what you want to change: Details (name, total, pay by date and UPI ID), People, or Amounts. Each saves on its own. The link stays the same and everyone sees the changes.',
           'Once someone has paid, amounts are locked.',
+          'A moment can’t become a goal, or a goal a moment. Start a new kitty for that.',
         ],
       },
       {

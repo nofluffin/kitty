@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth';
 import { useDraftKitty, type GoalPlan, type Split } from '@/lib/draft-kitty';
 import { explainFailure } from '@/lib/errors';
 import { loadGroups, type SavedGroup } from '@/lib/groups';
+import { useSaveEdit } from '@/lib/save-edit';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/lib/toast';
 import {
@@ -30,7 +31,11 @@ type Errors = Partial<Record<'title' | 'total' | 'date' | 'plan' | 'people' | 'u
 /** Most parts offered on screen 22: a year of monthly payments. */
 const MAX_PARTS_OFFERED = 12;
 
-/** Screen 2 (moment) and screen 22 (goal). */
+/**
+ * Screen 2 (moment) and screen 22 (goal).
+ * Opened with ?edit=<id> it's the Details part of editing (Raj, 22 Nov 2026): name, total, date,
+ * plan and UPI ID. People and amounts have their own screens, and the kind can't change.
+ */
 /** A draft with no pay by date yet: the database takes null, though the generated type says string. */
 const NO_DATE = null as unknown as string;
 
@@ -38,6 +43,9 @@ export default function NewKitty() {
   const toast = useToast();
   const { refreshProfile } = useAuth();
   const k = useDraftKitty();
+  const edit = useSaveEdit();
+  // The name as saved, for the title, so it doesn't change while it's retyped.
+  const [savedTitle] = useState(k.title.trim());
   // Errors show after the first "Create kitty" tap, then update live as each field is fixed.
   const [tried, setTried] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -82,14 +90,22 @@ export default function NewKitty() {
     ...(k.dueDate || !sharedEdit ? {} : { date: 'Pick the day everyone should pay by.' }),
     ...(others > 0 ? {} : { people: 'Add at least one other person.' }),
     ...(isValidUpiId(upi) ? {} : { upi: 'Enter your UPI ID, like name@okicici.' }),
-    ...(k.split.state === 'error' ? { people: 'The amounts you set add up to more than the total. Adjust them.' } : {}),
+    ...(k.split.state === 'error'
+      ? k.editing
+        ? { total: 'The amounts you set add up to more than this. Change them under Amounts first.' }
+        : { people: 'The amounts you set add up to more than the total. Adjust them.' }
+      : {}),
   };
   const errors: Errors = tried ? { ...problems, ...(formError ? { form: formError } : {}) } : {};
 
-  async function create(options: { thenScan?: boolean } = {}) {
+  async function create() {
     setTried(true);
     setFormError(null);
     if (Object.keys(problems).length > 0) return;
+    if (k.editing) {
+      setFormError(await edit.save(parts));
+      return;
+    }
     if (k.split.state !== 'ok' && !(k.split.state === 'no-total' && !k.totalPaise)) return;
 
     // No total yet: everyone's share is ₹0 until there is one.
@@ -111,33 +127,6 @@ export default function NewKitty() {
       // Paying for someone else: the payer's place in the list.
       ...(p.paidByKey ? { paid_by_index: k.people.findIndex((x) => x.key === p.paidByKey) } : {}),
     }));
-    if (k.editing) {
-      const { error } = await supabase.rpc('update_kitty', {
-        p_kitty_id: k.editing.id,
-        p_kind: k.kind,
-        ...(goal ? { p_goal_plan: k.goalPlan, ...(parts ? { p_parts_count: parts } : {}) } : {}),
-        p_title: k.title.trim(),
-        p_due_date: k.dueDate ?? NO_DATE,
-        p_total_paise: k.totalPaise ?? 0,
-        p_upi_id: upi,
-        p_members: people,
-      });
-      setSaving(false);
-      if (error) {
-        setFormError(await explainFailure(error, 'save your changes'));
-        return;
-      }
-      refreshProfile();
-      if (options.thenScan) {
-        // Scan from Edit kitty (Raj, 21 Nov 2026): edits saved first, then the camera.
-        router.push({ pathname: '/kitty/[id]/scan', params: { id: k.editing.id, mode: k.editing.status === 'draft' ? 'draft' : 'settle' } });
-        return;
-      }
-      toast('Changes saved');
-      // Back to where the edit started (the share screen or the feed), which reloads on focus.
-      router.back();
-      return;
-    }
     const { data, error } = await supabase.rpc('create_kitty', {
       p_kind: k.kind,
       ...(goal ? { p_goal_plan: k.goalPlan, ...(parts ? { p_parts_count: parts } : {}) } : {}),
@@ -184,10 +173,6 @@ export default function NewKitty() {
   );
 
   async function scanFirst() {
-    if (k.editing) {
-      await create({ thenScan: true });
-      return;
-    }
     setTried(true);
     setFormError(null);
     const needed: (keyof Errors)[] = ['title', 'people', 'upi'];
@@ -227,7 +212,7 @@ export default function NewKitty() {
 
   return (
     <Screen
-      title={k.editing ? 'Edit kitty' : 'New kitty'}
+      title={k.editing ? `Edit ${savedTitle}` : 'New kitty'}
       back
       footer={
         <>
@@ -235,30 +220,27 @@ export default function NewKitty() {
           {k.editing?.status === 'shared' ? (
             <Small>Everyone’s link updates straight away. You can only edit until someone pays.</Small>
           ) : null}
-          {/* Raj, 21 Nov 2026: Edit kitty gets its own Scan the bill button, next to Save. */}
-          {k.editing && !goal ? (
-            <Button variant="secondary" onPress={scanFirst} loading={scanning}>
-              Save and scan the bill
-            </Button>
-          ) : null}
           {!k.editing && incomplete ? <Small>No amount or date yet? Save it now. You can share it once both are in.</Small> : null}
-          <Button onPress={() => create()} loading={saving}>
+          <Button onPress={() => create()} loading={saving || edit.saving}>
             {k.editing ? 'Save changes' : incomplete ? 'Save kitty' : 'Create kitty'}
           </Button>
         </>
       }
     >
-      <Segmented
-        label="Kind of kitty"
-        options={[
-          { value: 'moment', label: 'Moment' },
-          { value: 'goal', label: 'Goal' },
-        ]}
-        value={k.kind}
-        onChange={k.setKind}
-      />
+      {k.editing ? null : (
+        <Segmented
+          label="Kind of kitty"
+          options={[
+            { value: 'moment', label: 'Moment' },
+            { value: 'goal', label: 'Goal' },
+          ]}
+          value={k.kind}
+          onChange={k.setKind}
+        />
+      )}
 
       <Field
+        first={!!k.editing}
         label={goal ? 'What are you saving for' : 'What is it for'}
         value={k.title}
         onChangeText={k.setTitle}
@@ -318,39 +300,44 @@ export default function NewKitty() {
         </View>
       )}
 
-      <View style={styles.section}>
-        <Label>Who is in</Label>
-        <View style={styles.chips}>
-          {k.people.map((p, i) => (
-            <Chip
-              key={p.key}
-              filled={p.isOrganiser}
-              onPress={() => router.push({ pathname: '/new/person', params: { key: p.key } })}
-            >
-              {p.isOrganiser ? youLabel(p.name) : distinctNames(k.people)[i]}
-            </Chip>
-          ))}
-        </View>
-        <View style={styles.addGap}>
-          <DashedButton onPress={() => router.push('/new/person')}>Add or edit people</DashedButton>
-        </View>
-        {groups.length > 0 ? (
-          <View style={styles.groups}>
-            <DashedButton onPress={() => router.push('/new/groups')}>Add a saved group</DashedButton>
-            {k.groupNote ? <Small>{k.groupNote}</Small> : null}
+      {/* Editing: people and amounts have their own screens (Raj, 22 Nov 2026). */}
+      {k.editing ? null : (
+        <>
+          <View style={styles.section}>
+            <Label>Who is in</Label>
+            <View style={styles.chips}>
+              {k.people.map((p, i) => (
+                <Chip
+                  key={p.key}
+                  filled={p.isOrganiser}
+                  onPress={() => router.push({ pathname: '/new/person', params: { key: p.key } })}
+                >
+                  {p.isOrganiser ? youLabel(p.name) : distinctNames(k.people)[i]}
+                </Chip>
+              ))}
+            </View>
+            <View style={styles.addGap}>
+              <DashedButton onPress={() => router.push('/new/person')}>Add or edit people</DashedButton>
+            </View>
+            {groups.length > 0 ? (
+              <View style={styles.groups}>
+                <DashedButton onPress={() => router.push('/new/groups')}>Add a saved group</DashedButton>
+                {k.groupNote ? <Small>{k.groupNote}</Small> : null}
+              </View>
+            ) : null}
+            {others > 0 ? (
+              <View style={styles.saveGroup}>
+                <TextLink onPress={() => router.push('/new/save-group')}>Save these people as a group</TextLink>
+              </View>
+            ) : null}
+            <ErrorText>{errors.people}</ErrorText>
           </View>
-        ) : null}
-        {others > 0 ? (
-          <View style={styles.saveGroup}>
-            <TextLink onPress={() => router.push('/new/save-group')}>Save these people as a group</TextLink>
-          </View>
-        ) : null}
-        <ErrorText>{errors.people}</ErrorText>
-      </View>
 
-      <View style={styles.summaryGap}>
-        <SplitSummary split={k.split} count={k.people.length} parts={parts && k.dueDate ? { count: parts, dueDate: k.dueDate, today } : null} />
-      </View>
+          <View style={styles.summaryGap}>
+            <SplitSummary split={k.split} count={k.people.length} parts={parts && k.dueDate ? { count: parts, dueDate: k.dueDate, today } : null} />
+          </View>
+        </>
+      )}
 
       <Field
         label="Your UPI ID"
