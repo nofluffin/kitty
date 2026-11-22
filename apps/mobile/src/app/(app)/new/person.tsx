@@ -299,7 +299,7 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
                 name={p.isOrganiser ? youLabel(p.name) : distinctNames(k.people)[i]!}
                 diet={p.diet}
                 drinks={p.drinks}
-                note={p.paidByKey ? `${nameOf(p.paidByKey)} pays for them` : null}
+                note={p.paidByKey ? `${nameOf(p.paidByKey)} pays` : null}
                 onPress={() => router.setParams({ key: p.key })}
               />
             ))
