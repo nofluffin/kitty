@@ -181,7 +181,7 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
             label="Name"
             value={name}
             onChangeText={setName}
-            placeholder="Aisha"
+            placeholder="Firstname Lastname"
             autoCapitalize="words"
             maxLength={80}
             error={errors.name ?? null}
@@ -309,7 +309,10 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
           <View style={styles.groupTools}>
             {hasGroups ? <DashedButton onPress={() => router.push('/new/groups')}>Add a saved group</DashedButton> : null}
             {k.groupNote ? <Small>{k.groupNote}</Small> : null}
-            {others > 0 ? <TextLink onPress={() => router.push('/new/save-group')}>Save these people as a group</TextLink> : null}
+            {/* Raj, 22 Nov 2026: only once someone new has been added to the kitty. */}
+            {others > 0 && k.people.some((p) => !p.memberId) ? (
+              <TextLink onPress={() => router.push('/new/save-group')}>Save these people as a group</TextLink>
+            ) : null}
           </View>
         ) : null}
       </View>

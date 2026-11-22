@@ -96,6 +96,22 @@ export async function renamePeople(renames: { oldName: string; phone: string | n
   return error;
 }
 
+/** Who someone is, to compare lists of people: their number, or their name without one. */
+const personId = (p: { name: string; phone: string | null }) => p.phone ?? `name:${p.name.trim().toLowerCase()}`;
+
+/**
+ * A group you already have with exactly these people, leaving yourself out (Raj, 22 Nov 2026),
+ * so the same people aren't saved twice.
+ */
+export function findSameGroup(
+  people: { name: string; phone: string | null; isOrganiser: boolean }[],
+  groups: SavedGroup[],
+  myId: string | undefined,
+): SavedGroup | null {
+  const want = people.filter((p) => !p.isOrganiser).map(personId).sort().join('|');
+  return groups.find((g) => g.people.filter((p) => p.profileId !== myId).map(personId).sort().join('|') === want) ?? null;
+}
+
 /** Takes the group out of your login only. Others keep it. */
 export async function leaveGroup(id: string) {
   const { error } = await supabase.from('group_holders').delete().eq('group_id', id);

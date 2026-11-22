@@ -3,9 +3,11 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { useAuth } from '@/lib/auth';
 import { describePerson, useDraftKitty } from '@/lib/draft-kitty';
 import { explainFailure } from '@/lib/errors';
-import { saveGroup } from '@/lib/groups';
+import { findSameGroup, loadGroups, saveGroup } from '@/lib/groups';
+import { notify } from '@/lib/notify';
 import { useToast } from '@/lib/toast';
 import { Body, Button, ErrorText, Field, Row, Screen } from '@/ui/components';
 
@@ -13,6 +15,7 @@ import { Body, Button, ErrorText, Field, Row, Screen } from '@/ui/components';
 export default function SaveGroup() {
   const k = useDraftKitty();
   const toast = useToast();
+  const { profile } = useAuth();
   const others = k.people.filter((p) => !p.isOrganiser);
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
@@ -25,6 +28,13 @@ export default function SaveGroup() {
     }
     setError(null);
     setBusy(true);
+    // The same people already make a group: say so rather than saving them twice.
+    const same = findSameGroup(k.people, await loadGroups().catch(() => []), profile?.id);
+    if (same) {
+      setBusy(false);
+      notify('This group already exists', `${same.name} already has these people. Add them from Saved groups next time.`);
+      return;
+    }
     const e = await saveGroup(name.trim(), k.people);
     setBusy(false);
     if (e) {
