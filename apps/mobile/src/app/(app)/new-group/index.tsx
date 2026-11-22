@@ -156,7 +156,7 @@ export default function NewGroup() {
               name={p.isOrganiser ? youLabel(profile?.name || p.name) : distinctNames(k.people)[i]!}
               diet={p.diet}
               drinks={p.drinks}
-              note={p.paidByKey ? `${nameOf(p.paidByKey)} pays for them` : null}
+              note={p.paidByKey ? `${nameOf(p.paidByKey)} pays` : null}
               onPress={() => router.push({ pathname: '/new-group/person', params: { key: p.key } })}
             />
           ))}
