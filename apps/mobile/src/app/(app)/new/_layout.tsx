@@ -30,7 +30,7 @@ export default function NewKittyLayout() {
     };
   }, [editId, attempt]);
 
-  const title = editId ? 'Edit kitty' : 'New kitty';
+  const title = editId ? 'Edit' : 'New kitty';
   if (!profile || (editId && (existing === null || existing === 'error' || existing === 'locked'))) {
     // Never spin forever: if something can't load, say so and offer a retry.
     const failed = profileStatus === 'error' || existing === 'error';

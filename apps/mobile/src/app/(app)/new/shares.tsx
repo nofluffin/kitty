@@ -4,15 +4,21 @@ import { useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { describePerson, useDraftKitty, type DraftPerson } from '@/lib/draft-kitty';
+import { useSaveEdit } from '@/lib/save-edit';
 import { Button, ErrorText, InfoBox, Note, Screen, TextLink } from '@/ui/components';
 import { colors, layout, type } from '@/ui/theme';
 
 const WORDS = ['no one', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
 const count = (n: number) => WORDS[n] ?? String(n);
 
-/** Screen 4, the adjust rule from spec section 4. */
+/**
+ * Screen 4, the adjust rule from spec section 4.
+ * Opened with ?edit=<id> it's the Amounts part of editing a kitty (Raj, 22 Nov 2026) and saves it.
+ */
 export default function AdjustShares() {
   const k = useDraftKitty();
+  const edit = useSaveEdit();
+  const [saveError, setSaveError] = useState<string | null>(null);
   const split = k.split;
   const shareOf = new Map(split.state === 'ok' ? split.shares.map((s) => [s.memberId, s.sharePaise]) : []);
   const fixed = k.people.filter((p) => p.fixedPaise !== null);
@@ -41,31 +47,41 @@ export default function AdjustShares() {
 
   return (
     <Screen
-      title="Shares"
+      title={k.editing ? 'Amounts' : 'Shares'}
       back
       footer={
-        <>
-          <Note>
-            You can change amounts until someone pays. Scan the bill and Kitty works out each person’s exact share from what they
-            had, replacing these amounts.
-          </Note>
-          {/* Raj, 21 Nov 2026: Scan the bill replaces Done here; the back arrow keeps the amounts. */}
-          {k.kind === 'moment' ? (
-            <Button
-              onPress={() => {
-                // Screen 2 saves the kitty and opens the camera: it has the name, date and UPI ID.
-                k.setScanRequested(true);
-                router.back();
-              }}
-            >
-              Scan the bill
+        k.editing ? (
+          <>
+            <Note>You can change amounts until someone pays. Scanning the bill replaces them with each person’s exact share.</Note>
+            <ErrorText>{saveError}</ErrorText>
+            <Button onPress={async () => setSaveError(await edit.save())} loading={edit.saving} disabled={split.state !== 'ok'}>
+              Save changes
             </Button>
-          ) : (
-            <Button onPress={() => router.back()} disabled={split.state !== 'ok'}>
-              Done
-            </Button>
-          )}
-        </>
+          </>
+        ) : (
+          <>
+            <Note>
+              You can change amounts until someone pays. Scan the bill and Kitty works out each person’s exact share from what they
+              had, replacing these amounts.
+            </Note>
+            {/* Raj, 21 Nov 2026: Scan the bill replaces Done here; the back arrow keeps the amounts. */}
+            {k.kind === 'moment' ? (
+              <Button
+                onPress={() => {
+                  // Screen 2 saves the kitty and opens the camera: it has the name, date and UPI ID.
+                  k.setScanRequested(true);
+                  router.back();
+                }}
+              >
+                Scan the bill
+              </Button>
+            ) : (
+              <Button onPress={() => router.back()} disabled={split.state !== 'ok'}>
+                Done
+              </Button>
+            )}
+          </>
+        )
       }
     >
       <View style={styles.top}>

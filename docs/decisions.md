@@ -2,6 +2,13 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 22 Nov 2026: editing a kitty in three parts
+
+- **Edit kitty is split into Details, People and Amounts** (Raj: the one screen did too much for newcomers). The kitty page and share screen show three rows under "Nobody has paid yet, so you can still edit". Details (the old screen, opened with ?edit=) holds the name, total, pay by date, UPI ID and a goal's plan; People is the add-a-person screen; Amounts is the Adjust shares screen. Each has its own Save changes, which saves the whole kitty through `useSaveEdit` (apps/mobile/src/lib/save-edit.ts) and goes back.
+- **Details is titled "Edit {kitty name}"**, using the name as saved, so it doesn't change while it's retyped.
+- **The kind (Moment or Goal) can't change once saved**, and "Save and scan the bill" is gone from editing: the kitty page already has Scan the bill.
+- **Amounts is greyed out until there's an amount.** If a smaller total no longer covers amounts set by hand, Details says to change them under Amounts first.
+
 ## 22 Nov 2026: Upload bill after taking the photo
 
 - **Once a photo of the bill is taken, the main button says "Upload bill"** (Raj), or "Upload bill (2 photos)" for more than one. It said "Scan this photo", which read like taking another picture. "Rescan the bill" on the kitty page and share screen stays as it was (the earlier change to "Upload bill" there was reverted).

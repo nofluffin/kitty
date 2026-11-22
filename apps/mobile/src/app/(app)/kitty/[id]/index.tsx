@@ -13,6 +13,7 @@ import { setArchived } from '@/lib/kitties';
 import { useToast } from '@/lib/toast';
 import { Button, CenteredState, Header, Note, Progress, TextLink } from '@/ui/components';
 import { riseIn, settle } from '@/ui/motion';
+import { EditRows } from '@/ui/edit-rows';
 import { colors, layout, page, type } from '@/ui/theme';
 
 type Load = { state: 'loading' } | { state: 'error' } | { state: 'ready'; kitty: FeedKitty };
@@ -117,12 +118,11 @@ export default function Feed() {
                 </Animated.View>
               ))}
             </View>
-            {/* Raj, 21 Nov 2026: straight under the people, not in the footer. */}
+            {/* Raj, 21 Nov 2026: straight under the people, not in the footer.
+                22 Nov 2026: three rows (Details, People, Amounts) instead of one big edit screen. */}
             {load.kitty.editable ? (
               <View style={styles.editLink}>
-                <TextLink onPress={() => router.push({ pathname: '/new', params: { edit: id } })}>
-                  Nobody has paid yet. Edit the amounts or people
-                </TextLink>
+                <EditRows kitty={load.kitty} />
               </View>
             ) : null}
           </ScrollView>
@@ -258,7 +258,7 @@ function FeedRow({ kitty, member: m }: { kitty: FeedKitty; member: FeedMember })
 
 // Measured from screen 7.
 const styles = StyleSheet.create({
-  editLink: { marginTop: 16, alignItems: 'flex-start' },
+  editLink: { marginTop: 24 },
   archiveRow: { alignItems: 'flex-start' },
   archiveText: { color: colors.destructive },
   flex: { flex: 1 },

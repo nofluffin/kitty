@@ -2,19 +2,23 @@ import { cleanName, type Diet, distinctNames, formatIndianMobile, normaliseIndia
 // The legacy picker returns the picked person's details directly. The newer Contact.presentPicker
 // only returns an ID, and reading the numbers then needs full address book permission on iPhone.
 import { presentContactPickerAsync } from 'expo-contacts/legacy';
-import { router, useLocalSearchParams, usePathname } from 'expo-router';
-import { useState } from 'react';
+import { router, useFocusEffect, useLocalSearchParams, usePathname } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 
 import { useAuth } from '@/lib/auth';
 import { describePerson, useDraftKitty, type DraftPerson } from '@/lib/draft-kitty';
+import { loadGroups } from '@/lib/groups';
 import { notify } from '@/lib/notify';
-import { Button, Chip, Field, Label, Row, Screen, Segmented, Small, TextLink } from '@/ui/components';
+import { useSaveEdit } from '@/lib/save-edit';
+import { Button, Chip, DashedButton, ErrorText, Field, Label, Row, Screen, Segmented, Small, TextLink } from '@/ui/components';
 import { type } from '@/ui/theme';
 
 /**
  * Screen 3. Adds people one after another; the list underneath shows who's in.
  * Tapping someone in the list loads them back into the form to change or remove.
+ * Opened with ?edit=<id> it's the People part of editing a kitty (Raj, 22 Nov 2026), with saved
+ * groups here too, and Save changes saves the kitty.
  */
 export default function AddPerson() {
   const { key: editKey } = useLocalSearchParams<{ key?: string }>();
@@ -29,6 +33,27 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
   const { profile } = useAuth();
   // The same screen adds people to a new group (Groups tab).
   const inGroup = usePathname().startsWith('/new-group');
+  // Editing a saved kitty's people: this screen saves the kitty.
+  const kittyEdit = !!k.editing && !inGroup;
+  const edit = useSaveEdit();
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [hasGroups, setHasGroups] = useState(false);
+  useFocusEffect(
+    useCallback(() => {
+      if (!kittyEdit) return;
+      loadGroups()
+        .then((g) => setHasGroups(g.length > 0))
+        .catch(() => setHasGroups(false));
+    }, [kittyEdit]),
+  );
+  const others = k.people.filter((p) => !p.isOrganiser).length;
+  async function saveKitty() {
+    if (others === 0) {
+      setSaveError('Add at least one other person.');
+      return;
+    }
+    setSaveError(await edit.save());
+  }
   const [name, setName] = useState(editing?.name ?? '');
   const hasName = name.trim().length > 0;
   const [mobile, setMobile] = useState(editing?.phone ? formatIndianMobile(editing.phone).replace(/^\+91 /, '') : '');
@@ -105,7 +130,7 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
 
   return (
     <Screen
-      title={editing ? (isOrganiser ? youLabel(editing.name) : `Edit ${editing.name}`) : 'Add a person'}
+      title={editing ? (isOrganiser ? youLabel(editing.name) : `Edit ${editing.name}`) : kittyEdit ? 'People' : 'Add a person'}
       back
       footer={
         // Raj, 20 Nov 2026: one pinned button. "Add to kitty" while someone is being filled in,
@@ -114,6 +139,13 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
           <Button onPress={save}>Save changes</Button>
         ) : name.trim() ? (
           <Button onPress={save}>{inGroup ? 'Add to group' : 'Add to kitty'}</Button>
+        ) : kittyEdit ? (
+          <>
+            <ErrorText>{saveError}</ErrorText>
+            <Button onPress={saveKitty} loading={edit.saving}>
+              Save changes
+            </Button>
+          </>
         ) : (
           <Button onPress={() => router.back()}>{`Done, ${k.people.length} ${k.people.length === 1 ? 'person' : 'people'} in`}</Button>
         )
@@ -235,7 +267,7 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
       </View>
 
       <View style={styles.actions}>
-        {added && !editing ? <Text style={[type.note, styles.added]}>{added} added. Add someone else, or tap Done.</Text> : null}
+        {added && !editing ? <Text style={[type.note, styles.added]}>{added} added. Add someone else, or tap {kittyEdit ? 'Save changes' : 'Done'}.</Text> : null}
         {editing ? (
           <Button variant="secondary" onPress={remove}>
             {isOrganiser ? (inGroup ? 'Leave me out of this group' : 'I’m not paying into this one') : inGroup ? 'Remove from group' : 'Remove from kitty'}
@@ -269,6 +301,13 @@ function PersonForm({ editing }: { editing: DraftPerson | null }) {
             ))
           )}
         </View>
+        {kittyEdit ? (
+          <View style={styles.groupTools}>
+            {hasGroups ? <DashedButton onPress={() => router.push('/new/groups')}>Add a saved group</DashedButton> : null}
+            {k.groupNote ? <Small>{k.groupNote}</Small> : null}
+            {others > 0 ? <TextLink onPress={() => router.push('/new/save-group')}>Save these people as a group</TextLink> : null}
+          </View>
+        ) : null}
       </View>
     </Screen>
   );
@@ -289,4 +328,5 @@ const styles = StyleSheet.create({
   addBack: { marginTop: 8 },
   added: { textAlign: 'center' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 9, marginTop: 11 },
+  groupTools: { marginTop: 20, gap: 14, alignItems: 'stretch' },
 });
