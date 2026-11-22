@@ -76,7 +76,7 @@ const SECTIONS: { title: string; icon: IconName; topics: Topic[] }[] = [
       {
         q: 'Saving a group',
         a: [
-          'In the Groups tab, tap “New group”, give it a name like Family or Office lunch, and add people. Or, after adding people to a kitty, tap “Save these people as a group”. Numbers, food and drink, and who pays for whom are kept, and you’re in it too.',
+          'In the Groups tab, tap “New group”, give it a name like Family or Office lunch, and add people. Or, after adding people to a kitty, tap “Save these people as a group”. Numbers, food and drink, and who pays for whom are kept, and you’re in it too. When editing a kitty, it shows once you’ve added someone new. If you already have a group with the same people, Kitty says so instead of saving it twice.',
           'Saving again with the same name makes a new group and swaps your old one for it. Anyone you shared the old one with keeps theirs.',
           'To change a group, tap it, or tap Edit next to it, in the Groups tab. Rename it, add or remove people, or change their food and drink, then tap “Save group”. You get the new version; anyone you shared the old one with keeps theirs.',
           'Renamed someone? Their new name also shows in your other groups and in kitties where nobody has paid yet. Kitties someone has paid into keep the old name, and so do groups someone else also has.',

@@ -2,6 +2,12 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 22 Nov 2026: name placeholder and saving groups
+
+- **Name fields say "Firstname Lastname"** as the example, instead of "Aisha" (Raj).
+- **"Save these people as a group" on a kitty's People screen shows only once someone new has been added** (Raj). On New kitty everyone is new, so it shows as before.
+- **Saving the same people as an existing group shows "This group already exists"** and names that group, instead of saving it again. People are compared by mobile number, or by name without one, leaving yourself out (`findSameGroup` in apps/mobile/src/lib/groups.ts).
+
 ## 22 Nov 2026: renaming someone in a group
 
 - **Renaming someone in a group also renames them in your other groups and in your kitties where nobody has paid yet** (Raj chose this over groups only, or everywhere). Kitties someone has paid into keep the old name as a record.
