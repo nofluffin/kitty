@@ -2,6 +2,10 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 22 Nov 2026: Vercel builds main only
+
+- **Both Vercel projects deploy only from main** (Raj): `git.deploymentEnabled` in apps/web/vercel.json and apps/mobile/vercel.json, so pull request branches no longer make preview builds. On 21 Nov the Hobby plan's daily deployment limit was hit (each PR made previews of both sites plus the live builds), which held thekitty.app and app.thekitty.app back for about a day. Check changes locally or in the browser tests before merging instead.
+
 ## 22 Nov 2026: kitties without an amount or date
 
 - **A kitty can be saved with no amount and no pay by date** (Raj). The button says "Save kitty" instead of "Create kitty", and everyone's share is ₹0. It's kept as a draft: on Kitties it shows "No amount yet" and "No pay by date yet", and opening it explains what's missing, with Scan the bill and Edit kitty.
