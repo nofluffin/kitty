@@ -51,7 +51,8 @@ export interface ExistingKitty {
   partsCount: number | null;
   title: string;
   totalPaise: Paise;
-  dueDate: string;
+  /** Empty until the organiser picks one (Raj, 22 Nov 2026). */
+  dueDate: string | null;
   upiId: string;
   people: (Omit<DraftPerson, 'key' | 'paidByKey'> & { paidByMemberId: string | null })[];
 }

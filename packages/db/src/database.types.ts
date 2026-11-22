@@ -139,14 +139,14 @@ isOneToOne: false
                   ]
                 },"kitties": {
                   Row: {
-                    "amount_source": Database["public"]['Enums']["amount_source"],"archived_at": string | null,"closed_at": string | null,"created_at": string,"due_date": string,"final_bill_paise": number | null,"goal_plan": Database["public"]['Enums']["goal_plan"] | null,"id": string,"kind": Database["public"]['Enums']["kitty_kind"],"organiser_id": string,"parts_count": number | null,"remind_day_before": boolean,"remind_on_day": boolean,"share_slug": string,"shared_at": string | null,"status": Database["public"]['Enums']["kitty_status"],"title": string,"total_paise": number,"updated_at": string,"upi_id": string
+                    "amount_source": Database["public"]['Enums']["amount_source"],"archived_at": string | null,"closed_at": string | null,"created_at": string,"due_date": string | null,"final_bill_paise": number | null,"goal_plan": Database["public"]['Enums']["goal_plan"] | null,"id": string,"kind": Database["public"]['Enums']["kitty_kind"],"organiser_id": string,"parts_count": number | null,"remind_day_before": boolean,"remind_on_day": boolean,"share_slug": string,"shared_at": string | null,"status": Database["public"]['Enums']["kitty_status"],"title": string,"total_paise": number,"updated_at": string,"upi_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "amount_source"?: Database["public"]['Enums']["amount_source"],"archived_at"?: string | null,"closed_at"?: string | null,"created_at"?: string,"due_date": string,"final_bill_paise"?: number | null,"goal_plan"?: Database["public"]['Enums']["goal_plan"] | null,"id"?: string,"kind": Database["public"]['Enums']["kitty_kind"],"organiser_id": string,"parts_count"?: number | null,"remind_day_before"?: boolean,"remind_on_day"?: boolean,"share_slug"?: string,"shared_at"?: string | null,"status"?: Database["public"]['Enums']["kitty_status"],"title": string,"total_paise": number,"updated_at"?: string,"upi_id": string
+                    "amount_source"?: Database["public"]['Enums']["amount_source"],"archived_at"?: string | null,"closed_at"?: string | null,"created_at"?: string,"due_date"?: string | null,"final_bill_paise"?: number | null,"goal_plan"?: Database["public"]['Enums']["goal_plan"] | null,"id"?: string,"kind": Database["public"]['Enums']["kitty_kind"],"organiser_id": string,"parts_count"?: number | null,"remind_day_before"?: boolean,"remind_on_day"?: boolean,"share_slug"?: string,"shared_at"?: string | null,"status"?: Database["public"]['Enums']["kitty_status"],"title": string,"total_paise": number,"updated_at"?: string,"upi_id": string
                   }
                   Update: {
-                    "amount_source"?: Database["public"]['Enums']["amount_source"],"archived_at"?: string | null,"closed_at"?: string | null,"created_at"?: string,"due_date"?: string,"final_bill_paise"?: number | null,"goal_plan"?: Database["public"]['Enums']["goal_plan"] | null,"id"?: string,"kind"?: Database["public"]['Enums']["kitty_kind"],"organiser_id"?: string,"parts_count"?: number | null,"remind_day_before"?: boolean,"remind_on_day"?: boolean,"share_slug"?: string,"shared_at"?: string | null,"status"?: Database["public"]['Enums']["kitty_status"],"title"?: string,"total_paise"?: number,"updated_at"?: string,"upi_id"?: string
+                    "amount_source"?: Database["public"]['Enums']["amount_source"],"archived_at"?: string | null,"closed_at"?: string | null,"created_at"?: string,"due_date"?: string | null,"final_bill_paise"?: number | null,"goal_plan"?: Database["public"]['Enums']["goal_plan"] | null,"id"?: string,"kind"?: Database["public"]['Enums']["kitty_kind"],"organiser_id"?: string,"parts_count"?: number | null,"remind_day_before"?: boolean,"remind_on_day"?: boolean,"share_slug"?: string,"shared_at"?: string | null,"status"?: Database["public"]['Enums']["kitty_status"],"title"?: string,"total_paise"?: number,"updated_at"?: string,"upi_id"?: string
                   }
                   Relationships: [
                     {
@@ -293,7 +293,7 @@ isOneToOne: false
 "archived_at": string | null,
 "closed_at": string | null,
 "created_at": string,
-"due_date": string,
+"due_date": string | null,
 "final_bill_paise": number | null,
 "goal_plan": Database["public"]['Enums']["goal_plan"] | null,
 "id": string,
@@ -372,7 +372,7 @@ isOneToOne: false
 "archived_at": string | null,
 "closed_at": string | null,
 "created_at": string,
-"due_date": string,
+"due_date": string | null,
 "final_bill_paise": number | null,
 "goal_plan": Database["public"]['Enums']["goal_plan"] | null,
 "id": string,

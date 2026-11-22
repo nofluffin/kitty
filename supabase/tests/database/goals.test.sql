@@ -22,9 +22,10 @@ select throws_ok($$ select public.create_kitty('goal', 'One part', current_date 
 select throws_ok($$ select public.create_kitty('moment', 'Dinner', current_date + 2, 20000, 'rohan@okicici',
   '[{"name": "Rohan", "is_organiser": true, "share_paise": 10000}, {"name": "Aisha", "share_paise": 10000}]', 'parts', 2) $$,
   '23514', 'only goals are paid in parts', 'moments are never in parts');
-select throws_ok($$ select public.create_kitty('goal', 'No target', current_date + 60, 0, 'rohan@okicici',
-  '[{"name": "Rohan", "is_organiser": true, "share_paise": 0}, {"name": "Aisha", "share_paise": 0}]') $$,
-  '23514', 'give the goal a target', 'a goal needs a target');
+-- 22 Nov 2026: a goal can be saved without a target, but not shared without one.
+select throws_ok($$ select public.share_kitty((public.create_kitty('goal', 'No target', current_date + 60, 0, 'rohan@okicici',
+  '[{"name": "Rohan", "is_organiser": true, "share_paise": 0}, {"name": "Aisha", "share_paise": 0}]')).id) $$,
+  '23514', 'add a total or scan the bill before sharing', 'a goal needs a target before it''s shared');
 
 select lives_ok($$ select public.share_kitty((select id from goa)) $$, 'a goal in parts can be shared');
 

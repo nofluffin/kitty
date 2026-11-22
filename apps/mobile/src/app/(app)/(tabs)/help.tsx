@@ -62,6 +62,7 @@ const SECTIONS: { title: string; icon: IconName; topics: Topic[] }[] = [
       {
         q: 'Changing amounts',
         a: [
+          'Don’t know the amount or date yet? Leave them empty and tap “Save kitty”. Everyone’s share is ₹0 until you add the total or scan the bill, and you can share it once both the amount and the pay by date are in.',
           'Kitty splits the total equally. Tap “Adjust” to set someone’s amount by hand; the rest is split among everyone else.',
           'Have the bill? Scan it any time before someone pays: on the new kitty screen, under Adjust, while editing a kitty (“Save and scan the bill” saves your changes first), or on its share screen. Veg eaters don’t pay for non-veg dishes, and only drinkers pay for alcohol.',
         ],

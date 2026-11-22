@@ -186,7 +186,7 @@ function Summary({ kitty }: { kitty: FeedKitty }) {
           {progress.paid} of {progress.total} paid
         </Text>
         <Text style={type.note}>
-          {formatShortDate(kitty.dueDate)}, {timeToGo(localIsoDate(), kitty.dueDate)}
+          {kitty.dueDate ? `${formatShortDate(kitty.dueDate)}, ${timeToGo(localIsoDate(), kitty.dueDate)}` : 'No pay by date yet'}
         </Text>
       </View>
     </View>

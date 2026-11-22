@@ -2,6 +2,13 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 22 Nov 2026: kitties without an amount or date
+
+- **A kitty can be saved with no amount and no pay by date** (Raj). The button says "Save kitty" instead of "Create kitty", and everyone's share is ₹0. It's kept as a draft: on Kitties it shows "No amount yet" and "No pay by date yet", and opening it explains what's missing, with Scan the bill and Edit kitty.
+- **It can be shared once both are in** (Raj chose this over sharing a ₹0 kitty). The database enforces it: share_kitty asks for a total and a date, and a shared kitty can't lose its date (constraint kitties_shared_have_a_date) or its total.
+- A goal can also wait for its target. Paying a goal in parts still needs a date, since the parts count back from it.
+- Migration 20261122030122_kitty_without_amount.
+
 ## 21 Nov 2026: Save and scan on Edit kitty
 
 - **Edit kitty has a "Save and scan the bill" button above Save changes** (Raj), for moments. It saves your edits, then opens the camera. The dashed scan box is gone from Edit kitty; New kitty keeps it, worded "Have the bill? Scan it for exact shares" so it no longer gets cut off.
