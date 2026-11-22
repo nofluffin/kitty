@@ -150,7 +150,7 @@ export default function Feed() {
                   {!load.kitty.editable
                     ? 'Someone has paid, so the bill can’t be scanned any more. Everyone’s amount stays as it is.'
                     : load.kitty.hasBill
-                      ? 'The bill is scanned. Rescan it if something changed, and Kitty works the shares out again.'
+                      ? 'The bill is scanned. If something changed, upload the new bill and Kitty works the shares out again.'
                       : 'Scan the bill before anyone pays, and Kitty splits veg, non-veg and alcohol into exact shares.'}
                 </Note>
                 {/* Raj, 20 Nov 2026: once anyone has paid, scanning is greyed out. */}
@@ -159,7 +159,8 @@ export default function Feed() {
                   disabled={!load.kitty.editable}
                   onPress={() => router.push({ pathname: '/kitty/[id]/scan', params: { id, mode: 'settle' } })}
                 >
-                  {load.kitty.hasBill ? 'Rescan the bill' : 'Scan the bill'}
+                  {/* Raj, 22 Nov 2026: "Upload bill" once one is scanned, not "Rescan". */}
+                  {load.kitty.hasBill ? 'Upload bill' : 'Scan the bill'}
                 </Button>
               </>
             )}
