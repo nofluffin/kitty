@@ -114,6 +114,9 @@ export async function loadMemberView(slug: string, claimToken: string | undefine
   if (error) return { kind: "unavailable" };
   // A draft hasn't been shared yet, so its link shouldn't work. Don't reveal it exists.
   if (!k || k.status === "draft") return { kind: "not_found" };
+  // Shared kitties always have a pay by date (the database insists, 22 Nov 2026).
+  const dueDate = k.due_date;
+  if (!dueDate) return { kind: "not_found" };
 
   // Full names (Raj, 21 Nov 2026): two people can share a first name.
   const organiserName = (k.organiser?.name ?? "").replace(/\s+/g, " ").trim() || "The organiser";
@@ -200,7 +203,7 @@ export async function loadMemberView(slug: string, claimToken: string | undefine
     slug,
     title: k.title,
     status: k.status,
-    dueDate: k.due_date,
+    dueDate,
     totalPaise: k.total_paise,
     upiId: k.upi_id,
     finalBillPaise: k.final_bill_paise,
