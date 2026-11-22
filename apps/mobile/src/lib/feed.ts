@@ -32,7 +32,7 @@ export interface FeedKitty {
   partsCount: number | null;
   /** Nobody but the organiser has paid yet, so amounts can still be edited (decided 20 Nov 2026). */
   editable: boolean;
-  /** A bill has been scanned and checked, so the button says "Rescan the bill". */
+  /** A bill has been scanned and checked, so the button says "Upload bill". */
   hasBill: boolean;
   /** Filed away by the organiser (Archived kitties). */
   archivedAt: string | null;
