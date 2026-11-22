@@ -2,6 +2,10 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 22 Nov 2026: the person being edited is greyed in the list
+
+- **While editing someone, their row under "In this group" or "In this kitty" is greyed out and can't be tapped** (Raj), so it's clear who the form is for.
+
 ## 22 Nov 2026: group rows open the group
 
 - **The Groups list has no Share or Edit buttons** (Raj). Each row is the star, the group's name and people (now using the full width), and an arrow; tapping it opens the group.

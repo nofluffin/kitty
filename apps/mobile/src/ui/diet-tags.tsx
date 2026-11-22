@@ -39,6 +39,7 @@ export function PersonRow({
   diet,
   drinks,
   note,
+  current,
   onPress,
 }: {
   name: string;
@@ -46,14 +47,18 @@ export function PersonRow({
   drinks: boolean;
   /** Extra line, like who pays for them. */
   note?: string | null;
+  /** The person being edited right now: greyed out, and not tappable (Raj, 22 Nov 2026). */
+  current?: boolean;
   onPress: () => void;
 }) {
   return (
     <Pressable
       onPress={onPress}
+      disabled={current}
+      accessibilityState={{ disabled: !!current, selected: !!current }}
       accessibilityRole="button"
       accessibilityLabel={`${name}, ${diet === 'veg' ? 'Veg' : 'Non-Veg'}, ${drinks ? 'Alcohol' : 'No Alcohol'}${note ? `, ${note}` : ''}`}
-      style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+      style={({ pressed }) => [styles.row, pressed && styles.pressed, current && styles.current]}
     >
       <View style={styles.text}>
         <Text style={type.bodyInk} numberOfLines={1}>
@@ -82,4 +87,5 @@ const styles = StyleSheet.create({
   },
   text: { flex: 1, gap: 6 },
   pressed: { opacity: 0.6 },
+  current: { opacity: 0.4 },
 });
