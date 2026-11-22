@@ -2,6 +2,11 @@
 
 Choices made during the build that aren't in the spec, or that settle something it leaves open. Newest first.
 
+## 22 Nov 2026: group rows open the group
+
+- **The Groups list has no Share or Edit buttons** (Raj). Each row is the star, the group's name and people (now using the full width), and an arrow; tapping it opens the group.
+- **Share on WhatsApp is on the group's own screen**, above Save group. It shares the group as saved (`shareGroup` in apps/mobile/src/lib/groups.ts).
+
 ## 22 Nov 2026: name placeholder and saving groups
 
 - **Name fields say "Firstname Lastname"** as the example, instead of "Aisha" (Raj).

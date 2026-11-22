@@ -1,15 +1,15 @@
+import Feather from '@expo/vector-icons/Feather';
 import { distinctNames, youLabel } from '@kitty/core';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Linking, Platform, Pressable, Share, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { useAuth } from '@/lib/auth';
-import { config } from '@/lib/config';
 import { explainFailure } from '@/lib/errors';
 import { loadGroups, setFavourite, type SavedGroup } from '@/lib/groups';
 
-import { CenteredState, SmallButton } from './components';
+import { CenteredState } from './components';
 import { riseIn, settle } from './motion';
 import { colors, layout, type } from './theme';
 
@@ -17,7 +17,8 @@ const RECENT = 3;
 
 /**
  * The groups screen (Raj, 20 Nov 2026): favourites, recently used, then all groups,
- * each with a star, Share and Edit. Leave and Delete are on the group's own screen. With onUse, tapping a group picks it.
+ * each with a star. Tapping a group opens it, where it can be shared, changed, left or deleted
+ * (Raj, 22 Nov 2026: no Share and Edit buttons on the list). With onUse, tapping a group picks it.
  */
 export function GroupsList({ onUse }: { onUse?: (g: SavedGroup) => void }) {
   const { profile } = useAuth();
@@ -50,15 +51,6 @@ export function GroupsList({ onUse }: { onUse?: (g: SavedGroup) => void }) {
   const shown = new Set([...favourites, ...recent].map((g) => g.id));
   const rest = groups.filter((g) => !shown.has(g.id));
 
-  async function share(g: SavedGroup) {
-    const text = `${profile?.name || 'I'} shared the group ${g.name} on Kitty. Open this to add it to your Kitty: ${config.memberPageUrl}/g/${g.shareToken}`;
-    try {
-      await Linking.openURL(`https://wa.me/?text=${encodeURIComponent(text)}`);
-    } catch {
-      if (Platform.OS !== 'web') await Share.share({ message: text });
-    }
-  }
-
   const edit = (g: SavedGroup) => router.push({ pathname: '/new-group', params: { edit: g.id } });
 
   async function star(g: SavedGroup) {
@@ -85,29 +77,23 @@ export function GroupsList({ onUse }: { onUse?: (g: SavedGroup) => void }) {
               </Pressable>
               {/* Raj, 21 Nov 2026: tapping a group opens it to edit (or picks it, on a new kitty). */}
               <Pressable
-                style={styles.flex}
+                style={({ pressed }) => [styles.open, pressed && styles.pressed]}
                 onPress={() => (onUse ? onUse(g) : edit(g))}
                 accessibilityRole="button"
                 accessibilityLabel={onUse ? `Add ${g.name}` : `Open ${g.name}`}
               >
-                <Text style={type.bodyInk}>{g.name}</Text>
-                <Text style={type.note}>
-                  {/* Raj, 21 Nov 2026: your name, with (You), rather than just You. */}
-                  {distinctNames(g.people)
-                    .map((label, i) => (g.people[i]!.profileId === profile?.id ? youLabel(profile?.name || g.people[i]!.name) : label))
-                    .join(', ')}
-                  {g.createdBy.id === profile?.id ? '' : `. From ${g.createdBy.name || 'a friend'}`}
-                </Text>
+                <View style={styles.flex}>
+                  <Text style={type.bodyInk}>{g.name}</Text>
+                  <Text style={type.note}>
+                    {/* Raj, 21 Nov 2026: your name, with (You), rather than just You. */}
+                    {distinctNames(g.people)
+                      .map((label, i) => (g.people[i]!.profileId === profile?.id ? youLabel(profile?.name || g.people[i]!.name) : label))
+                      .join(', ')}
+                    {g.createdBy.id === profile?.id ? '' : `. From ${g.createdBy.name || 'a friend'}`}
+                  </Text>
+                </View>
+                <Feather name="chevron-right" size={18} color={colors.muted} />
               </Pressable>
-              {/* Share and Edit side by side on the right, centred on the group. Leave and Delete are on the group's screen. */}
-              <View style={styles.actions}>
-                <SmallButton compact onPress={() => share(g)}>
-                  Share
-                </SmallButton>
-                <SmallButton compact onPress={() => edit(g)}>
-                  Edit
-                </SmallButton>
-              </View>
             </Animated.View>
           ))}
         </View>
@@ -131,6 +117,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12, borderBottomWidth: layout.border, borderBottomColor: colors.line },
   star: { width: 28, alignItems: 'center' },
   starText: { fontSize: 22, lineHeight: 26 },
+  open: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12 },
   flex: { flex: 1, gap: 2 },
-  actions: { flexDirection: 'row', gap: 6 },
+  pressed: { opacity: 0.6 },
 });
